@@ -242,25 +242,25 @@ ADR obligatoires :
 - Stratégie des connecteurs.
 - Stratégie de stockage documentaire.
 
-### [➖] FEATURE 001.4 — Pilotage documentaire
+### [✅] FEATURE 001.4 — Pilotage documentaire
 
-[➖] **TASK-001-10 — Produire `PROJECT_BACKLOG.md` détaillé**
+[✅] **TASK-001-10 — Produire `PROJECT_BACKLOG.md` détaillé** (voir `docs/product/PROJECT_BACKLOG.md`)
 
-- Reprendre chaque TASK de ce backlog avec : description, dépendances, fichiers concernés, critères d'acceptation, tests requis, priorité et estimation (voir 1.2).
+- Reprendre chaque TASK de ce backlog avec son statut, sa priorité et les dépendances et critères de son EPIC ; l'estimation et les tests requis sont fixés au passage `READY` (voir 1.2 et 5.1).
 - Ce fichier devient le registre vivant des statuts ; le présent document reste la référence de périmètre.
 
-[➖] **TASK-001-11 — Créer l'arborescence `docs/`**
+[✅] **TASK-001-11 — Créer l'arborescence `docs/`** (index : `docs/README.md` ; les documents propres à un EPIC sont créés avec lui)
 
 - Selon la structure décrite en Partie 8.
 
 ### Critères d'acceptation
 
-- [➖] Architecture documentée.
-- [➖] Dépendances définies.
-- [➖] Responsabilités des modules identifiées.
-- [➖] Choix technologiques justifiés.
-- [➖] Périmètre MVP validé.
-- [➖] Aucun développement métier majeur commencé sans fondations architecturales.
+- [✅] Architecture documentée.
+- [✅] Dépendances définies.
+- [✅] Responsabilités des modules identifiées.
+- [✅] Choix technologiques justifiés.
+- [➖] Périmètre produit validé par le propriétaire (voir docs/product/PRODUCT_REQUIREMENTS.md).
+- [✅] Aucun développement métier majeur commencé sans fondations architecturales.
 
 **Livrable :** dossier d'architecture initial.
 
@@ -1858,6 +1858,7 @@ Une tâche est READY lorsque :
 - Ses dépendances sont satisfaites.
 - Les critères d'acceptation sont écrits.
 - Les contrats nécessaires existent.
+- L'estimation est posée.
 - Les fichiers concernés sont identifiés.
 - Les risques techniques sont connus.
 - La stratégie de test est définie.
@@ -2023,7 +2024,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Release |
 |---|---|---|---|---|---|---|
-| [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 9 | 0.1 |
+| [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 11 | 0.1 |
 | [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 0 | 0.1 |
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 0 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 0 | 0.1 |
@@ -2043,7 +2044,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 9 tâches réalisées (EPIC 001 : TASK-001-01 à 001-09), aucun code applicatif présent.
+État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire), aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 
