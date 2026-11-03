@@ -63,3 +63,28 @@ class FakeConnector:
 
 
 CRITERES = SearchCriteria(title="Data Analyst")
+
+
+class PagedFakeConnector(FakeConnector):
+    """Connecteur de TEST paginé : renvoie `pages[curseur]` ; peut échouer à une page donnée."""
+
+    def __init__(
+        self,
+        key: str,
+        pages: list[list[ConnectorOffer]],
+        *,
+        fail_on_page: int | None = None,
+        error: Exception | None = None,
+    ) -> None:
+        super().__init__(key)
+        self._pages = pages
+        self._fail_on_page = fail_on_page
+        self._error = error
+
+    async def search(self, criteria: SearchCriteria) -> SearchPage:
+        self.calls += 1
+        index = int(criteria.cursor or 0)
+        if self._fail_on_page == index and self._error is not None:
+            raise self._error
+        suivant = str(index + 1) if index + 1 < len(self._pages) else None
+        return SearchPage(offers=tuple(self._pages[index]), next_cursor=suivant)

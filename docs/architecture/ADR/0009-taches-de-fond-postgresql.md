@@ -1,6 +1,6 @@
 # ADR-0009 — Tâches de fond adossées à PostgreSQL
 
-- **Statut :** Proposé
+- **Statut :** Accepté (implémenté : file PostgreSQL et worker, EPIC 007)
 - **Date :** 2026-11-03
 
 ## Contexte

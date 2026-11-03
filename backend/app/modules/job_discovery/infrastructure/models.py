@@ -174,6 +174,26 @@ class JobOfferSourceModel(PrimaryKeyMixin, CreatedAtMixin, OwnedMixin, Base):
     last_seen_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    # Renseigné quand la source, parcourue entièrement, ne présente plus cette offre ;
+    # effacé si elle réapparaît.
+    gone_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class JobOfferRevisionModel(PrimaryKeyMixin, CreatedAtMixin, OwnedMixin, Base):
+    """Historique des modifications d'une offre : état précédent conservé à chaque changement."""
+
+    __tablename__ = "job_offer_revisions"
+    __table_args__ = (
+        CheckConstraint("char_length(content_hash) = 64", name="content_hash_sha256"),
+        Index("ix_job_offer_revisions_offer_id_observed_at", "offer_id", "observed_at"),
+    )
+
+    offer_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("job_offers.id", ondelete="CASCADE")
+    )
+    content_hash: Mapped[str] = mapped_column(String(64))
+    snapshot: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
 class JobOfferStateModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):

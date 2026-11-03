@@ -40,6 +40,8 @@ class UpsertResult:
     """L'offre n'existait pas encore."""
     changed: bool
     """Le contenu (empreinte) a changé depuis la dernière observation : analyses à invalider."""
+    merged: bool = False
+    """L'observation a été rattachée à une offre existante (même poste vu sur une autre source)."""
 
 
 class JobOfferRepository(Protocol):

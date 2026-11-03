@@ -10,11 +10,11 @@ Source de vérité : les migrations Alembic (`backend/migrations/versions/`), v�
 - Montants en `NUMERIC`, jamais en flottant. Données semi-structurées (préférences, critères, résultats d'analyse, charge brute d'une source) en `JSONB`, validées par le domaine avant écriture.
 - Pays, langues et devises : formats contrôlés par `CHECK`, sans liste fermée.
 
-## Tables (27)
+## Tables (29)
 
-`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `job_sources` · `target_companies` · `job_offers` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications`
+`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `job_sources` · `target_companies` · `job_offers` · `job_offer_revisions` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications` · `jobs`
 
-À venir avec leur EPIC : file de tâches (`jobs`, ADR-0009, EPIC 007/015), préférences de notification (EPIC 015), préparation d'entretien (EPIC 016).
+À venir avec leur EPIC : préférences de notification (EPIC 015), préparation d'entretien (EPIC 016).
 
 ## Index (TASK-004-08)
 
@@ -40,7 +40,9 @@ Chaque table de données a aussi un index sur `owner_id` et sur ses clés étran
 | Donnée | Règle |
 |---|---|
 | Observations d'offres et données brutes | Conservées tant que l'offre existe (audit, traçabilité) |
-| Offres expirées | Passent à `expired` ; passent à `archived` après 90 jours sans candidature ni sauvegarde. Jamais supprimées si une candidature y est liée |
+| Offres expirées | Passent à `expired` quand toutes leurs observations ont disparu d'un parcours **complet** de leur source, ou à la date d'expiration annoncée ; passent à `archived` après 90 jours sans candidature ni sauvegarde. Jamais supprimées si une candidature y est liée |
+| Historique des modifications d'offres (`job_offer_revisions`) | Conservé tant que l'offre existe |
+| Tâches de fond terminées (`jobs`) | À purger après 30 jours ; les tâches mortes restent consultables jusqu'à purge manuelle |
 | Historique des candidatures | Conservé (utile à l'utilisateur) |
 | `ai_usages` | 24 mois, puis agrégation mensuelle conservée |
 | `ai_cache_entries` | Suppression à `expires_at` |

@@ -776,66 +776,66 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION
+# [✅] EPIC 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION
 
 **Priorité : P0 — Fondamental**
 
 **Objectif :** centraliser et fiabiliser les offres issues de différentes sources.
 
-### [➖] FEATURE 007.1 — Ingestion
+### [✅] FEATURE 007.1 — Ingestion
 
-[➖] **TASK-007-01 — Créer le Job Ingestion Service**
+[✅] **TASK-007-01 — Créer le Job Ingestion Service**
 
-[➖] **TASK-007-02 — Ajouter les tâches asynchrones**
+[✅] **TASK-007-02 — Ajouter les tâches asynchrones**
 
-[➖] **TASK-007-03 — Gérer les résultats paginés**
+[✅] **TASK-007-03 — Gérer les résultats paginés**
 
-[➖] **TASK-007-04 — Gérer les erreurs partielles**
+[✅] **TASK-007-04 — Gérer les erreurs partielles**
 
-### [➖] FEATURE 007.2 — Normalisation
+### [✅] FEATURE 007.2 — Normalisation
 
-[➖] **TASK-007-05 — Normaliser les intitulés**
+[✅] **TASK-007-05 — Normaliser les intitulés**
 
-[➖] **TASK-007-06 — Normaliser les pays et villes**
+[✅] **TASK-007-06 — Normaliser les pays et villes**
 
-[➖] **TASK-007-07 — Normaliser les contrats**
+[✅] **TASK-007-07 — Normaliser les contrats**
 
-[➖] **TASK-007-08 — Normaliser les devises**
+[✅] **TASK-007-08 — Normaliser les devises**
 
-[➖] **TASK-007-09 — Normaliser les dates et fuseaux horaires**
+[✅] **TASK-007-09 — Normaliser les dates et fuseaux horaires**
 
-[➖] **TASK-007-10 — Préserver les données originales**
+[✅] **TASK-007-10 — Préserver les données originales**
 
-### [➖] FEATURE 007.3 — Déduplication
+### [✅] FEATURE 007.3 — Déduplication
 
-[➖] **TASK-007-11 — Détection par identifiant externe**
+[✅] **TASK-007-11 — Détection par identifiant externe**
 
-[➖] **TASK-007-12 — Détection par URL canonique**
+[✅] **TASK-007-12 — Détection par URL canonique**
 
-[➖] **TASK-007-13 — Détection multicritère**
+[✅] **TASK-007-13 — Détection multicritère**
 
-[➖] **TASK-007-14 — Calcul de similarité textuelle**
+[✅] **TASK-007-14 — Calcul de similarité textuelle**
 
-[➖] **TASK-007-15 — Gestion des offres multi-sources**
+[✅] **TASK-007-15 — Gestion des offres multi-sources**
 
-### [➖] FEATURE 007.4 — Cycle de vie des annonces
+### [✅] FEATURE 007.4 — Cycle de vie des annonces
 
-[➖] **TASK-007-16 — Détection des annonces expirées**
+[✅] **TASK-007-16 — Détection des annonces expirées**
 
-[➖] **TASK-007-17 — Gestion des annonces modifiées**
+[✅] **TASK-007-17 — Gestion des annonces modifiées**
 
-[➖] **TASK-007-18 — Historisation des changements**
+[✅] **TASK-007-18 — Historisation des changements**
 
-[➖] **TASK-007-19 — Nettoyage des annonces obsolètes selon politique de rétention**
+[✅] **TASK-007-19 — Nettoyage des annonces obsolètes selon politique de rétention**
 
 ### Critères d'acceptation
 
-- [➖] Données normalisées.
-- [➖] Doublons contrôlés.
-- [➖] Historique conservé.
-- [➖] Offres correctement reliées à leurs sources.
-- [➖] Ingestion résiliente.
-- [➖] Aucun doublon créé lors de la relance d'une tâche.
+- [✅] Données normalisées.
+- [✅] Doublons contrôlés.
+- [✅] Historique conservé.
+- [✅] Offres correctement reliées à leurs sources.
+- [✅] Ingestion résiliente.
+- [✅] Aucun doublon créé lors de la relance d'une tâche.
 
 **Livrable :** pipeline fiable de collecte d'offres.
 
@@ -2030,7 +2030,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
-| [➖] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 0 | 0.2 |
+| [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 0 | 0.2 |
 | [➖] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 0 | 0.3 |
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 0 | 0.3 |
@@ -2044,7 +2044,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 006 : FEATURES 006.1 à 006.3 réalisées (framework, registre, résilience) ; 006.6 en cours : détection par URL, JSON-LD, filtrage, SSRF et tests faits (006-22, 24, 26, 27, 28), connecteurs Greenhouse et Lever implémentés sur fixtures sans appel réel (006-23 partielle : Ashby, SmartRecruiters, Workable restants), 006-25 partielle (robots.txt et refus respectés ; limitation de débit et cache de pages à brancher), 006-21 sans interface ; 006-14/15 en attente de vérification des sources officielles (voir docs/DATA_SOURCES.md), 006-16 BLOCKED (identifiants à fournir par le propriétaire) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
+État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 007 : réalisé et testé sur connecteurs de test (aucune source réelle encore intégrée) ; la planification des nettoyages (007-19) et le branchement des gestionnaires de tâches sont faits avec l'EPIC 015 ; EPIC 006 : FEATURES 006.1 à 006.3 réalisées (framework, registre, résilience) ; 006.6 en cours : détection par URL, JSON-LD, filtrage, SSRF et tests faits (006-22, 24, 26, 27, 28), connecteurs Greenhouse et Lever implémentés sur fixtures sans appel réel (006-23 partielle : Ashby, SmartRecruiters, Workable restants), 006-25 partielle (robots.txt et refus respectés ; limitation de débit et cache de pages à brancher), 006-21 sans interface ; 006-14/15 en attente de vérification des sources officielles (voir docs/DATA_SOURCES.md), 006-16 BLOCKED (identifiants à fournir par le propriétaire) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 

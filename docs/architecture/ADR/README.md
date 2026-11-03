@@ -21,7 +21,7 @@ Un ADR documente une décision d'architecture importante : contexte, décision, 
 | [0006](0006-strategie-connecteurs.md) | Stratégie des connecteurs de sources | Accepté |
 | [0007](0007-stockage-documentaire.md) | Stockage documentaire | Accepté |
 | [0008](0008-authentification-differee.md) | Authentification différée, exécution locale | Accepté |
-| [0009](0009-taches-de-fond-postgresql.md) | Tâches de fond adossées à PostgreSQL | Proposé |
+| [0009](0009-taches-de-fond-postgresql.md) | Tâches de fond adossées à PostgreSQL | Accepté |
 | [0010](0010-contrastes-boutons-pleins.md) | Texte sombre sur les boutons pleins (contraste) | Accepté |
 
 Modèle : [TEMPLATE.md](TEMPLATE.md)

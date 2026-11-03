@@ -22,7 +22,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 12 | EPIC 002 |
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 18 | EPIC 002 |
-| [➖] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 0 | EPIC 004, EPIC 006 |
+| [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 0 | EPIC 003, EPIC 007 |
 | [➖] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 0 | EPIC 005, EPIC 007, EPIC 008 |
 | [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 0 | EPIC 002, EPIC 004 |
@@ -347,59 +347,59 @@ Total : 404 tâches.
 - [➖] Aucune source simulée présentée comme réelle.
 - [➖] Un connecteur indisponible ne bloque pas les autres.
 
-## [➖] EPIC 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION
+## [✅] EPIC 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION
 
 - **Priorité :** P0
 - **Objectif :** centraliser et fiabiliser les offres issues de différentes sources.
 - **Dépendances :** EPIC 004, EPIC 006
 
-### [➖] FEATURE 007.1 — Ingestion
+### [✅] FEATURE 007.1 — Ingestion
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-007-01 | Créer le Job Ingestion Service | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-02 | Ajouter les tâches asynchrones | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-03 | Gérer les résultats paginés | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-04 | Gérer les erreurs partielles | P0 | BACKLOG | à estimer |
+| [✅] | TASK-007-01 | Créer le Job Ingestion Service | P0 | DONE | à estimer |
+| [✅] | TASK-007-02 | Ajouter les tâches asynchrones | P0 | DONE | à estimer |
+| [✅] | TASK-007-03 | Gérer les résultats paginés | P0 | DONE | à estimer |
+| [✅] | TASK-007-04 | Gérer les erreurs partielles | P0 | DONE | à estimer |
 
-### [➖] FEATURE 007.2 — Normalisation
-
-| Statut | ID | Titre | Priorité | État | Estimation |
-|---|---|---|---|---|---|
-| [➖] | TASK-007-05 | Normaliser les intitulés | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-06 | Normaliser les pays et villes | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-07 | Normaliser les contrats | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-08 | Normaliser les devises | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-09 | Normaliser les dates et fuseaux horaires | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-10 | Préserver les données originales | P0 | BACKLOG | à estimer |
-
-### [➖] FEATURE 007.3 — Déduplication
+### [✅] FEATURE 007.2 — Normalisation
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-007-11 | Détection par identifiant externe | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-12 | Détection par URL canonique | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-13 | Détection multicritère | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-14 | Calcul de similarité textuelle | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-15 | Gestion des offres multi-sources | P0 | BACKLOG | à estimer |
+| [✅] | TASK-007-05 | Normaliser les intitulés | P0 | DONE | à estimer |
+| [✅] | TASK-007-06 | Normaliser les pays et villes | P0 | DONE | à estimer |
+| [✅] | TASK-007-07 | Normaliser les contrats | P0 | DONE | à estimer |
+| [✅] | TASK-007-08 | Normaliser les devises | P0 | DONE | à estimer |
+| [✅] | TASK-007-09 | Normaliser les dates et fuseaux horaires | P0 | DONE | à estimer |
+| [✅] | TASK-007-10 | Préserver les données originales | P0 | DONE | à estimer |
 
-### [➖] FEATURE 007.4 — Cycle de vie des annonces
+### [✅] FEATURE 007.3 — Déduplication
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-007-16 | Détection des annonces expirées | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-17 | Gestion des annonces modifiées | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-18 | Historisation des changements | P0 | BACKLOG | à estimer |
-| [➖] | TASK-007-19 | Nettoyage des annonces obsolètes selon politique de rétention | P0 | BACKLOG | à estimer |
+| [✅] | TASK-007-11 | Détection par identifiant externe | P0 | DONE | à estimer |
+| [✅] | TASK-007-12 | Détection par URL canonique | P0 | DONE | à estimer |
+| [✅] | TASK-007-13 | Détection multicritère | P0 | DONE | à estimer |
+| [✅] | TASK-007-14 | Calcul de similarité textuelle | P0 | DONE | à estimer |
+| [✅] | TASK-007-15 | Gestion des offres multi-sources | P0 | DONE | à estimer |
+
+### [✅] FEATURE 007.4 — Cycle de vie des annonces
+
+| Statut | ID | Titre | Priorité | État | Estimation |
+|---|---|---|---|---|---|
+| [✅] | TASK-007-16 | Détection des annonces expirées | P0 | DONE | à estimer |
+| [✅] | TASK-007-17 | Gestion des annonces modifiées | P0 | DONE | à estimer |
+| [✅] | TASK-007-18 | Historisation des changements | P0 | DONE | à estimer |
+| [✅] | TASK-007-19 | Nettoyage des annonces obsolètes selon politique de rétention | P0 | DONE | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 
-- [➖] Données normalisées.
-- [➖] Doublons contrôlés.
-- [➖] Historique conservé.
-- [➖] Offres correctement reliées à leurs sources.
-- [➖] Ingestion résiliente.
-- [➖] Aucun doublon créé lors de la relance d'une tâche.
+- [✅] Données normalisées.
+- [✅] Doublons contrôlés.
+- [✅] Historique conservé.
+- [✅] Offres correctement reliées à leurs sources.
+- [✅] Ingestion résiliente.
+- [✅] Aucun doublon créé lors de la relance d'une tâche.
 
 ## [➖] EPIC 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE
 
