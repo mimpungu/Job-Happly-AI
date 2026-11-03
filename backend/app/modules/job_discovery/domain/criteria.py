@@ -41,6 +41,9 @@ class SearchCriteria(BaseModel):
     language: str | None = None
     page_size: int = Field(default=50, ge=1, le=100)
     cursor: str | None = Field(default=None, max_length=500)
+    whole_catalogue: bool = False
+    """Énumère tout le catalogue d'une source (collecte d'un job board d'entreprise) : seule
+    intention qui dispense de préciser un critère de recherche."""
 
     @field_validator("country_codes")
     @classmethod
@@ -85,7 +88,9 @@ class SearchCriteria(BaseModel):
 
     @model_validator(mode="after")
     def _coherence(self) -> Self:
-        if not (self.title or self.keywords or self.skills or self.company or self.sector):
+        if not self.whole_catalogue and not (
+            self.title or self.keywords or self.skills or self.company or self.sector
+        ):
             raise ValueError(
                 "Précisez au moins un intitulé, un mot-clé, une compétence, "
                 "une entreprise ou un secteur."

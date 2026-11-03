@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.job_discovery.domain.target_company import (
@@ -19,6 +20,10 @@ from app.modules.job_discovery.infrastructure.models import TargetCompanyModel
 
 class TargetCompanyError(ValueError):
     """Opération refusée sur une entreprise suivie."""
+
+
+class TargetCompanyNotFoundError(LookupError):
+    """Entreprise suivie inexistante (ou appartenant à un autre utilisateur)."""
 
 
 class SqlTargetCompanyRepository:
@@ -37,8 +42,21 @@ class SqlTargetCompanyRepository:
         )
         if entreprise.careers_url and (detectee := detect_from_url(entreprise.careers_url)):
             self._appliquer(entreprise, detectee, now)
-        self._session.add(entreprise)
-        await self._session.flush()
+        try:
+            # Point de sauvegarde : un doublon ne doit pas invalider la transaction de la requête.
+            async with self._session.begin_nested():
+                self._session.add(entreprise)
+        except IntegrityError as erreur:
+            raise TargetCompanyError("Cette entreprise est déjà suivie.") from erreur
+        return entreprise
+
+    async def get(self, owner_id: uuid.UUID, company_id: uuid.UUID) -> TargetCompanyModel:
+        requete = select(TargetCompanyModel).where(
+            TargetCompanyModel.owner_id == owner_id, TargetCompanyModel.id == company_id
+        )
+        entreprise = (await self._session.execute(requete)).scalar_one_or_none()
+        if entreprise is None:
+            raise TargetCompanyNotFoundError(str(company_id))
         return entreprise
 
     async def list(self, owner_id: uuid.UUID) -> list[TargetCompanyModel]:

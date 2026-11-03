@@ -1,3 +1,6 @@
+import gzip
+import json
+
 import httpx
 import pytest
 
@@ -81,6 +84,22 @@ class TestRequetes:
         assert len(vus) == 1  # la redirection n'a pas été suivie
         assert vus[0].headers["User-Agent"] == USER_AGENT
         assert "@" not in USER_AGENT  # aucune coordonnée personnelle
+
+    async def test_lit_une_reponse_compressee_en_gzip(self) -> None:
+        # Régression : les serveurs réels compressent ; le contenu décodé ne doit pas être
+        # décompressé une seconde fois quand la réponse est reconstruite.
+        corps = gzip.compress(json.dumps({"jobs": [1, 2]}).encode())
+        transport = httpx.MockTransport(
+            lambda r: httpx.Response(
+                200,
+                content=corps,
+                headers={"Content-Encoding": "gzip", "Content-Type": "application/json"},
+            )
+        )
+        async with _client(transport) as client:
+            donnees = await get_json(client, "https://exemple.test/x", source_key="s")
+
+        assert donnees == {"jobs": [1, 2]}
 
     async def test_json_invalide_est_une_reponse_invalide(self) -> None:
         transport = httpx.MockTransport(lambda r: httpx.Response(200, content=b"<html>"))

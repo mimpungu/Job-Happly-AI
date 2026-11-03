@@ -13,6 +13,10 @@ from app.modules.candidate_profile.presentation.router import (
     register_document_errors,
 )
 from app.modules.candidate_profile.presentation.router import router as profile_router
+from app.modules.job_discovery.presentation.companies_router import (
+    register_company_errors,
+)
+from app.modules.job_discovery.presentation.companies_router import router as companies_router
 from app.modules.job_discovery.presentation.router import register_domain_errors, router
 from app.modules.job_intelligence.presentation.router import (
     register_matching_errors,
@@ -48,12 +52,14 @@ def create_app() -> FastAPI:
     register_domain_errors(application)
     register_document_errors(application)
     register_matching_errors(application)
+    register_company_errors(application)
 
     @application.get("/api/v1/health", tags=["platform"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
 
     application.include_router(router)
+    application.include_router(companies_router)
     application.include_router(profile_router)
     application.include_router(matching_router)
     return application

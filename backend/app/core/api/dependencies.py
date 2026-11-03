@@ -15,6 +15,7 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.core.database.session import UnitOfWork
 from app.modules.platform.infrastructure.models import UserModel
 
 
@@ -41,3 +42,16 @@ async def get_owner_id(session: SessionDep) -> uuid.UUID:
     session.add(utilisateur)
     await session.flush()
     return utilisateur.id
+
+
+def get_unit_of_work(request: Request) -> UnitOfWork:
+    """Pour les traitements longs qui gèrent leurs propres transactions (collecte d'offres)."""
+    fabrique: async_sessionmaker[AsyncSession] | None = getattr(
+        request.app.state, "session_factory", None
+    )
+    if fabrique is None:
+        raise HTTPException(status_code=503, detail="Base de données non configurée.")
+    return UnitOfWork(fabrique)
+
+
+UnitOfWorkDep = Annotated[UnitOfWork, Depends(get_unit_of_work)]

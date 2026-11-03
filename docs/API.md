@@ -56,6 +56,20 @@ Fiche détaillée : description, URL de candidature, dates et **sources** (clé,
 
 Corps `{"state": "saved" | "ignored" | null}` → 204. Idempotent ; `null` retire l'état. Une offre ignorée est masquée par défaut mais reste retrouvable (`state=ignored`).
 
+## Entreprises suivies et collecte
+
+Aucune liste fermée d'entreprises : l'utilisateur tape un nom, l'application cherche le job board public correspondant.
+
+| Route | Rôle |
+|---|---|
+| `POST /target-companies/discover` `{name}` | Sonde les API publiques Greenhouse et Lever avec des jetons dérivés du nom. Ne persiste rien. Retourne `[{ats_kind, token, careers_url, board_name, offer_count}]` (liste vide si rien n'est trouvé). |
+| `POST /target-companies` `{name, careers_url?, enabled?}` | Suit une entreprise (422 `company_invalid` si doublon ou source non supportée à l'activation). |
+| `GET /target-companies` | Entreprises suivies, avec état de la dernière collecte. |
+| `PATCH /target-companies/{id}` `{enabled}` | Active ou désactive (404 `company_not_found`). |
+| `POST /collection/run` | Collecte en parallèle les entreprises activées ; bilan par source. 409 `no_company_enabled` si aucune. |
+
+Une source en échec n'affecte pas les autres (statut `partial`). Un refus d'accès (401/403) rend l'entreprise « non supportée » : jamais contourné. La découverte propose un résultat à confirmer : deux sociétés peuvent partager un jeton.
+
 ## Recherches sauvegardées
 
 | Route | Rôle |

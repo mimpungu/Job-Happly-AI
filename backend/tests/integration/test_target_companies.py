@@ -50,9 +50,8 @@ async def test_refuse_un_nom_vide_et_un_doublon_insensible_a_la_casse(
         await depot.add(user_id, name="   ", careers_url=None, now=MAINTENANT)
 
     await depot.add(user_id, name="Exemple", careers_url=None, now=MAINTENANT)
-    with pytest.raises(DBAPIError):
-        async with session.begin_nested():
-            await depot.add(user_id, name="EXEMPLE", careers_url=None, now=MAINTENANT)
+    with pytest.raises(TargetCompanyError, match="déjà suivie"):
+        await depot.add(user_id, name="EXEMPLE", careers_url=None, now=MAINTENANT)
 
 
 async def test_active_seulement_une_source_supportee(

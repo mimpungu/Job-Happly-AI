@@ -160,7 +160,14 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
                 description={
                   savedOnly
                     ? "Sauvegardez une offre depuis la recherche pour la retrouver ici."
-                    : "Aucune offre collectée ne correspond à ces critères. Élargissez la recherche ; les offres apparaissent une fois les sources activées et collectées."
+                    : "Aucune offre collectée ne correspond à ces critères. Élargissez la recherche ; les offres apparaissent une fois les entreprises suivies et collectées."
+                }
+                action={
+                  savedOnly ? undefined : (
+                    <Link href="/settings" className={buttonVariants({ variant: "secondary" })}>
+                      Suivre des entreprises
+                    </Link>
+                  )
                 }
               />
             ) : (

@@ -59,3 +59,13 @@ def test_est_immuable_et_serialisable_pour_etre_sauvegarde() -> None:
     with pytest.raises(ValidationError):
         criteres.title = "Autre"  # type: ignore[misc]
     assert SearchCriteria.model_validate(criteres.model_dump(mode="json")) == criteres
+
+
+def test_une_recherche_vide_est_refusee_sauf_pour_enumerer_un_catalogue() -> None:
+    with pytest.raises(ValidationError, match="au moins un intitulé"):
+        SearchCriteria()
+
+    catalogue = SearchCriteria(whole_catalogue=True)
+
+    assert catalogue.title is None
+    assert catalogue.whole_catalogue is True

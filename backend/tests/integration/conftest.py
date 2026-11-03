@@ -7,6 +7,7 @@ dont le nom finit par `_test` : une base de développement ne doit jamais être 
 import os
 import uuid
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import httpx
@@ -14,11 +15,11 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import make_url, pool
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.core.api.dependencies import get_session
+from app.core.api.dependencies import get_session, get_unit_of_work
 from app.core.config import get_settings
-from app.core.database.session import to_driver_url
+from app.core.database.session import UnitOfWork, to_driver_url
 from app.main import create_app
 from app.modules.platform.infrastructure.models import UserModel
 
@@ -79,9 +80,23 @@ async def user_id(session: AsyncSession) -> uuid.UUID:
     return utilisateur.id
 
 
+class SessionPartagee(UnitOfWork):
+    """Unité de travail de TEST : réutilise la session du test (annulée à la fin du test)."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        super().__init__(async_sessionmaker())
+        self._session = session
+
+    @asynccontextmanager
+    async def begin(self) -> AsyncIterator[AsyncSession]:
+        async with self._session.begin_nested():
+            yield self._session
+
+
 @pytest.fixture
 async def client(session: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
     application = create_app()
+    application.dependency_overrides[get_unit_of_work] = lambda: SessionPartagee(session)
 
     async def _session_de_test() -> AsyncIterator[AsyncSession]:
         yield session

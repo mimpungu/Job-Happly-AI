@@ -6,7 +6,7 @@ Principe (ADR-0006) : sources **gratuites et publiques** uniquement, accès auto
 
 ## Intégrées, configurées et testées
 
-Aucune source n'a été testée contre un service réel : les connecteurs ci-dessous sont **implémentés et testés sur des fixtures** (réponses fictives de même forme), sans appel au service réel. Un premier appel réel (lecture d'un job board public choisi par l'utilisateur) reste à effectuer et à consigner ici.
+Greenhouse et Lever ont été appelés en réel le 2026-11-04 (découverte de Stripe, Datadog, Spotify ; collecte réelle de Datadog et Spotify : 484 offres, relance sans doublon). Les tests automatisés restent sur fixtures, sans réseau. Les autres sources (France Travail, pages carrières) n'ont pas été testées en réel.
 
 | Connecteur | Fichier | Accès | Vérifié le |
 |---|---|---|---|

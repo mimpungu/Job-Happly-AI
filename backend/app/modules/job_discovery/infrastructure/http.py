@@ -87,9 +87,14 @@ async def fetch(
                 contenu.extend(morceau)
                 if len(contenu) > max_bytes:
                     raise InvalidResponseError("Réponse trop volumineuse.", source_key=source_key)
+            # `aiter_bytes` a déjà décompressé le contenu : conserver Content-Encoding ferait
+            # décompresser une seconde fois (erreur sur toute réponse gzip réelle).
+            entetes = httpx.Headers(flux.headers)
+            for nom in ("content-encoding", "content-length"):
+                entetes.pop(nom, None)
             return httpx.Response(
                 status_code=flux.status_code,
-                headers=flux.headers,
+                headers=entetes,
                 content=bytes(contenu),
                 request=flux.request,
             )

@@ -148,9 +148,15 @@ class SearchPage:
 class JobSourceConnector(Protocol):
     """Contrat de toute source d'offres. Une source ne connaît ni la base ni les autres sources."""
 
-    key: str
-    name: str
-    kind: SourceKind
+    # Lecture seule : un connecteur enveloppé (résilience) expose ces valeurs sans les stocker.
+    @property
+    def key(self) -> str: ...
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def kind(self) -> SourceKind: ...
 
     def get_capabilities(self) -> ConnectorCapabilities: ...
 
