@@ -47,13 +47,23 @@ export function SearchForm({ filters, onSubmit, onSaveSearch }: SearchFormProps)
       className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4"
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Field label="Intitulé, mot-clé ou entreprise">
+        <Field label="Intitulé ou mot-clé">
           {(champ) => (
             <Input
               {...champ}
               value={draft.text}
               maxLength={200}
               onChange={(e) => maj("text", e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label="Entreprise" hint="Nom d'une entreprise déjà collectée.">
+          {(champ) => (
+            <Input
+              {...champ}
+              value={draft.company}
+              maxLength={200}
+              onChange={(e) => maj("company", e.target.value)}
             />
           )}
         </Field>

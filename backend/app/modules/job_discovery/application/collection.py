@@ -12,7 +12,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 
 import httpx
@@ -21,12 +21,18 @@ from app.core.database.session import UnitOfWork
 from app.modules.job_discovery.application.ingestion import IngestionService, SourceOutcome
 from app.modules.job_discovery.application.target_connectors import connector_for
 from app.modules.job_discovery.domain.connector import (
+    ConnectorCapabilities,
+    ConnectorOffer,
     HealthState,
     HealthStatus,
     JobSourceConnector,
+    SearchPage,
 )
 from app.modules.job_discovery.domain.criteria import SearchCriteria
-from app.modules.job_discovery.domain.enums import SearchRunStatus
+from app.modules.job_discovery.domain.enums import SearchRunStatus, SourceKind
+from app.modules.job_discovery.domain.it_offers import is_it_offer
+from app.modules.job_discovery.domain.offers import NormalizedOffer
+from app.modules.job_discovery.domain.text import normalize_text
 from app.modules.job_discovery.infrastructure.resilience import ResilientConnector
 from app.modules.job_discovery.infrastructure.source_repository import SqlJobSourceRepository
 from app.modules.job_discovery.infrastructure.target_company_repository import (
@@ -37,6 +43,64 @@ ClientFactory = Callable[[], AbstractAsyncContextManager[httpx.AsyncClient]]
 
 # Erreurs qui signalent un refus du site : la source est écartée, jamais contournée.
 _REFUS = frozenset({"AccessDeniedError", "AuthenticationFailedError"})
+
+
+@dataclass(frozen=True, slots=True)
+class CollectionFilter:
+    """Ce qu'on garde à la collecte. Vide = tout le catalogue de chaque entreprise."""
+
+    it_only: bool = False
+    city: str | None = None
+    country_codes: tuple[str, ...] = ()
+
+    @property
+    def is_empty(self) -> bool:
+        return not (self.it_only or self.city or self.country_codes)
+
+    def keeps(self, offre: NormalizedOffer) -> bool:
+        if self.it_only and not is_it_offer(offre.title):
+            return False
+        if self.city and not (
+            offre.location and normalize_text(self.city) in normalize_text(offre.location)
+        ):
+            return False
+        pays = offre.country_code
+        return not (
+            self.country_codes and pays is not None and pays.value not in self.country_codes
+        )
+
+
+class _FilteredConnector:
+    """Écarte, avant enregistrement, les offres hors filtre ; le reste passe tel quel."""
+
+    def __init__(self, inner: JobSourceConnector, keep: CollectionFilter) -> None:
+        self._inner = inner
+        self._keep = keep
+
+    @property
+    def key(self) -> str:
+        return self._inner.key
+
+    @property
+    def name(self) -> str:
+        return self._inner.name
+
+    @property
+    def kind(self) -> SourceKind:
+        return self._inner.kind
+
+    def get_capabilities(self) -> ConnectorCapabilities:
+        return self._inner.get_capabilities()
+
+    async def search(self, criteria: SearchCriteria) -> SearchPage:
+        page = await self._inner.search(criteria)
+        return replace(page, offers=tuple(o for o in page.offers if self._keep.keeps(o.offer)))
+
+    async def get_details(self, external_id: str) -> ConnectorOffer | None:
+        return await self._inner.get_details(external_id)
+
+    async def health_check(self) -> HealthStatus:
+        return await self._inner.health_check()
 
 
 class NoEnabledCompanyError(Exception):
@@ -81,7 +145,10 @@ class CollectionService:
         self._clock = clock
         self._resilient = resilient or ResilientConnector
 
-    async def run(self, *, owner_id: uuid.UUID) -> CollectionReport:
+    async def run(
+        self, *, owner_id: uuid.UUID, keep: CollectionFilter | None = None
+    ) -> CollectionReport:
+        keep = keep or CollectionFilter()
         debut = self._clock()
         async with self._client_factory() as client:
             cibles = await self._preparer(owner_id, client)
@@ -89,12 +156,15 @@ class CollectionService:
                 raise NoEnabledCompanyError
             rapport = await IngestionService(self._uow, clock=self._clock).ingest(
                 owner_id=owner_id,
-                connectors=[c.connector for c in cibles],
+                connectors=[
+                    c.connector if keep.is_empty else _FilteredConnector(c.connector, keep)
+                    for c in cibles
+                ],
                 source_ids={c.connector.key: c.source_id for c in cibles},
                 criteria=SearchCriteria(whole_catalogue=True),
-                # Un job board d'entreprise liste tout son catalogue : un parcours complet
-                # permet de déclarer disparues les offres retirées.
-                full_catalogue=True,
+                # Retirer des offres « disparues » n'est sûr que si tout le catalogue a été vu :
+                # avec un filtre, une offre absente peut simplement être hors filtre.
+                full_catalogue=keep.is_empty,
             )
         par_cle = {o.source_key: o for o in rapport.outcomes}
         resultats = tuple(

@@ -62,6 +62,7 @@ export interface OfferPage {
 /** Filtres de la liste, tels que l'utilisateur les saisit (tout est facultatif). */
 export interface OfferFilters {
   text: string;
+  company: string;
   city: string;
   country: string;
   employmentType: string;

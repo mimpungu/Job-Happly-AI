@@ -29,6 +29,7 @@ export const REMOTE_TYPES = [
 
 export const DEFAULT_FILTERS: OfferFilters = {
   text: "",
+  company: "",
   city: "",
   country: "",
   employmentType: "",
@@ -59,6 +60,7 @@ export function filtersFromParams(params: URLSearchParams): OfferFilters {
   const page = Number.parseInt(lire("page"), 10);
   return {
     text: lire("text"),
+    company: lire("company"),
     city: lire("city"),
     country: lire("country").toUpperCase(),
     employmentType: lire("employment"),
@@ -80,6 +82,7 @@ export function filtersToParams(filters: OfferFilters): URLSearchParams {
     if (valeur) params.set(cle, valeur);
   };
   ecrire("text", filters.text.trim());
+  ecrire("company", filters.company.trim());
   ecrire("city", filters.city.trim());
   ecrire("country", filters.country.trim().toUpperCase());
   ecrire("employment", filters.employmentType);
@@ -103,6 +106,7 @@ export function filtersToApiQuery(filters: OfferFilters, pageSize: number): URLS
     if (valeur) params.set(cle, valeur);
   };
   ecrire("text", filters.text.trim());
+  ecrire("company", filters.company.trim());
   ecrire("city", filters.city.trim());
   ecrire("country_codes", filters.country.trim().toUpperCase());
   ecrire("employment_types", filters.employmentType);
@@ -124,6 +128,7 @@ export function filtersToApiQuery(filters: OfferFilters, pageSize: number): URLS
 export function filtersToSavedCriteria(filters: OfferFilters): Record<string, unknown> {
   const criteres: Record<string, unknown> = { sort: filters.sort, state: filters.state };
   if (filters.text.trim()) criteres.text = filters.text.trim();
+  if (filters.company.trim()) criteres.company = filters.company.trim();
   if (filters.city.trim()) criteres.city = filters.city.trim();
   if (filters.country.trim()) criteres.country_codes = [filters.country.trim().toUpperCase()];
   if (filters.employmentType) criteres.employment_types = [filters.employmentType];
@@ -153,6 +158,7 @@ export function filtersFromSavedCriteria(criteres: Record<string, unknown>): Off
   return {
     ...base,
     text: texte("text"),
+    company: texte("company"),
     city: texte("city"),
     country: premier("country_codes"),
     employmentType: premier("employment_types"),

@@ -16,6 +16,7 @@ from app.core.api.dependencies import SessionDep as Session
 from app.core.api.dependencies import UnitOfWorkDep, get_owner_id
 from app.core.api.errors import error_response
 from app.modules.job_discovery.application.collection import (
+    CollectionFilter,
     CollectionReport,
     CollectionService,
     NoEnabledCompanyError,
@@ -47,6 +48,14 @@ class DiscoveredBoardResponse(BaseModel):
     careers_url: str
     board_name: str | None
     offer_count: int
+
+
+class CollectionBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    it_only: bool = False
+    city: str | None = Field(default=None, max_length=200)
+    country_codes: list[str] = Field(default_factory=list, max_length=10)
 
 
 class CompanyBody(BaseModel):
@@ -198,10 +207,18 @@ async def update_company(
 
 
 @router.post("/collection/run", response_model=CollectionResponse)
-async def run_collection(uow: UnitOfWorkDep, owner_id: Owner) -> CollectionResponse:
+async def run_collection(
+    uow: UnitOfWorkDep, owner_id: Owner, body: CollectionBody | None = None
+) -> CollectionResponse:
     """Collecte, en parallèle, les offres de toutes les entreprises activées."""
     service = CollectionService(uow, create_http_client)
-    return CollectionResponse.from_report(await service.run(owner_id=owner_id))
+    corps = body or CollectionBody()
+    garder = CollectionFilter(
+        it_only=corps.it_only,
+        city=(corps.city or "").strip() or None,
+        country_codes=tuple(c.upper() for c in corps.country_codes),
+    )
+    return CollectionResponse.from_report(await service.run(owner_id=owner_id, keep=garder))
 
 
 def _gestionnaire(status: int, code: str, message: str | None) -> ExceptionHandler:

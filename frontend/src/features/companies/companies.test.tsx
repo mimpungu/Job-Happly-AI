@@ -183,4 +183,25 @@ describe("CompaniesPanel", () => {
     expect(await screen.findByText("Source non reconnue")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Activer Acme" })).toBeDisabled();
   });
+
+  it("envoie les filtres informatique et ville avec la collecte", async () => {
+    const corps: unknown[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (url.endsWith("/collection/run")) {
+          corps.push(JSON.parse(String(init?.body)));
+          return json({ started_at: "", finished_at: "", status: "succeeded", sources: [] });
+        }
+        return json([entreprise()]);
+      }),
+    );
+    afficher();
+    const user = userEvent.setup();
+
+    await user.type(await screen.findByLabelText("Ville (facultatif)"), "Paris");
+    await user.click(screen.getByRole("button", { name: "Collecter les offres" }));
+
+    await waitFor(() => expect(corps).toEqual([{ it_only: true, city: "Paris" }]));
+  });
 });

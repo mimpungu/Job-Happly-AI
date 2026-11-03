@@ -171,11 +171,23 @@ describe("JobsExplorer", () => {
     afficher();
     await screen.findByText("Aucune offre ne correspond");
 
-    await userEvent.type(screen.getByLabelText("Intitulé, mot-clé ou entreprise"), "python");
+    await userEvent.type(screen.getByLabelText("Intitulé ou mot-clé"), "python");
     await userEvent.type(screen.getByLabelText("Ville"), "Lyon");
     await userEvent.click(screen.getByRole("button", { name: "Rechercher" }));
 
     expect(push).toHaveBeenCalledWith("/jobs?text=python&city=Lyon");
+  });
+
+  it("filtre par nom d'entreprise et par ville", async () => {
+    simulerApi(() => json(page([])));
+    afficher();
+    await screen.findByText("Aucune offre ne correspond");
+
+    await userEvent.type(screen.getByLabelText("Entreprise"), "BNP Paribas");
+    await userEvent.type(screen.getByLabelText("Ville"), "Paris");
+    await userEvent.click(screen.getByRole("button", { name: "Rechercher" }));
+
+    expect(push).toHaveBeenCalledWith("/jobs?company=BNP+Paribas&city=Paris");
   });
 
   it("refuse un salaire sans devise", async () => {
@@ -210,7 +222,7 @@ describe("JobsExplorer", () => {
     expect(liste?.url).toContain("text=python");
     expect(liste?.url).toContain("sort=title_asc");
     expect(liste?.url).toContain("page=2");
-    expect(screen.getByLabelText("Intitulé, mot-clé ou entreprise")).toHaveValue("python");
+    expect(screen.getByLabelText("Intitulé ou mot-clé")).toHaveValue("python");
   });
 
   it("la page des offres sauvegardées impose l'état et masque le formulaire", async () => {

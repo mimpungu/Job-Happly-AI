@@ -282,6 +282,8 @@ function Bilan({ rapport }: { rapport: CollectionReport }) {
 export function CompaniesPanel() {
   const entreprises = useCompanies();
   const collecter = useRunCollection();
+  const [informatique, setInformatique] = useState(true);
+  const [ville, setVille] = useState("");
   const aucuneActive = entreprises.isSuccess && !entreprises.data.some((e) => e.enabled);
 
   return (
@@ -293,10 +295,13 @@ export function CompaniesPanel() {
           disabled={entreprises.isPending || aucuneActive}
           title={aucuneActive ? "Activez au moins une entreprise." : undefined}
           onClick={() =>
-            collecter.mutate(undefined, {
-              onSuccess: (r) => toast.success(resumeCollecte(r)),
-              onError: (e) => toast.error(e.message),
-            })
+            collecter.mutate(
+              { it_only: informatique, city: ville.trim() || null },
+              {
+                onSuccess: (r) => toast.success(resumeCollecte(r)),
+                onError: (e) => toast.error(e.message),
+              },
+            )
           }
         >
           Collecter les offres
@@ -310,6 +315,31 @@ export function CompaniesPanel() {
           cherchez celles qui vous intéressent.
         </p>
         <Recherche />
+        <fieldset className="flex flex-wrap items-end gap-4">
+          <legend className="mb-2 text-sm font-medium text-foreground">
+            Filtres de la collecte
+          </legend>
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input
+              type="checkbox"
+              checked={informatique}
+              onChange={(e) => setInformatique(e.target.checked)}
+            />
+            Informatique uniquement
+          </label>
+          <div className="min-w-48">
+            <Field label="Ville (facultatif)">
+              {(champ) => (
+                <Input
+                  {...champ}
+                  value={ville}
+                  placeholder="Ex. Paris"
+                  onChange={(e) => setVille(e.target.value)}
+                />
+              )}
+            </Field>
+          </div>
+        </fieldset>
         {collecter.isSuccess ? <Bilan rapport={collecter.data} /> : null}
         {entreprises.isPending ? (
           <Skeleton className="h-24 w-full" />

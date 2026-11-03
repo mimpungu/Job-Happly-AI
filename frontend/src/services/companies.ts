@@ -19,5 +19,13 @@ export const setCompanyEnabled = (id: string, enabled: boolean) =>
     body: JSON.stringify({ enabled }),
   });
 
-export const runCollection = () =>
-  apiFetch<CollectionReport>("/api/v1/collection/run", { method: "POST" });
+export interface CollectionFilter {
+  it_only: boolean;
+  city: string | null;
+}
+
+export const runCollection = (filtre: CollectionFilter) =>
+  apiFetch<CollectionReport>("/api/v1/collection/run", {
+    method: "POST",
+    body: JSON.stringify(filtre),
+  });
