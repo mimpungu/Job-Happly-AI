@@ -1,25 +1,49 @@
 """Point d'entrée de l'API."""
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.api.errors import register_error_handlers
 from app.core.config import get_settings
+from app.core.database.session import create_engine, create_session_factory
+from app.modules.job_discovery.presentation.router import register_domain_errors, router
+
+
+@asynccontextmanager
+async def _lifespan(application: FastAPI) -> AsyncIterator[None]:
+    settings = get_settings()
+    if settings.database_url is None:
+        # Sans base, seule la santé répond ; les autres routes renvoient 503.
+        yield
+        return
+    moteur = create_engine(settings.database_url)
+    application.state.session_factory = create_session_factory(moteur)
+    try:
+        yield
+    finally:
+        await moteur.dispose()
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    application = FastAPI(title="Happly AI API", version="0.1.0")
+    application = FastAPI(title="Happly AI API", version="0.1.0", lifespan=_lifespan)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_allowed_origins,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Content-Type"],
     )
+    register_error_handlers(application)
+    register_domain_errors(application)
 
     @application.get("/api/v1/health", tags=["platform"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    application.include_router(router)
     return application
 
 

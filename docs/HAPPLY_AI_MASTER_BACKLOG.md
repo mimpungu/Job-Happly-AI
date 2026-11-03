@@ -897,13 +897,13 @@ Méthodes :
 
 ### [➖] FEATURE 008.4 — Recherches sauvegardées
 
-[➖] **TASK-008-22 — Créer SavedSearch**
+[✅] **TASK-008-22 — Créer SavedSearch**
 
-[➖] **TASK-008-23 — Enregistrer les critères**
+[✅] **TASK-008-23 — Enregistrer les critères**
 
-[➖] **TASK-008-24 — Modifier les recherches**
+[✅] **TASK-008-24 — Modifier les recherches**
 
-[➖] **TASK-008-25 — Relancer une recherche**
+[✅] **TASK-008-25 — Relancer une recherche**
 
 [➖] **TASK-008-26 — Afficher l'historique**
 
@@ -2031,7 +2031,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
-| [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 0 | 0.2 |
+| [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 4 | 0.2 |
 | [➖] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 0 | 0.3 |
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 0 | 0.3 |
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 0 | 0.3 |

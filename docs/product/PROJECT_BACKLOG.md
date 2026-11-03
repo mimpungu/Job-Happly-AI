@@ -23,7 +23,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 18 | EPIC 002 |
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
-| [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 0 | EPIC 003, EPIC 007 |
+| [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 4 | EPIC 003, EPIC 007 |
 | [➖] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 0 | EPIC 005, EPIC 007, EPIC 008 |
 | [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 0 | EPIC 002, EPIC 004 |
 | [➖] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 0 | EPIC 009, EPIC 010 |
@@ -447,10 +447,10 @@ Total : 404 tâches.
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-008-22 | Créer SavedSearch | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-23 | Enregistrer les critères | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-24 | Modifier les recherches | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-25 | Relancer une recherche | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-22 | Créer SavedSearch | P0 | DONE | à estimer |
+| [✅] | TASK-008-23 | Enregistrer les critères | P0 | DONE | à estimer |
+| [✅] | TASK-008-24 | Modifier les recherches | P0 | DONE | à estimer |
+| [✅] | TASK-008-25 | Relancer une recherche | P0 | DONE | à estimer |
 | [➖] | TASK-008-26 | Afficher l'historique | P0 | BACKLOG | à estimer |
 
 ### [➖] FEATURE 008.5 — Compléments de recherche et d'offre
