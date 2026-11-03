@@ -17,7 +17,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Dépendances |
 |---|---|---|---|---|---|---|
 | [➖] | 001 — PRODUCT DISCOVERY & SOFTWARE ARCHITECTURE | P0 | 4 | 11 | 11 | — |
-| [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 0 | EPIC 001 |
+| [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 3 | EPIC 001 |
 | [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 0 | EPIC 002 |
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 0 | EPIC 002 |
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
@@ -96,9 +96,9 @@ Total : 404 tâches.
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-002-01 | Initialiser le repository | P0 | BACKLOG | à estimer |
-| [➖] | TASK-002-02 | Initialiser le frontend | P0 | BACKLOG | à estimer |
-| [➖] | TASK-002-03 | Initialiser le backend | P0 | BACKLOG | à estimer |
+| [✅] | TASK-002-01 | Initialiser le repository | P0 | DONE | à estimer |
+| [✅] | TASK-002-02 | Initialiser le frontend | P0 | DONE | à estimer |
+| [✅] | TASK-002-03 | Initialiser le backend | P0 | DONE | à estimer |
 | [➖] | TASK-002-04 | Configurer les outils qualité | P0 | BACKLOG | à estimer |
 
 ### [➖] FEATURE 002.2 — Configuration et environnements

@@ -47,15 +47,14 @@ Règle de dépendance : `presentation` et `infrastructure` dépendent de `applic
 
 ```text
 happly-ai/
-├── apps/
-│   ├── web/                 # Next.js (app, components, features, hooks, lib, services, styles, types)
-│   └── api/
-│       ├── app/
-│       │   ├── core/        # configuration, logs, erreurs communes, sécurité transverse
-│       │   └── modules/     # un dossier par bounded context
-│       │       └── <contexte>/{domain,application,infrastructure,presentation}/
-│       ├── migrations/      # Alembic
-│       └── tests/           # unit, integration, api, security
+├── frontend/                # Next.js : src/{app,components,features,hooks,lib,services,styles,types}
+├── backend/                 # FastAPI
+│   ├── app/
+│   │   ├── core/            # configuration, logs, erreurs communes, sécurité transverse
+│   │   └── modules/         # un dossier par bounded context
+│   │       └── <contexte>/{domain,application,infrastructure,presentation}/
+│   ├── migrations/          # Alembic
+│   └── tests/               # unit, integration, api, security, architecture
 ├── packages/                # shared-types (générés depuis OpenAPI), design-system
 ├── infrastructure/          # docker, scripts, monitoring
 ├── documents/               # templates LaTeX
@@ -63,7 +62,7 @@ happly-ai/
 └── docs/
 ```
 
-Choix : l'organisation **par module métier d'abord**, puis par couche à l'intérieur de chaque module, pour garder les frontières nettes et permettre l'extraction d'un module. Les dossiers `domain/application/...` de premier niveau de la spec sont donc déclinés **dans** chaque module.
+Choix : `frontend/` et `backend/` sont deux projets distincts à la racine du dépôt, avec chacun ses dépendances, ses outils et sa CI. L'organisation **par module métier d'abord**, puis par couche à l'intérieur de chaque module, pour garder les frontières nettes et permettre l'extraction d'un module. Les dossiers `domain/application/...` de premier niveau de la spec sont donc déclinés **dans** chaque module.
 
 ## 5. Flux principaux
 

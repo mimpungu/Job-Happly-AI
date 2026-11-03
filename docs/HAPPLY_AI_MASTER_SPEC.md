@@ -268,8 +268,8 @@ Exemple d'organisation cible :
 ```text
 happly-ai/
 │
-├── apps/
-│   ├── web/
+├── frontend/                # Next.js (séparé du backend)
+│   ├── src/
 │   │   ├── app/
 │   │   ├── components/
 │   │   ├── features/
@@ -278,19 +278,16 @@ happly-ai/
 │   │   ├── services/
 │   │   ├── styles/
 │   │   └── types/
-│   │
-│   └── api/
-│       ├── app/
-│       │   ├── domain/
-│       │   ├── application/
-│       │   ├── infrastructure/
-│       │   ├── presentation/
-│       │   ├── modules/
-│       │   ├── core/
-│       │   └── main.py
-│       │
-│       ├── migrations/
-│       └── tests/
+│   └── package.json
+│
+├── backend/                 # FastAPI (séparé du frontend)
+│   ├── app/
+│   │   ├── core/
+│   │   ├── modules/         # un module par bounded context, couches à l'intérieur
+│   │   └── main.py
+│   ├── migrations/
+│   ├── tests/
+│   └── pyproject.toml
 │
 ├── packages/
 │   ├── shared-types/

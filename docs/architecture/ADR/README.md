@@ -14,7 +14,7 @@ Un ADR documente une décision d'architecture importante : contexte, décision, 
 | ADR | Titre | Statut |
 |---|---|---|
 | [0001](0001-monolithe-modulaire.md) | Monolithe modulaire en Clean Architecture | Accepté |
-| [0002](0002-backend-python-fastapi.md) | Backend Python / FastAPI | Accepté (version de Python à confirmer) |
+| [0002](0002-backend-python-fastapi.md) | Backend Python / FastAPI | Accepté |
 | [0003](0003-frontend-nextjs.md) | Frontend Next.js / TypeScript strict | Accepté |
 | [0004](0004-base-de-donnees-postgresql.md) | Base de données PostgreSQL | Accepté |
 | [0005](0005-strategie-ia-et-plafonds.md) | Stratégie IA, API payante et plafonds | Accepté (fournisseur à décider) |

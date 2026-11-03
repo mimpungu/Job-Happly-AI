@@ -1,6 +1,6 @@
 # ADR-0002 — Backend Python / FastAPI
 
-- **Statut :** Accepté (version de Python à confirmer)
+- **Statut :** Accepté
 - **Date :** 2026-11-03
 
 ## Contexte
@@ -13,7 +13,7 @@ Le backend orchestre des I/O (sources d'offres, API IA, base) et du traitement d
 - API REST versionnée (`/api/v1`), async pour les I/O.
 - Gestion des dépendances et des environnements avec **uv**.
 - Qualité : Ruff, mypy (ou pyright) en mode strict, pytest.
-- **Version de Python proposée : 3.13**, épinglée via uv. Le poste de développement a Python 3.14, jugé trop récent pour garantir la compatibilité de toutes les dépendances. À confirmer lors de TASK-002-03 après vérification des dépendances réelles.
+- **Version de Python proposée : 3.13**, épinglée via uv. Le poste de développement a Python 3.14, jugé trop récent pour garantir la compatibilité de toutes les dépendances. **Confirmé** lors de TASK-002-03 : les dépendances s'installent et les tests passent en 3.13.
 
 ## Alternatives étudiées
 

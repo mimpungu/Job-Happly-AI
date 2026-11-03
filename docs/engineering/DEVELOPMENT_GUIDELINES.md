@@ -46,8 +46,8 @@ Complète `CLAUDE.md` et `docs/AI_DEVELOPMENT_RULES.md` (qui prévalent en cas d
 ## Structure et nommage des tests
 
 ```text
-apps/api/tests/{unit,integration,api,security,architecture}/
-apps/web/src/**/*.test.ts(x)   # à côté du code testé
+backend/tests/{unit,integration,api,security,architecture}/
+frontend/src/**/*.test.ts(x)   # à côté du code testé
 e2e/                           # Playwright
 ```
 

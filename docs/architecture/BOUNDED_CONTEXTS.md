@@ -1,6 +1,6 @@
 # Bounded contexts (TASK-001-05)
 
-Chaque contexte est un module du monolithe (`apps/api/app/modules/<contexte>/`) avec ses propres couches. Un contexte possède ses données : aucun autre contexte n'écrit dans ses tables.
+Chaque contexte est un module du monolithe (`backend/app/modules/<contexte>/`) avec ses propres couches. Un contexte possède ses données : aucun autre contexte n'écrit dans ses tables.
 
 | Contexte | Responsabilité | Entités possédées | Epics |
 |---|---|---|---|
