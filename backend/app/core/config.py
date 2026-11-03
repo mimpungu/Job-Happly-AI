@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     # URL de connexion PostgreSQL (ADR-0004), ex. postgresql://user:motdepasse@127.0.0.1:5432/happly
     database_url: SecretStr | None = None
+    # API France Travail (OAuth2). Identifiants absents = source « non configurée ».
+    france_travail_client_id: SecretStr | None = None
+    france_travail_client_secret: SecretStr | None = None
 
     @model_validator(mode="after")
     def _verifier_coherence(self) -> Self:

@@ -52,6 +52,10 @@ Réponse : `{items, total, page, page_size, page_count}`. Chaque offre liste ses
 
 Fiche détaillée : description, URL de candidature, dates et **sources** (clé, nom, URL, dernière observation, `still_listed`).
 
+### `POST /offers/manual`
+
+Ajoute une offre copiée à la main depuis un site (utile quand celui-ci bloque les robots, comme BNP Paribas). Aucune requête n'est faite vers le site d'origine. Corps : `title`, `description` (≥ 20 caractères), `application_url` (**https** obligatoire, sans identifiants), et facultatifs `company_name`, `location`, `country_code`, `employment_type`, `remote_type`, `published_at`. Réponse 201 : `{offer_id, created, merged, changed, already_known}`. L'adresse (sans fragment) identifie l'offre : la saisir deux fois ne crée pas de doublon (`already_known: true`). L'offre porte la source « Saisie manuelle » et suit ensuite la même normalisation, déduplication, recherche et le même score que les autres. 422 `manual_offer_invalid` si la saisie est refusée.
+
 ### `PUT /offers/{offer_id}/state`
 
 Corps `{"state": "saved" | "ignored" | null}` → 204. Idempotent ; `null` retire l'état. Une offre ignorée est masquée par défaut mais reste retrouvable (`state=ignored`).
@@ -69,6 +73,15 @@ Aucune liste fermée d'entreprises : l'utilisateur tape un nom, l'application ch
 | `POST /collection/run` | Collecte en parallèle les entreprises activées ; bilan par source. 409 `no_company_enabled` si aucune. |
 
 Une source en échec n'affecte pas les autres (statut `partial`). Un refus d'accès (401/403) rend l'entreprise « non supportée » : jamais contourné. La découverte propose un résultat à confirmer : deux sociétés peuvent partager un jeton.
+
+## France Travail (API officielle)
+
+| Route | Rôle |
+|---|---|
+| `GET /france-travail/status` | `{configured}` : vrai si les deux identifiants sont présents dans l'environnement. Ne les révèle jamais. |
+| `POST /france-travail/search` `{title?, company?, keywords?, city?, department?, max_pages?}` | Interroge la source et enregistre les offres (idempotent). Au moins un de `title`, `company`, `keywords`. `department` (ex. `75`) restreint la recherche côté source ; `city` et `company` affinent localement. 409 `source_not_configured` sans identifiants. |
+
+Un échec de la source (identifiants refusés, quota, panne) est renvoyé dans `error_type` avec `succeeded: false`, jamais présenté comme « 0 offre ».
 
 ## Recherches sauvegardées
 

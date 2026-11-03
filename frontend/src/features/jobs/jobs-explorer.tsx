@@ -19,6 +19,7 @@ import { ApiError } from "@/services/api-client";
 import type { OfferFilters, OfferSort, OfferState } from "@/types/jobs";
 
 import { filtersFromParams, filtersToParams, SORTS } from "./filters";
+import { ManualOfferDialog } from "./manual-offer-dialog";
 import { OffersTable } from "./offers-table";
 import { SaveSearchDialog } from "./save-search-dialog";
 import { SavedSearchesPanel } from "./saved-searches-panel";
@@ -95,6 +96,7 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
                   : " "}
               </p>
               <div className="flex flex-wrap items-end gap-3">
+                <ManualOfferDialog />
                 <Button
                   variant="secondary"
                   loading={recalculer.isPending}

@@ -42,3 +42,24 @@ export interface CollectionReport {
   status: "succeeded" | "partial" | "failed";
   sources: SourceOutcome[];
 }
+
+export interface FranceTravailSearch {
+  title: string | null;
+  company: string | null;
+  keywords: string[];
+  city: string | null;
+  department: string | null;
+}
+
+export interface FranceTravailResult {
+  succeeded: boolean;
+  complete: boolean;
+  pages: number;
+  fetched: number;
+  created: number;
+  merged: number;
+  changed: number;
+  unchanged: number;
+  rejected: number;
+  error_type: string | null;
+}

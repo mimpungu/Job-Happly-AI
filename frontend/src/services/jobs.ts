@@ -3,6 +3,8 @@ import type {
   OfferDetail,
   OfferFilters,
   OfferPage,
+  ManualOfferInput,
+  ManualOfferResult,
   OfferState,
   SavedSearch,
   SearchRun,
@@ -43,3 +45,9 @@ export const runSavedSearch = (id: string) =>
   );
 
 export const listSearchRuns = () => apiFetch<SearchRun[]>("/api/v1/search-runs?limit=10");
+
+export const addManualOffer = (offre: ManualOfferInput) =>
+  apiFetch<ManualOfferResult>("/api/v1/offers/manual", {
+    method: "POST",
+    body: JSON.stringify(offre),
+  });

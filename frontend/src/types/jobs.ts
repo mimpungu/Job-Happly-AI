@@ -100,3 +100,20 @@ export interface SearchRun {
 export interface ApiErrorBody {
   error: { code: string; message: string; details?: { field: string; message: string }[] };
 }
+
+/** Offre saisie à la main (copiée depuis un site). */
+export interface ManualOfferInput {
+  title: string;
+  company_name: string | null;
+  location: string | null;
+  application_url: string;
+  description: string;
+}
+
+export interface ManualOfferResult {
+  offer_id: string;
+  created: boolean;
+  merged: boolean;
+  changed: boolean;
+  already_known: boolean;
+}

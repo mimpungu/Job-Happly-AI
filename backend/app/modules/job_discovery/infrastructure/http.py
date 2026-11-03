@@ -77,11 +77,12 @@ async def fetch(
     *,
     source_key: str,
     params: dict[str, str] | None = None,
+    headers: dict[str, str] | None = None,
     max_bytes: int = MAX_RESPONSE_BYTES,
 ) -> httpx.Response:
     """GET avec taille de réponse bornée et traduction des erreurs réseau."""
     try:
-        async with client.stream("GET", url, params=params) as flux:
+        async with client.stream("GET", url, params=params, headers=headers) as flux:
             contenu = bytearray()
             async for morceau in flux.aiter_bytes():
                 contenu.extend(morceau)

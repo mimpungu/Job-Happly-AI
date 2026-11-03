@@ -6,8 +6,10 @@ import { offersKey } from "@/features/jobs/use-offers";
 import {
   addCompany,
   discoverCompany,
+  getFranceTravailStatus,
   listCompanies,
   runCollection,
+  searchFranceTravail,
   setCompanyEnabled,
 } from "@/services/companies";
 
@@ -44,5 +46,16 @@ export function useRunCollection() {
       void client.invalidateQueries({ queryKey: COMPANIES_KEY });
       void client.invalidateQueries({ queryKey: offersKey });
     },
+  });
+}
+
+export const useFranceTravailStatus = () =>
+  useQuery({ queryKey: ["france-travail", "status"], queryFn: getFranceTravailStatus });
+
+export function useFranceTravailSearch() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: searchFranceTravail,
+    onSettled: () => void client.invalidateQueries({ queryKey: offersKey }),
   });
 }

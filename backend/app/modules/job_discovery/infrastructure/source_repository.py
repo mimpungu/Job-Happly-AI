@@ -13,7 +13,10 @@ from app.modules.job_discovery.domain.connector import (
     HealthStatus,
     JobSourceConnector,
 )
+from app.modules.job_discovery.domain.enums import SourceKind
 from app.modules.job_discovery.infrastructure.models import JobSourceModel
+
+MANUAL_SOURCE_KEY = "manual"
 
 
 class SqlJobSourceRepository:
@@ -34,6 +37,21 @@ class SqlJobSourceRepository:
         modele.countries = sorted(capacites.countries)
         modele.requires_api_key = capacites.requires_credentials
         await self._session.flush()
+        return modele
+
+    async def ensure_manual(self, owner_id: uuid.UUID) -> JobSourceModel:
+        """Source des offres saisies à la main : créée une fois, toujours active."""
+        modele = await self._by_key(owner_id, MANUAL_SOURCE_KEY)
+        if modele is None:
+            modele = JobSourceModel(
+                owner_id=owner_id,
+                key=MANUAL_SOURCE_KEY,
+                name="Saisie manuelle",
+                kind=SourceKind.MANUAL.value,
+                enabled=True,
+            )
+            self._session.add(modele)
+            await self._session.flush()
         return modele
 
     async def set_enabled(self, owner_id: uuid.UUID, key: str, enabled: bool) -> None:
