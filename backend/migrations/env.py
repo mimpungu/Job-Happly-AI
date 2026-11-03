@@ -11,7 +11,8 @@ from app.core.database.session import to_driver_url
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Ne désactive pas les loggers de l'application (comportement par défaut d'Alembic).
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = metadata
 

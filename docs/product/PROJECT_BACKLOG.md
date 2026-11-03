@@ -21,7 +21,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 12 | EPIC 002 |
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
-| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 0 | EPIC 002 |
+| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 13 | EPIC 002 |
 | [➖] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 0 | EPIC 004, EPIC 006 |
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 0 | EPIC 003, EPIC 007 |
 | [➖] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 0 | EPIC 005, EPIC 007, EPIC 008 |
@@ -280,33 +280,33 @@ Total : 404 tâches.
 - **Objectif :** créer une architecture de connecteurs indépendante des fournisseurs.
 - **Dépendances :** EPIC 002
 
-### [➖] FEATURE 006.1 — Contrat des connecteurs
+### [✅] FEATURE 006.1 — Contrat des connecteurs
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-006-01 | Définir JobSourceConnector | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-02 | Définir les modèles de requête | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-03 | Définir les modèles de réponse | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-04 | Définir les exceptions spécifiques | P0 | BACKLOG | à estimer |
+| [✅] | TASK-006-01 | Définir JobSourceConnector | P0 | DONE | à estimer |
+| [✅] | TASK-006-02 | Définir les modèles de requête | P0 | DONE | à estimer |
+| [✅] | TASK-006-03 | Définir les modèles de réponse | P0 | DONE | à estimer |
+| [✅] | TASK-006-04 | Définir les exceptions spécifiques | P0 | DONE | à estimer |
 
-### [➖] FEATURE 006.2 — Registre des sources
-
-| Statut | ID | Titre | Priorité | État | Estimation |
-|---|---|---|---|---|---|
-| [➖] | TASK-006-05 | Développer ConnectorRegistry | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-06 | Ajouter la configuration des sources | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-07 | Ajouter l'activation et la désactivation | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-08 | Ajouter le statut de santé | P0 | BACKLOG | à estimer |
-
-### [➖] FEATURE 006.3 — Résilience
+### [✅] FEATURE 006.2 — Registre des sources
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-006-09 | Implémenter les timeouts | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-10 | Implémenter les retries | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-11 | Implémenter le rate limiting | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-12 | Ajouter le circuit breaker si nécessaire | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-13 | Journaliser les erreurs | P0 | BACKLOG | à estimer |
+| [✅] | TASK-006-05 | Développer ConnectorRegistry | P0 | DONE | à estimer |
+| [✅] | TASK-006-06 | Ajouter la configuration des sources | P0 | DONE | à estimer |
+| [✅] | TASK-006-07 | Ajouter l'activation et la désactivation | P0 | DONE | à estimer |
+| [✅] | TASK-006-08 | Ajouter le statut de santé | P0 | DONE | à estimer |
+
+### [✅] FEATURE 006.3 — Résilience
+
+| Statut | ID | Titre | Priorité | État | Estimation |
+|---|---|---|---|---|---|
+| [✅] | TASK-006-09 | Implémenter les timeouts | P0 | DONE | à estimer |
+| [✅] | TASK-006-10 | Implémenter les retries | P0 | DONE | à estimer |
+| [✅] | TASK-006-11 | Implémenter le rate limiting | P0 | DONE | à estimer |
+| [✅] | TASK-006-12 | Ajouter le circuit breaker si nécessaire | P0 | DONE | à estimer |
+| [✅] | TASK-006-13 | Journaliser les erreurs | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 006.4 — Premier connecteur réel
 

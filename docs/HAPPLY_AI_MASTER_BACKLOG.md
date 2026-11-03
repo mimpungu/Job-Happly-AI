@@ -663,9 +663,9 @@ Les extractions doivent pouvoir fonctionner avec des règles classiques avant d'
 
 **Objectif :** créer une architecture de connecteurs indépendante des fournisseurs.
 
-### [➖] FEATURE 006.1 — Contrat des connecteurs
+### [✅] FEATURE 006.1 — Contrat des connecteurs
 
-[➖] **TASK-006-01 — Définir JobSourceConnector**
+[✅] **TASK-006-01 — Définir JobSourceConnector**
 
 Méthodes :
 - search.
@@ -673,33 +673,33 @@ Méthodes :
 - health_check.
 - get_capabilities.
 
-[➖] **TASK-006-02 — Définir les modèles de requête**
+[✅] **TASK-006-02 — Définir les modèles de requête**
 
-[➖] **TASK-006-03 — Définir les modèles de réponse**
+[✅] **TASK-006-03 — Définir les modèles de réponse**
 
-[➖] **TASK-006-04 — Définir les exceptions spécifiques**
+[✅] **TASK-006-04 — Définir les exceptions spécifiques**
 
-### [➖] FEATURE 006.2 — Registre des sources
+### [✅] FEATURE 006.2 — Registre des sources
 
-[➖] **TASK-006-05 — Développer ConnectorRegistry**
+[✅] **TASK-006-05 — Développer ConnectorRegistry**
 
-[➖] **TASK-006-06 — Ajouter la configuration des sources**
+[✅] **TASK-006-06 — Ajouter la configuration des sources**
 
-[➖] **TASK-006-07 — Ajouter l'activation et la désactivation**
+[✅] **TASK-006-07 — Ajouter l'activation et la désactivation**
 
-[➖] **TASK-006-08 — Ajouter le statut de santé**
+[✅] **TASK-006-08 — Ajouter le statut de santé**
 
-### [➖] FEATURE 006.3 — Résilience
+### [✅] FEATURE 006.3 — Résilience
 
-[➖] **TASK-006-09 — Implémenter les timeouts**
+[✅] **TASK-006-09 — Implémenter les timeouts**
 
-[➖] **TASK-006-10 — Implémenter les retries**
+[✅] **TASK-006-10 — Implémenter les retries**
 
-[➖] **TASK-006-11 — Implémenter le rate limiting**
+[✅] **TASK-006-11 — Implémenter le rate limiting**
 
-[➖] **TASK-006-12 — Ajouter le circuit breaker si nécessaire**
+[✅] **TASK-006-12 — Ajouter le circuit breaker si nécessaire**
 
-[➖] **TASK-006-13 — Journaliser les erreurs**
+[✅] **TASK-006-13 — Journaliser les erreurs**
 
 ### [➖] FEATURE 006.4 — Premier connecteur réel
 
@@ -2029,7 +2029,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
-| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 0 | 0.2 |
+| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 13 | 0.2 |
 | [➖] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 0 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 0 | 0.2 |
 | [➖] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 0 | 0.3 |
@@ -2044,7 +2044,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
+État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 006 : FEATURES 006.1 à 006.3 réalisées (framework, registre, résilience) ; 006-14/15 en attente de vérification des sources officielles (voir docs/DATA_SOURCES.md), 006-16 BLOCKED (identifiants à fournir par le propriétaire) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 
