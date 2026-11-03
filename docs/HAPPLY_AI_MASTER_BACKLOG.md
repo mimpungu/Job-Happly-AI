@@ -158,7 +158,7 @@ L'ordre précis des tâches dépend des relations de dépendance indiquées ci-d
 
 **Objectif :** établir une architecture cohérente avant de développer les fonctionnalités métier.
 
-### [➖] FEATURE 001.1 — Analyse de l'environnement
+### [✅] FEATURE 001.1 — Analyse de l'environnement
 
 [✅] **TASK-001-01 — Inspecter le dépôt**
 
@@ -185,9 +185,9 @@ L'ordre précis des tâches dépend des relations de dépendance indiquées ci-d
 - Définir les premiers parcours utilisateur.
 - Établir les critères de réussite.
 
-### [➖] FEATURE 001.2 — Architecture logicielle
+### [✅] FEATURE 001.2 — Architecture logicielle
 
-[➖] **TASK-001-04 — Concevoir l'architecture globale**
+[✅] **TASK-001-04 — Concevoir l'architecture globale**
 
 Définir :
 - Frontend.
@@ -200,7 +200,7 @@ Définir :
 - IA.
 - Stockage.
 
-[➖] **TASK-001-05 — Définir les bounded contexts**
+[✅] **TASK-001-05 — Définir les bounded contexts**
 
 Identifier les domaines :
 - Candidate Profile.
@@ -212,11 +212,11 @@ Identifier les domaines :
 - Interview Preparation.
 - Notifications.
 
-[➖] **TASK-001-06 — Définir les contrats intermodules**
+[✅] **TASK-001-06 — Définir les contrats intermodules**
 
 Documenter les interfaces et les dépendances.
 
-[➖] **TASK-001-07 — Définir les conventions de développement**
+[✅] **TASK-001-07 — Définir les conventions de développement**
 
 - Nommage.
 - Typage.
@@ -226,9 +226,9 @@ Documenter les interfaces et les dépendances.
 - Formatage.
 - Validation.
 
-### [➖] FEATURE 001.3 — Architecture documentaire
+### [✅] FEATURE 001.3 — Architecture documentaire
 
-[➖] **TASK-001-08 — Créer ARCHITECTURE.md**
+[✅] **TASK-001-08 — Créer ARCHITECTURE.md**
 
 [✅] **TASK-001-09 — Créer les premiers ADR** (voir `docs/architecture/ADR/`)
 
@@ -2023,7 +2023,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Release |
 |---|---|---|---|---|---|---|
-| [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 4 | 0.1 |
+| [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 9 | 0.1 |
 | [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 0 | 0.1 |
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 0 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 0 | 0.1 |
@@ -2043,7 +2043,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 4 tâches réalisées (TASK-001-01, 001-02, 001-03 et 001-09), aucun code applicatif présent.
+État du dépôt au dernier relevé : 9 tâches réalisées (EPIC 001 : TASK-001-01 à 001-09), aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 
