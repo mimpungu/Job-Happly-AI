@@ -1,5 +1,4 @@
 import uuid
-from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 
 import httpx
@@ -7,26 +6,12 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.api.dependencies import get_session
 from app.main import create_app
 from app.modules.job_discovery.infrastructure import offer_queries
 from app.modules.job_discovery.infrastructure.models import JobOfferModel
 from app.modules.platform.infrastructure.models import UserModel
 
 T0 = datetime(2026, 11, 1, 12, 0, tzinfo=UTC)
-
-
-@pytest.fixture
-async def client(session: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
-    application = create_app()
-
-    async def _session_de_test() -> AsyncIterator[AsyncSession]:
-        yield session
-
-    application.dependency_overrides[get_session] = _session_de_test
-    transport = httpx.ASGITransport(app=application, raise_app_exceptions=False)
-    async with httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000") as c:
-        yield c
 
 
 async def _creer_offre(client: httpx.AsyncClient, session: AsyncSession, **champs: object) -> str:

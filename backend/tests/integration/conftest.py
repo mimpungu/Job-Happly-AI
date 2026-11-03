@@ -9,14 +9,17 @@ import uuid
 from collections.abc import AsyncIterator
 from pathlib import Path
 
+import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import make_url, pool
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
+from app.core.api.dependencies import get_session
 from app.core.config import get_settings
 from app.core.database.session import to_driver_url
+from app.main import create_app
 from app.modules.platform.infrastructure.models import UserModel
 
 RACINE_BACKEND = Path(__file__).resolve().parents[2]
@@ -74,3 +77,16 @@ async def user_id(session: AsyncSession) -> uuid.UUID:
     session.add(utilisateur)
     await session.flush()
     return utilisateur.id
+
+
+@pytest.fixture
+async def client(session: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
+    application = create_app()
+
+    async def _session_de_test() -> AsyncIterator[AsyncSession]:
+        yield session
+
+    application.dependency_overrides[get_session] = _session_de_test
+    transport = httpx.ASGITransport(app=application, raise_app_exceptions=False)
+    async with httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000") as c:
+        yield c

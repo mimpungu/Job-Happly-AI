@@ -84,12 +84,31 @@ Import d'un CV, en `multipart/form-data` (champ `fichier`). **Lecture seule : le
 
 Réponse : `{filename, format, page_count, warnings, text, proposed_profile}`. `filename` est un nom d'affichage assaini, jamais un chemin.
 
+`proposed_document` est la même proposition sous forme de brouillon éditable (éléments `imported`, non validés), prête à être relue puis envoyée à `PUT /profile/draft`.
+
 `proposed_profile` est une **proposition**, pas un fait : coordonnées, expériences, formations, compétences, langues, certifications, résumé. Garanties :
 
 - Une information absente du document vaut `null`. Une date partielle (`{"year": 2020, "month": null}`) n'est jamais complétée.
 - Un niveau de langue n'est reconnu que s'il est explicite (A1–C2 ou langue maternelle) ; « courant » reste du texte (`level_text`), jamais converti en C1.
 - Chaque expérience ou formation porte `source_text` (traçabilité) et `confidence` : `low` signale une lecture ambiguë (ex. intitulé et entreprise interchangeables) à vérifier.
 - `warnings` liste ce qui n'a pas pu être lu.
+
+### Profil maître (brouillon, validation, versions)
+
+| Route | Rôle |
+|---|---|
+| `GET /profile` | dernière version (`{meta, document}`) ; `null` s'il n'existe pas |
+| `PUT /profile/draft` | enregistre le brouillon (le crée à la première sauvegarde) ; 409 `no_draft` si la dernière version est validée |
+| `POST /profile/validate` | valide le brouillon ; 422 `profile_incomplete` avec la liste des champs manquants |
+| `POST /profile/versions` | nouveau brouillon copié de la dernière version validée (201) ; 409 `draft_exists` s'il y en a déjà un |
+| `GET /profile/versions` · `/versions/{n}` | versions, de la plus récente à la plus ancienne |
+| `GET /profile/history?limit=100` | journal des modifications, le plus récent d'abord |
+
+`document` = `{identity, summary, experiences[], educations[], skills[], languages[], certifications[], preferences}`. Les éléments portent `id`, `origin` (`imported`/`manual`), `validated` et `source_text` ; les dates sont `{year, month|null}`.
+
+- **Enregistrer** remplace le contenu du brouillon : un élément avec `id` est mis à jour, sans `id` il est créé, absent il est supprimé. Un `id` inconnu est refusé (422 `unknown_item`).
+- **Brouillon libre, validation stricte** : un brouillon peut être incomplet. Un élément envoyé avec `validated: true` doit être complet (expérience : intitulé, entreprise, début ; formation : diplôme, établissement ; langue : niveau). Valider le profil exige prénom, nom et **tous** les éléments confirmés : rien n'est validé à la place de l'utilisateur. Après modification d'un élément déjà confirmé, le client doit renvoyer `validated: false` pour exiger une nouvelle relecture.
+- **Préférences** : métiers, pays, villes, télétravail, contrats, salaire souhaité (avec devise) et langues de candidature, versionnées avec le profil.
 
 ## Limites actuelles
 

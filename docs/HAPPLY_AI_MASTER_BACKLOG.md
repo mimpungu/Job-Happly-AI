@@ -627,11 +627,11 @@ Les extractions doivent pouvoir fonctionner avec des règles classiques avant d'
 
 [➖] **TASK-005-15 — Ajouter la validation des informations extraites**
 
-[➖] **TASK-005-16 — Ajouter l'historique des modifications**
+[✅] **TASK-005-16 — Ajouter l'historique des modifications**
 
 ### [➖] FEATURE 005.4 — Profil professionnel
 
-[➖] **TASK-005-17 — Créer le profil maître versionné**
+[✅] **TASK-005-17 — Créer le profil maître versionné**
 
 [➖] **TASK-005-18 — Créer la gestion des préférences professionnelles**
 
@@ -649,9 +649,9 @@ Les extractions doivent pouvoir fonctionner avec des règles classiques avant d'
 - [✅] Extraction testée.
 - [➖] Modifications possibles.
 - [➖] Validation humaine disponible.
-- [➖] Profil maître conservé indépendamment des CV ciblés.
-- [➖] Traçabilité des informations.
-- [➖] Aucune donnée professionnelle inventée.
+- [✅] Profil maître conservé indépendamment des CV ciblés.
+- [✅] Traçabilité des informations.
+- [✅] Aucune donnée professionnelle inventée.
 
 **Livrable :** profil candidat central.
 
@@ -2028,7 +2028,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 6 | 0.1 |
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
-| [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 10 | 0.3 |
+| [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 12 | 0.3 |
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |

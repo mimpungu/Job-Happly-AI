@@ -10,11 +10,21 @@ Source de vérité : les migrations Alembic (`backend/migrations/versions/`), v�
 - Montants en `NUMERIC`, jamais en flottant. Données semi-structurées (préférences, critères, résultats d'analyse, charge brute d'une source) en `JSONB`, validées par le domaine avant écriture.
 - Pays, langues et devises : formats contrôlés par `CHECK`, sans liste fermée.
 
-## Tables (29)
+## Tables (30)
 
-`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `job_sources` · `target_companies` · `job_offers` · `job_offer_revisions` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications` · `jobs`
+`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `profile_changes` · `job_sources` · `target_companies` · `job_offers` · `job_offer_revisions` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications` · `jobs`
 
 À venir avec leur EPIC : préférences de notification (EPIC 015), préparation d'entretien (EPIC 016).
+
+## Profil maître (EPIC 005, migration 0004)
+
+- **Versions** : une ligne de `candidate_profiles` par version (`version` croissante par candidat). Une version `validated` n'est jamais réécrite ; modifier ouvre un nouveau brouillon copié.
+- **Identité figée par version** (`candidate_profiles.identity`, JSONB) : modifier l'identité d'un brouillon ne change pas les versions validées. `candidates` reflète la dernière version validée.
+- **Brouillon libre, élément validé complet** : `company`, `title`, `start_date`, `institution`, `degree`, `proficiency` sont nullables ; les contraintes `validated_is_complete` interdisent de confirmer (`validated_at`) un élément incomplet.
+- **Dates partielles** : une date `date` est accompagnée d'une précision (`*_precision` = `year` ou `month`). « 2020 » est stocké au 1er janvier avec la précision `year` : la base ne prétend pas connaître le mois.
+- **Niveau de langue inconnu** : `proficiency` NULL ; le texte d'origine (« courant ») est gardé dans `level_text`, jamais converti en niveau CECR.
+- **Traçabilité** : `source` (importé/manuel), `source_text` (extrait du CV d'origine) et `validated_at` sur chaque élément.
+- **Journal** `profile_changes` : une ligne par modification (`entity_type`, `action`, `changes` = `{champ: [avant, après]}`), supprimée avec le profil. Le CV importé n'est jamais conservé, seul l'extrait source de chaque élément l'est.
 
 ## Index (TASK-004-08)
 
