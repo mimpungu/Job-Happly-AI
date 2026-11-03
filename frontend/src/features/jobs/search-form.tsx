@@ -9,6 +9,11 @@ import type { OfferFilters } from "@/types/jobs";
 
 import { DEFAULT_FILTERS, EMPLOYMENT_TYPES, REMOTE_TYPES } from "./filters";
 
+const SCORES_MINIMAUX = [50, 60, 70, 80].map((n) => ({
+  value: String(n),
+  label: `${n} et plus`,
+}));
+
 export interface SearchFormProps {
   filters: OfferFilters;
   onSubmit: (filters: OfferFilters) => void;
@@ -116,6 +121,17 @@ export function SearchForm({ filters, onSubmit, onSaveSearch }: SearchFormProps)
               value={draft.salaryCurrency}
               maxLength={3}
               onChange={(e) => maj("salaryCurrency", e.target.value.toUpperCase())}
+            />
+          )}
+        </Field>
+        <Field label="Compatibilité minimale" hint="Nécessite un profil validé.">
+          {({ id }) => (
+            <Select
+              id={id}
+              options={SCORES_MINIMAUX}
+              placeholder="Toutes"
+              value={draft.minScore}
+              onChange={(e) => maj("minScore", e.target.value)}
             />
           )}
         </Field>

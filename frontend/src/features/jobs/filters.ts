@@ -7,6 +7,7 @@ export const SORTS: readonly { value: OfferSort; label: string }[] = [
   { value: "company_asc", label: "Entreprise (A→Z)" },
   { value: "salary_desc", label: "Salaire décroissant" },
   { value: "recently_seen", label: "Vues récemment" },
+  { value: "score_desc", label: "Meilleure compatibilité" },
 ];
 
 export const EMPLOYMENT_TYPES = [
@@ -35,6 +36,7 @@ export const DEFAULT_FILTERS: OfferFilters = {
   salaryMin: "",
   salaryCurrency: "EUR",
   publishedSince: "",
+  minScore: "",
   sort: "published_desc",
   state: "visible",
   page: 1,
@@ -42,6 +44,12 @@ export const DEFAULT_FILTERS: OfferFilters = {
 
 const SORT_VALUES = new Set<string>(SORTS.map((s) => s.value));
 const STATE_VALUES = new Set<string>(["visible", "saved", "ignored", "all"]);
+
+/** Un score minimal n'est accepté que s'il est un entier de 0 à 100 ; sinon pas de filtre. */
+function scoreValide(valeur: string): string {
+  const nombre = Number(valeur);
+  return valeur !== "" && Number.isInteger(nombre) && nombre >= 0 && nombre <= 100 ? valeur : "";
+}
 
 /** Une valeur d'URL est une entrée non fiable : toute valeur inattendue retombe sur le défaut. */
 export function filtersFromParams(params: URLSearchParams): OfferFilters {
@@ -58,6 +66,7 @@ export function filtersFromParams(params: URLSearchParams): OfferFilters {
     salaryMin: lire("salary_min"),
     salaryCurrency: lire("currency").toUpperCase() || DEFAULT_FILTERS.salaryCurrency,
     publishedSince: lire("since"),
+    minScore: scoreValide(lire("min_score")),
     sort: SORT_VALUES.has(tri) ? (tri as OfferSort) : DEFAULT_FILTERS.sort,
     state: STATE_VALUES.has(etat) ? (etat as StateFilter) : DEFAULT_FILTERS.state,
     page: Number.isInteger(page) && page >= 1 ? page : 1,
@@ -80,6 +89,7 @@ export function filtersToParams(filters: OfferFilters): URLSearchParams {
     params.set("currency", filters.salaryCurrency.trim().toUpperCase());
   }
   ecrire("since", filters.publishedSince);
+  ecrire("min_score", filters.minScore);
   if (filters.sort !== DEFAULT_FILTERS.sort) params.set("sort", filters.sort);
   if (filters.state !== DEFAULT_FILTERS.state) params.set("state", filters.state);
   if (filters.page > 1) params.set("page", String(filters.page));
@@ -102,6 +112,7 @@ export function filtersToApiQuery(filters: OfferFilters, pageSize: number): URLS
     params.set("salary_currency", filters.salaryCurrency.trim().toUpperCase());
   }
   if (filters.publishedSince) params.set("published_since", `${filters.publishedSince}T00:00:00Z`);
+  if (filters.minScore) params.set("min_score", filters.minScore);
   params.set("sort", filters.sort);
   params.set("state", filters.state);
   params.set("page", String(filters.page));
@@ -122,6 +133,7 @@ export function filtersToSavedCriteria(filters: OfferFilters): Record<string, un
     criteres.salary_currency = filters.salaryCurrency.trim().toUpperCase();
   }
   if (filters.publishedSince) criteres.published_since = `${filters.publishedSince}T00:00:00Z`;
+  if (filters.minScore) criteres.min_score = filters.minScore;
   return criteres;
 }
 
@@ -148,6 +160,9 @@ export function filtersFromSavedCriteria(criteres: Record<string, unknown>): Off
     salaryMin: texte("salary_min"),
     salaryCurrency: texte("salary_currency") || DEFAULT_FILTERS.salaryCurrency,
     publishedSince: depuis.slice(0, 10),
+    minScore:
+      texte("min_score") ||
+      (typeof criteres.min_score === "number" ? String(criteres.min_score) : ""),
     page: 1,
   };
 }

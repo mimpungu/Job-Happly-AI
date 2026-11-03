@@ -110,6 +110,22 @@ Réponse : `{filename, format, page_count, warnings, text, proposed_profile}`. `
 - **Brouillon libre, validation stricte** : un brouillon peut être incomplet. Un élément envoyé avec `validated: true` doit être complet (expérience : intitulé, entreprise, début ; formation : diplôme, établissement ; langue : niveau). Valider le profil exige prénom, nom et **tous** les éléments confirmés : rien n'est validé à la place de l'utilisateur. Après modification d'un élément déjà confirmé, le client doit renvoyer `validated: false` pour exiger une nouvelle relecture.
 - **Préférences** : métiers, pays, villes, télétravail, contrats, salaire souhaité (avec devise) et langues de candidature, versionnées avec le profil.
 
+## Compatibilité (score)
+
+Score indicatif, déterministe, expliqué (`docs/architecture/MATCHING.md`). Calculé sur le profil **validé** : sans lui, 409 `no_validated_profile`.
+
+| Route | Rôle |
+|---|---|
+| `GET /offers/{id}/match` | score détaillé : `{result, profile_version, computed_at}` ; `result` = score, couverture, fiabilité, critères (statut, note, explication), correspondances, écarts, résumé, avertissement ; le score est mémorisé |
+| `POST /matching/recompute` | recalcule toutes les offres actives (profil validé, poids courants) → `{computed, not_computable, profile_version, weights_version}` |
+| `GET /matching/weights` | pondérations courantes, par défaut et version |
+| `PUT /matching/weights` | `{weights: {critère: nombre 0-100}}` ; un critère omis garde son poids par défaut, 0 le désactive ; 422 `invalid_weights` sinon |
+| `DELETE /matching/weights` | rétablit les pondérations par défaut |
+
+`GET /offers` accepte aussi `min_score` (0-100) et `sort=score_desc` ; chaque offre porte `match_score` et `match_reliability` (`null` = pas encore évaluée). Sans profil validé, `min_score` et `sort=score_desc` renvoient 409 `scoring_unavailable` plutôt qu'une liste trompeuse.
+
+Les critères dont les données manquent ont `status: "missing_data"` et `score: null` : ils ne sont pas comptés.
+
 ## Limites actuelles
 
 - Ces routes lisent les offres **déjà présentes en base**. Le déclenchement d'une collecte auprès des sources (ingestion) n'est pas encore exposé : il viendra avec les connecteurs réels et l'EPIC 015.

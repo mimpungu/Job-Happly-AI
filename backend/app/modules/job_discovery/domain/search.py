@@ -27,6 +27,18 @@ from app.modules.job_discovery.domain.enums import OfferState, OfferStatus
 MAX_PAGE_SIZE = 100
 
 
+@dataclass(frozen=True, slots=True)
+class ScoreContext:
+    """Quels scores lire : ceux du profil validé courant avec les pondérations courantes."""
+
+    profile_id: uuid.UUID
+    weights_version: str
+
+
+class ScoringUnavailableError(RuntimeError):
+    """Tri ou filtre par score demandé sans profil validé : aucun score n'existe."""
+
+
 class OfferSort(StrEnum):
     PUBLISHED_DESC = "published_desc"
     PUBLISHED_ASC = "published_asc"
@@ -34,6 +46,7 @@ class OfferSort(StrEnum):
     COMPANY_ASC = "company_asc"
     SALARY_DESC = "salary_desc"
     RECENTLY_SEEN = "recently_seen"
+    SCORE_DESC = "score_desc"
 
 
 class StateFilter(StrEnum):
@@ -61,6 +74,9 @@ class OfferFilter(BaseModel):
     salary_currency: str | None = None
     published_since: datetime | None = None
     language: str | None = None
+    # Score de correspondance minimal (0-100). Les offres sans score sont exclues : une offre
+    # non évaluée n'est pas une offre « mauvaise ».
+    min_score: Decimal | None = Field(default=None, ge=0, le=100)
     statuses: tuple[OfferStatus, ...] = (OfferStatus.ACTIVE,)
     state: StateFilter = StateFilter.VISIBLE
     sort: OfferSort = OfferSort.PUBLISHED_DESC
@@ -133,6 +149,9 @@ class OfferSummary:
     status: str
     state: OfferState | None
     source_keys: tuple[str, ...]
+    # Dernier score calculé pour le profil validé courant ; `None` = pas encore évalué.
+    match_score: Decimal | None = None
+    match_reliability: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,7 +194,13 @@ class OfferNotFoundError(LookupError):
 
 
 class OfferQueryRepository(Protocol):
-    async def search(self, *, owner_id: uuid.UUID, offer_filter: OfferFilter) -> OfferPage: ...
+    async def search(
+        self,
+        *,
+        owner_id: uuid.UUID,
+        offer_filter: OfferFilter,
+        score_context: ScoreContext | None = None,
+    ) -> OfferPage: ...
 
     async def get(self, *, owner_id: uuid.UUID, offer_id: uuid.UUID) -> OfferDetail: ...
 

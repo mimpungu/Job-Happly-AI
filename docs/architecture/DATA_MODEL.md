@@ -10,9 +10,9 @@ Source de vérité : les migrations Alembic (`backend/migrations/versions/`), v�
 - Montants en `NUMERIC`, jamais en flottant. Données semi-structurées (préférences, critères, résultats d'analyse, charge brute d'une source) en `JSONB`, validées par le domaine avant écriture.
 - Pays, langues et devises : formats contrôlés par `CHECK`, sans liste fermée.
 
-## Tables (30)
+## Tables (31)
 
-`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `profile_changes` · `job_sources` · `target_companies` · `job_offers` · `job_offer_revisions` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications` · `jobs`
+`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `profile_changes` · `matching_settings` · `job_sources` · `target_companies` · `job_offers` · `job_offer_revisions` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications` · `jobs`
 
 À venir avec leur EPIC : préférences de notification (EPIC 015), préparation d'entretien (EPIC 016).
 
@@ -25,6 +25,11 @@ Source de vérité : les migrations Alembic (`backend/migrations/versions/`), v�
 - **Niveau de langue inconnu** : `proficiency` NULL ; le texte d'origine (« courant ») est gardé dans `level_text`, jamais converti en niveau CECR.
 - **Traçabilité** : `source` (importé/manuel), `source_text` (extrait du CV d'origine) et `validated_at` sur chaque élément.
 - **Journal** `profile_changes` : une ligne par modification (`entity_type`, `action`, `changes` = `{champ: [avant, après]}`), supprimée avec le profil. Le CV importé n'est jamais conservé, seul l'extrait source de chaque élément l'est.
+
+## Scoring (EPIC 009, migration 0005)
+
+- `job_match_scores` : une ligne par (offre, version de profil, version de poids) ; `score` 0-100, `breakdown` JSONB (critères, correspondances, écarts, fiabilité). Les scores d'une autre version de profil ou de poids sont purgés au recalcul. Voir `MATCHING.md`.
+- `matching_settings` : pondérations personnalisées (JSONB), une ligne par propriétaire ; aucune ligne = pondérations par défaut. Distinctes du profil maître.
 
 ## Index (TASK-004-08)
 

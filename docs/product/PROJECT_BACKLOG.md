@@ -24,7 +24,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 18 | EPIC 002 |
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 19 | EPIC 003, EPIC 007 |
-| [➖] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 0 | EPIC 005, EPIC 007, EPIC 008 |
+| [✅] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 17 | EPIC 005, EPIC 007, EPIC 008 |
 | [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 0 | EPIC 002, EPIC 004 |
 | [➖] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 0 | EPIC 009, EPIC 010 |
 | [➖] | 012 — LATEX RESUME GENERATOR | P1 | 5 | 27 | 0 | EPIC 005, EPIC 010, EPIC 011 |
@@ -174,7 +174,7 @@ Total : 404 tâches.
 - [✅] Composants réutilisables.
 - [✅] Navigation fonctionnelle.
 - [✅] Responsive desktop/tablette/mobile.
-- [➖] Accessibilité clavier.
+- [✅] Accessibilité clavier.
 - [✅] Contrastes lisibles.
 
 ## [➖] EPIC 004 — DATABASE & DOMAIN FOUNDATION
@@ -469,51 +469,51 @@ Total : 404 tâches.
 - [✅] Erreurs clairement affichées.
 - [✅] Recherche sauvegardable et reproductible.
 
-## [➖] EPIC 009 — JOB MATCHING & SCORING ENGINE
+## [✅] EPIC 009 — JOB MATCHING & SCORING ENGINE
 
 - **Priorité :** P0
 - **Objectif :** classer les offres selon leur correspondance avec le profil candidat.
 - **Dépendances :** EPIC 005, EPIC 007, EPIC 008
 
-### [➖] FEATURE 009.1 — Matching déterministe
+### [✅] FEATURE 009.1 — Matching déterministe
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-009-01 | Définir les critères de correspondance | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-02 | Créer le moteur de correspondance métier | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-03 | Comparer les compétences | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-04 | Comparer l'expérience | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-05 | Comparer la formation | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-06 | Comparer les préférences géographiques | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-07 | Comparer les conditions contractuelles | P0 | BACKLOG | à estimer |
+| [✅] | TASK-009-01 | Définir les critères de correspondance | P0 | DONE | à estimer |
+| [✅] | TASK-009-02 | Créer le moteur de correspondance métier | P0 | DONE | à estimer |
+| [✅] | TASK-009-03 | Comparer les compétences | P0 | DONE | à estimer |
+| [✅] | TASK-009-04 | Comparer l'expérience | P0 | DONE | à estimer |
+| [✅] | TASK-009-05 | Comparer la formation | P0 | DONE | à estimer |
+| [✅] | TASK-009-06 | Comparer les préférences géographiques | P0 | DONE | à estimer |
+| [✅] | TASK-009-07 | Comparer les conditions contractuelles | P0 | DONE | à estimer |
 
-### [➖] FEATURE 009.2 — Scoring
-
-| Statut | ID | Titre | Priorité | État | Estimation |
-|---|---|---|---|---|---|
-| [➖] | TASK-009-08 | Définir les pondérations | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-09 | Calculer le score sur 100 | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-10 | Identifier les correspondances | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-11 | Identifier les écarts | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-12 | Expliquer chaque score | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-13 | Permettre la personnalisation des pondérations | P0 | BACKLOG | à estimer |
-
-### [➖] FEATURE 009.3 — Interface de compatibilité
+### [✅] FEATURE 009.2 — Scoring
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-009-14 | Créer ScoreIndicator | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-15 | Créer SkillMatchPanel | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-16 | Créer le détail des critères | P0 | BACKLOG | à estimer |
-| [➖] | TASK-009-17 | Créer les filtres par compatibilité | P0 | BACKLOG | à estimer |
+| [✅] | TASK-009-08 | Définir les pondérations | P0 | DONE | à estimer |
+| [✅] | TASK-009-09 | Calculer le score sur 100 | P0 | DONE | à estimer |
+| [✅] | TASK-009-10 | Identifier les correspondances | P0 | DONE | à estimer |
+| [✅] | TASK-009-11 | Identifier les écarts | P0 | DONE | à estimer |
+| [✅] | TASK-009-12 | Expliquer chaque score | P0 | DONE | à estimer |
+| [✅] | TASK-009-13 | Permettre la personnalisation des pondérations | P0 | DONE | à estimer |
+
+### [✅] FEATURE 009.3 — Interface de compatibilité
+
+| Statut | ID | Titre | Priorité | État | Estimation |
+|---|---|---|---|---|---|
+| [✅] | TASK-009-14 | Créer ScoreIndicator | P0 | DONE | à estimer |
+| [✅] | TASK-009-15 | Créer SkillMatchPanel | P0 | DONE | à estimer |
+| [✅] | TASK-009-16 | Créer le détail des critères | P0 | DONE | à estimer |
+| [✅] | TASK-009-17 | Créer les filtres par compatibilité | P0 | DONE | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 
-- [➖] Score reproductible.
-- [➖] Pondérations configurables.
-- [➖] Justification visible.
-- [➖] Aucun score présenté comme une probabilité réelle d'embauche.
-- [➖] Données manquantes distinguées des compétences absentes.
+- [✅] Score reproductible.
+- [✅] Pondérations configurables.
+- [✅] Justification visible.
+- [✅] Aucun score présenté comme une probabilité réelle d'embauche.
+- [✅] Données manquantes distinguées des compétences absentes.
 
 ## [➖] EPIC 010 — AI PLATFORM & COST MANAGEMENT
 

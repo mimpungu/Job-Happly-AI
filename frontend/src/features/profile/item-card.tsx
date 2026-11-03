@@ -47,18 +47,6 @@ export function ItemCard({
           {missing.length > 0 ? <Badge variant="danger">Incomplet</Badge> : null}
         </div>
         <div className="flex items-center gap-1">
-          {validated ? null : (
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={missing.length > 0}
-              onClick={onConfirm}
-              aria-label={`Confirmer : ${title}`}
-            >
-              <Check className="size-4" aria-hidden="true" />
-              Confirmer
-            </Button>
-          )}
           <IconButton size="sm" aria-label={`Retirer : ${title}`} onClick={onRemove}>
             <Trash2 className="size-4" aria-hidden="true" />
           </IconButton>
@@ -72,6 +60,22 @@ export function ItemCard({
       ) : null}
 
       {children}
+
+      {/* Après les champs : on relit, puis on confirme (ordre naturel au clavier aussi). */}
+      {validated ? null : (
+        <div>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={missing.length > 0}
+            onClick={onConfirm}
+            aria-label={`Confirmer : ${title}`}
+          >
+            <Check className="size-4" aria-hidden="true" />
+            Confirmer
+          </Button>
+        </div>
+      )}
 
       {sourceText ? (
         <details className="text-xs text-foreground-muted">

@@ -7,7 +7,12 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 
 from app.modules.job_discovery.domain.saved_search import SavedSearchRepository, SearchRun
-from app.modules.job_discovery.domain.search import OfferFilter, OfferPage, OfferQueryRepository
+from app.modules.job_discovery.domain.search import (
+    OfferFilter,
+    OfferPage,
+    OfferQueryRepository,
+    ScoreContext,
+)
 
 
 def _maintenant() -> datetime:
@@ -32,10 +37,13 @@ class SearchService:
         owner_id: uuid.UUID,
         offer_filter: OfferFilter,
         saved_search_id: uuid.UUID | None = None,
+        score_context: ScoreContext | None = None,
     ) -> tuple[OfferPage, SearchRun]:
         """Exécute la recherche puis l'enregistre dans l'historique."""
         debut = self._clock()
-        page = await self._offers.search(owner_id=owner_id, offer_filter=offer_filter)
+        page = await self._offers.search(
+            owner_id=owner_id, offer_filter=offer_filter, score_context=score_context
+        )
         execution = await self._saved.record_run(
             owner_id=owner_id,
             saved_search_id=saved_search_id,
@@ -47,7 +55,11 @@ class SearchService:
         return page, execution
 
     async def rerun(
-        self, *, owner_id: uuid.UUID, saved_search_id: uuid.UUID
+        self,
+        *,
+        owner_id: uuid.UUID,
+        saved_search_id: uuid.UUID,
+        score_context: ScoreContext | None = None,
     ) -> tuple[OfferPage, SearchRun]:
         """Relance les critères mémorisés, toujours depuis la première page."""
         recherche = await self._saved.get(owner_id=owner_id, search_id=saved_search_id)
@@ -55,4 +67,5 @@ class SearchService:
             owner_id=owner_id,
             offer_filter=recherche.offer_filter.model_copy(update={"page": 1}),
             saved_search_id=saved_search_id,
+            score_context=score_context,
         )

@@ -22,6 +22,8 @@ const detail = (surcharge: Partial<OfferDetail> = {}): OfferDetail => ({
     status: "active",
     state: null,
     source_keys: ["a"],
+    match_score: null,
+    match_reliability: null,
   },
   description: "Ligne 1\n<img src=x onerror=alert(1)> ligne 2",
   application_url: "https://exemple.test/apply",

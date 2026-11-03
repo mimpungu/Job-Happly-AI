@@ -41,6 +41,9 @@ select = ["E", "F", "I", "B", "UP", "S", "C4", "SIM", "RUF", "ASYNC"]
 "app/modules/candidate_profile/domain/text_normalization.py" = ["RUF001", "RUF003"]
 "app/modules/candidate_profile/domain/extraction/*.py" = ["RUF001", "RUF002", "RUF003"]
 "tests/unit/candidate_profile/**" = ["RUF001", "RUF003"]
+# Les phrases d'explication du score sont écrites en entier pour rester lisibles et cherchables.
+"app/modules/job_intelligence/domain/matching/*.py" = ["E501", "RUF001", "RUF003"]
+"tests/unit/job_intelligence/**" = ["E501", "RUF001", "RUF003"]
 # Fichiers générés par Alembic : seules les corrections automatiques de formatage s'appliquent.
 "migrations/versions/*" = ["E501", "RUF012"]
 

@@ -11,6 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toaster";
 import { ApiError } from "@/services/api-client";
 
+import { MatchPanel } from "@/features/matching/match-panel";
+
 import { formatDate, formatEmployment, formatRemote, formatSalary } from "./format";
 import { useChangeOfferState, useOffer } from "./use-offers";
 
@@ -132,6 +134,8 @@ export function OfferDetailView({ id }: { id: string }) {
           </Button>
         </div>
       </header>
+
+      <MatchPanel offerId={id} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <Panel title="Description">

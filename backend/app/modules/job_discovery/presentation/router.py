@@ -33,6 +33,7 @@ from app.modules.job_discovery.infrastructure.offer_queries import SqlOfferQuery
 from app.modules.job_discovery.infrastructure.saved_search_repository import (
     SqlSavedSearchRepository,
 )
+from app.modules.job_intelligence.infrastructure.composition import build_matching_service
 
 router = APIRouter(prefix="/api/v1", tags=["job-discovery"])
 
@@ -89,8 +90,10 @@ class SearchRunResponse(BaseModel):
 async def list_offers(
     session: Session, owner_id: Owner, offer_filter: Annotated[OfferFilter, Query()]
 ) -> OfferPageResponse:
+    # Contexte de score : profil validé et pondérations courants (`None` sans profil validé).
+    contexte = await build_matching_service(session).score_context(owner_id=owner_id)
     page = await SqlOfferQueryRepository(session).search(
-        owner_id=owner_id, offer_filter=offer_filter
+        owner_id=owner_id, offer_filter=offer_filter, score_context=contexte
     )
     return OfferPageResponse.from_page(page)
 
@@ -148,7 +151,10 @@ async def run_saved_search(
     session: Session, owner_id: Owner, search_id: uuid.UUID
 ) -> SearchRunResponse:
     service = SearchService(SqlOfferQueryRepository(session), SqlSavedSearchRepository(session))
-    page, execution = await service.rerun(owner_id=owner_id, saved_search_id=search_id)
+    contexte = await build_matching_service(session).score_context(owner_id=owner_id)
+    page, execution = await service.rerun(
+        owner_id=owner_id, saved_search_id=search_id, score_context=contexte
+    )
     return SearchRunResponse(run=execution, results=OfferPageResponse.from_page(page))
 
 

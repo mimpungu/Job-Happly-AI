@@ -19,6 +19,7 @@ const complets = {
   salaryMin: "45000",
   salaryCurrency: "EUR",
   publishedSince: "2026-10-01",
+  minScore: "60",
   sort: "title_asc" as const,
   page: 3,
 };
@@ -66,6 +67,7 @@ describe("requête API", () => {
     expect(q.get("salary_min")).toBe("45000");
     expect(q.get("salary_currency")).toBe("EUR");
     expect(q.get("published_since")).toBe("2026-10-01T00:00:00Z");
+    expect(q.get("min_score")).toBe("60");
     expect([q.get("page"), q.get("page_size"), q.get("sort")]).toEqual(["3", "25", "title_asc"]);
   });
 
@@ -88,5 +90,28 @@ describe("recherche sauvegardée", () => {
     const filtres = filtersFromSavedCriteria({ text: "x", country_codes: [], sort: 12 });
 
     expect(filtres).toEqual({ ...DEFAULT_FILTERS, text: "x" });
+  });
+});
+
+describe("score minimal", () => {
+  it("n'accepte qu'un entier de 0 à 100 dans l'URL", () => {
+    expect(filtersFromParams(new URLSearchParams("min_score=70")).minScore).toBe("70");
+    expect(filtersFromParams(new URLSearchParams("min_score=0")).minScore).toBe("0");
+    for (const hostile of ["101", "-5", "abc", "7.5", "<script>", ""]) {
+      expect(filtersFromParams(new URLSearchParams({ min_score: hostile })).minScore).toBe("");
+    }
+  });
+
+  it("n'écrit rien sans filtre et le propage à l'API et aux recherches sauvegardées", () => {
+    expect(filtersToParams(DEFAULT_FILTERS).has("min_score")).toBe(false);
+    expect(filtersToApiQuery(DEFAULT_FILTERS, 25).has("min_score")).toBe(false);
+    const filtres = { ...DEFAULT_FILTERS, minScore: "60", sort: "score_desc" as const };
+
+    expect(filtersToApiQuery(filtres, 25).get("min_score")).toBe("60");
+    expect(filtersToApiQuery(filtres, 25).get("sort")).toBe("score_desc");
+    expect(filtersFromSavedCriteria(filtersToSavedCriteria(filtres))).toEqual({
+      ...filtres,
+      page: 1,
+    });
   });
 });

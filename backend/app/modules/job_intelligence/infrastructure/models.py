@@ -5,11 +5,18 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Numeric, String, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Numeric, String, func, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.database.base import Base, CreatedAtMixin, OwnedMixin, PrimaryKeyMixin, enum_check
+from app.core.database.base import (
+    Base,
+    CreatedAtMixin,
+    OwnedMixin,
+    PrimaryKeyMixin,
+    TimestampMixin,
+    enum_check,
+)
 from app.modules.job_intelligence.domain.enums import AnalysisKind
 
 
@@ -78,3 +85,15 @@ class JobMatchScoreModel(PrimaryKeyMixin, OwnedMixin, Base):
     computed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class MatchingSettingsModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
+    """Pondérations personnalisées du score. Distinctes du profil : les modifier ne crée pas de
+    nouvelle version du CV maître. Une ligne par propriétaire ; aucune ligne = pondérations par
+    défaut."""
+
+    __tablename__ = "matching_settings"
+    __table_args__ = (Index("uq_matching_settings_owner_id", "owner_id", unique=True),)
+
+    # {critère: poids} validé par le domaine (`validate_weights`) avant écriture.
+    weights: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))

@@ -135,6 +135,17 @@ function simulerImport(proposition: ProfileDocument, avertissements: string[] = 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("ProfileEditor — démarrage", () => {
+  it("affiche le titre de la page dès le chargement", () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise<Response>(() => undefined)),
+    ); // jamais résolu
+    afficher();
+
+    expect(screen.getByRole("heading", { level: 1, name: "Espace CV" })).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Chargement du profil" })).toBeInTheDocument();
+  });
+
   it("propose d'importer ou de saisir à la main quand il n'y a pas de profil", async () => {
     simulerApi(null);
     afficher();
@@ -152,6 +163,8 @@ describe("ProfileEditor — démarrage", () => {
     afficher();
 
     expect(await screen.findByText("Impossible de charger le profil")).toBeInTheDocument();
+    // Le titre de la page reste présent dans l'état d'erreur.
+    expect(screen.getByRole("heading", { level: 1, name: "Espace CV" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Réessayer" })).toBeInTheDocument();
   });
 
@@ -442,5 +455,80 @@ describe("ProfileEditor — préférences", () => {
 
     await userEvent.click(screen.getByLabelText("Hybride"));
     expect(screen.getByLabelText("Hybride")).toBeChecked();
+  });
+});
+
+describe("ProfileEditor — consultation des versions", () => {
+  const v1 = () =>
+    stocke(
+      document_({ identity: { ...emptyDocument().identity, first_name: "Ancien" } }),
+      "validated",
+      1,
+    );
+  const v2 = () =>
+    stocke(
+      document_({ identity: { ...emptyDocument().identity, first_name: "Courant" } }),
+      "draft",
+      2,
+    );
+  const metas = () => [v2().meta, v1().meta];
+
+  it("ne propose pas de sélecteur quand il n'existe qu'une version", async () => {
+    simulerApi(v1(), { "GET /profile/versions": () => json([v1().meta]) });
+    afficher();
+    await screen.findByText("Version 1 · validée");
+
+    expect(screen.queryByLabelText("Version affichée")).toBeNull();
+  });
+
+  it("affiche une ancienne version en lecture seule sans toucher au brouillon en cours", async () => {
+    const appels = simulerApi(v2(), {
+      "GET /profile/versions": () => json(metas()),
+      "GET /profile/versions/1": () => json(v1()),
+    });
+    afficher();
+    await screen.findByText("Version 2 · brouillon");
+    await userEvent.click(screen.getByRole("tab", { name: "Identité" }));
+    // Modification non enregistrée du brouillon actuel.
+    await userEvent.clear(screen.getByLabelText("Prénom"));
+    await userEvent.type(screen.getByLabelText("Prénom"), "Brouillon modifié");
+
+    await userEvent.selectOptions(await screen.findByLabelText("Version affichée"), "1");
+
+    expect(
+      await screen.findByText(/Vous consultez la version 1 en lecture seule/),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: "Identité" }));
+    expect(screen.getByLabelText("Prénom")).toHaveValue("Ancien");
+    expect(screen.getByLabelText("Prénom")).toBeDisabled();
+    // Aucune action d'écriture n'est proposée pendant la consultation.
+    expect(screen.queryByRole("button", { name: "Enregistrer" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Valider le profil" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Importer un CV" })).toBeNull();
+    expect(appels.some((a) => a.methode === "PUT")).toBe(false);
+
+    await userEvent.click(screen.getByRole("button", { name: "Revenir à la version actuelle" }));
+
+    await userEvent.click(screen.getByRole("tab", { name: "Identité" }));
+    expect(screen.getByLabelText("Prénom")).toHaveValue("Brouillon modifié"); // rien n'a été perdu
+    expect(screen.getByText("Modifications non enregistrées")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Enregistrer" })).toBeEnabled();
+  });
+
+  it("signale l'échec du chargement d'une version", async () => {
+    simulerApi(v2(), {
+      "GET /profile/versions": () => json(metas()),
+      "GET /profile/versions/1": () =>
+        json(
+          { error: { code: "profile_not_found", message: "Profil ou version introuvable." } },
+          404,
+        ),
+    });
+    afficher();
+    await screen.findByText("Version 2 · brouillon");
+
+    await userEvent.selectOptions(await screen.findByLabelText("Version affichée"), "1");
+
+    expect(await screen.findByText("Profil ou version introuvable.")).toBeInTheDocument();
   });
 });

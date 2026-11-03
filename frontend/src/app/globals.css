@@ -9,7 +9,23 @@ body {
 }
 
 /* Anneau de focus clavier uniforme, visible sur tous les éléments interactifs. */
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: var(--focus-ring-offset);
+}
+
+/*
+ * Mouvement réduit : l'utilisateur qui le demande au système ne voit ni transitions ni animations
+ * (notifications, fenêtres, survols). Durée quasi nulle plutôt que « none » pour que les
+ * événements de fin d'animation continuent de se déclencher.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

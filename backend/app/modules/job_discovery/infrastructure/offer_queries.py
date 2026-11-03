@@ -19,6 +19,8 @@ from app.modules.job_discovery.domain.search import (
     OfferSort,
     OfferSourceView,
     OfferSummary,
+    ScoreContext,
+    ScoringUnavailableError,
     StateFilter,
 )
 from app.modules.job_discovery.infrastructure.models import (
@@ -27,6 +29,10 @@ from app.modules.job_discovery.infrastructure.models import (
     JobOfferStateModel,
     JobSourceModel,
 )
+
+# Jointure en lecture seule avec les scores calculés par `job_intelligence` (modèle de lecture) :
+# nécessaire pour trier et filtrer côté base sans charger toutes les offres en mémoire.
+from app.modules.job_intelligence.infrastructure.models import JobMatchScoreModel
 
 _ECHAPPEMENT = "\\"
 
@@ -48,6 +54,8 @@ def _tri(tri: OfferSort) -> list[ColumnElement[Any]]:
             func.coalesce(JobOfferModel.salary_max, JobOfferModel.salary_min).desc().nulls_last()
         ],
         OfferSort.RECENTLY_SEEN: [JobOfferModel.last_seen_at.desc()],
+        # Les offres sans score passent après les offres notées, pas avant.
+        OfferSort.SCORE_DESC: [JobMatchScoreModel.score.desc().nulls_last()],
     }
     return [*ordres[tri], JobOfferModel.id.asc()]
 
@@ -88,6 +96,8 @@ def _conditions(owner_id: uuid.UUID, f: OfferFilter) -> list[ColumnElement[bool]
         )
     if f.published_since is not None:
         conditions.append(JobOfferModel.published_at >= f.published_since)
+    if f.min_score is not None:
+        conditions.append(JobMatchScoreModel.score >= f.min_score)
     if f.language:
         # « fr » doit aussi retrouver « fr-FR ».
         conditions.append(
@@ -120,7 +130,13 @@ def _jointure_etat(requete: Any, owner_id: uuid.UUID) -> Any:
     )
 
 
-def _resume(offre: JobOfferModel, etat: str | None, sources: tuple[str, ...]) -> OfferSummary:
+def _resume(
+    offre: JobOfferModel,
+    etat: str | None,
+    sources: tuple[str, ...],
+    score: Any = None,
+    fiabilite: str | None = None,
+) -> OfferSummary:
     return OfferSummary(
         id=offre.id,
         title=offre.title,
@@ -136,6 +152,23 @@ def _resume(offre: JobOfferModel, etat: str | None, sources: tuple[str, ...]) ->
         status=offre.status,
         state=OfferState(etat) if etat else None,
         source_keys=sources,
+        match_score=score,
+        match_reliability=fiabilite,
+    )
+
+
+def _jointure_score(requete: Any, owner_id: uuid.UUID, contexte: ScoreContext | None) -> Any:
+    """Associe à chaque offre son score (profil validé et poids courants), s'il existe."""
+    if contexte is None:
+        return requete
+    return requete.outerjoin(
+        JobMatchScoreModel,
+        and_(
+            JobMatchScoreModel.offer_id == JobOfferModel.id,
+            JobMatchScoreModel.owner_id == owner_id,
+            JobMatchScoreModel.profile_id == contexte.profile_id,
+            JobMatchScoreModel.weights_version == contexte.weights_version,
+        ),
     )
 
 
@@ -143,18 +176,42 @@ class SqlOfferQueryRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def search(self, *, owner_id: uuid.UUID, offer_filter: OfferFilter) -> OfferPage:
+    async def search(
+        self,
+        *,
+        owner_id: uuid.UUID,
+        offer_filter: OfferFilter,
+        score_context: ScoreContext | None = None,
+    ) -> OfferPage:
+        demande_un_score = (
+            offer_filter.min_score is not None or offer_filter.sort is OfferSort.SCORE_DESC
+        )
+        if demande_un_score and score_context is None:
+            # Pas de profil validé : aucun score n'existe. On le dit plutôt que de renvoyer une
+            # liste vide ou un tri arbitraire qui laisserait croire à un classement.
+            raise ScoringUnavailableError(
+                "Le tri et le filtre par score exigent un profil validé (Espace CV)."
+            )
         conditions = _conditions(owner_id, offer_filter)
 
         base = _filtre_etat(
-            _jointure_etat(select(JobOfferModel.id), owner_id), offer_filter.state
+            _jointure_score(
+                _jointure_etat(select(JobOfferModel.id), owner_id), owner_id, score_context
+            ),
+            offer_filter.state,
         ).where(*conditions)
         total = int(
             await self._session.scalar(select(func.count()).select_from(base.subquery())) or 0
         )
 
+        colonnes: list[Any] = [JobOfferModel, JobOfferStateModel.state]
+        if score_context is not None:
+            colonnes += [
+                JobMatchScoreModel.score,
+                JobMatchScoreModel.breakdown["reliability"].as_string(),
+            ]
         requete = _filtre_etat(
-            _jointure_etat(select(JobOfferModel, JobOfferStateModel.state), owner_id),
+            _jointure_score(_jointure_etat(select(*colonnes), owner_id), owner_id, score_context),
             offer_filter.state,
         )
         lignes = (
@@ -167,7 +224,10 @@ class SqlOfferQueryRepository:
         ).all()
 
         sources = await self._sources_par_offre([ligne[0].id for ligne in lignes])
-        items = tuple(_resume(offre, etat, sources.get(offre.id, ())) for offre, etat in lignes)
+        items = tuple(
+            _resume(ligne[0], ligne[1], sources.get(ligne[0].id, ()), *ligne[2:])
+            for ligne in lignes
+        )
         return OfferPage(
             items=items, total=total, page=offer_filter.page, page_size=offer_filter.page_size
         )

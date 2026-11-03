@@ -1,16 +1,21 @@
 "use client";
 
-import { SearchX, ServerCrash } from "lucide-react";
+import { SearchX, ServerCrash, UserRoundCheck } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
+
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/table";
 import { toast } from "@/components/ui/toaster";
+import { useRecompute } from "@/features/matching/use-matching";
+import { ApiError } from "@/services/api-client";
 import type { OfferFilters, OfferSort, OfferState } from "@/types/jobs";
 
 import { filtersFromParams, filtersToParams, SORTS } from "./filters";
@@ -42,6 +47,7 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
 
   const offres = useOffers(filters);
   const changerEtat = useChangeOfferState();
+  const recalculer = useRecompute();
   const modifierEtat = (id: string, state: OfferState | null) =>
     changerEtat.mutate(
       { id, state },
@@ -75,26 +81,49 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
             />
           )}
 
-          <section aria-label="Résultats" className="flex flex-col gap-4">
+          <section
+            aria-label="Résultats"
+            // Pendant le rechargement, l'ancienne page reste affichée : on le signale pour ne pas
+            // la faire passer pour à jour.
+            aria-busy={offres.isPlaceholderData || undefined}
+            className={cn("flex flex-col gap-4", offres.isPlaceholderData && "opacity-60")}
+          >
             <div className="flex flex-wrap items-end justify-between gap-3">
               <p className="text-sm text-foreground-muted" aria-live="polite">
                 {offres.data
                   ? `${offres.data.total} offre${offres.data.total > 1 ? "s" : ""}`
                   : " "}
               </p>
-              <div className="w-56">
-                <Field label="Trier par">
-                  {({ id }) => (
-                    <Select
-                      id={id}
-                      options={SORTS}
-                      value={filters.sort}
-                      onChange={(e) =>
-                        appliquer({ ...filters, sort: e.target.value as OfferSort, page: 1 })
-                      }
-                    />
-                  )}
-                </Field>
+              <div className="flex flex-wrap items-end gap-3">
+                <Button
+                  variant="secondary"
+                  loading={recalculer.isPending}
+                  onClick={() =>
+                    recalculer.mutate(undefined, {
+                      onSuccess: (r) =>
+                        toast.success(
+                          `${r.computed} offre${r.computed > 1 ? "s" : ""} évaluée${r.computed > 1 ? "s" : ""}.`,
+                        ),
+                      onError: (erreur) => toast.error(erreur.message),
+                    })
+                  }
+                >
+                  Calculer les scores
+                </Button>
+                <div className="w-56">
+                  <Field label="Trier par">
+                    {({ id }) => (
+                      <Select
+                        id={id}
+                        options={SORTS}
+                        value={filters.sort}
+                        onChange={(e) =>
+                          appliquer({ ...filters, sort: e.target.value as OfferSort, page: 1 })
+                        }
+                      />
+                    )}
+                  </Field>
+                </div>
               </div>
             </div>
 
@@ -105,12 +134,25 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
                 ))}
               </div>
             ) : offres.isError ? (
-              <EmptyState
-                icon={ServerCrash}
-                title="Impossible de charger les offres"
-                description={offres.error.message}
-                action={<Button onClick={() => void offres.refetch()}>Réessayer</Button>}
-              />
+              offres.error instanceof ApiError && offres.error.code === "scoring_unavailable" ? (
+                <EmptyState
+                  icon={UserRoundCheck}
+                  title="Compatibilité indisponible"
+                  description={offres.error.message}
+                  action={
+                    <Link href="/cv-studio" className={buttonVariants({ variant: "primary" })}>
+                      Valider mon profil
+                    </Link>
+                  }
+                />
+              ) : (
+                <EmptyState
+                  icon={ServerCrash}
+                  title="Impossible de charger les offres"
+                  description={offres.error.message}
+                  action={<Button onClick={() => void offres.refetch()}>Réessayer</Button>}
+                />
+              )
             ) : offres.data.items.length === 0 ? (
               <EmptyState
                 icon={SearchX}

@@ -470,7 +470,7 @@ Navigation :
 - [✅] Composants réutilisables.
 - [✅] Navigation fonctionnelle.
 - [✅] Responsive desktop/tablette/mobile.
-- [➖] Accessibilité clavier.
+- [✅] Accessibilité clavier.
 - [✅] Contrastes lisibles.
 
 **Livrable :** design system et interface principale.
@@ -926,59 +926,59 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 009 — JOB MATCHING & SCORING ENGINE
+# [✅] EPIC 009 — JOB MATCHING & SCORING ENGINE
 
 **Priorité : P0 — Fondamental**
 
 **Objectif :** classer les offres selon leur correspondance avec le profil candidat.
 
-### [➖] FEATURE 009.1 — Matching déterministe
+### [✅] FEATURE 009.1 — Matching déterministe
 
-[➖] **TASK-009-01 — Définir les critères de correspondance**
+[✅] **TASK-009-01 — Définir les critères de correspondance**
 
-[➖] **TASK-009-02 — Créer le moteur de correspondance métier**
+[✅] **TASK-009-02 — Créer le moteur de correspondance métier**
 
-[➖] **TASK-009-03 — Comparer les compétences**
+[✅] **TASK-009-03 — Comparer les compétences**
 
-[➖] **TASK-009-04 — Comparer l'expérience**
+[✅] **TASK-009-04 — Comparer l'expérience**
 
-[➖] **TASK-009-05 — Comparer la formation**
+[✅] **TASK-009-05 — Comparer la formation**
 
-[➖] **TASK-009-06 — Comparer les préférences géographiques**
+[✅] **TASK-009-06 — Comparer les préférences géographiques**
 
-[➖] **TASK-009-07 — Comparer les conditions contractuelles**
+[✅] **TASK-009-07 — Comparer les conditions contractuelles**
 
-### [➖] FEATURE 009.2 — Scoring
+### [✅] FEATURE 009.2 — Scoring
 
-[➖] **TASK-009-08 — Définir les pondérations**
+[✅] **TASK-009-08 — Définir les pondérations**
 
-[➖] **TASK-009-09 — Calculer le score sur 100**
+[✅] **TASK-009-09 — Calculer le score sur 100**
 
-[➖] **TASK-009-10 — Identifier les correspondances**
+[✅] **TASK-009-10 — Identifier les correspondances**
 
-[➖] **TASK-009-11 — Identifier les écarts**
+[✅] **TASK-009-11 — Identifier les écarts**
 
-[➖] **TASK-009-12 — Expliquer chaque score**
+[✅] **TASK-009-12 — Expliquer chaque score**
 
-[➖] **TASK-009-13 — Permettre la personnalisation des pondérations**
+[✅] **TASK-009-13 — Permettre la personnalisation des pondérations**
 
-### [➖] FEATURE 009.3 — Interface de compatibilité
+### [✅] FEATURE 009.3 — Interface de compatibilité
 
-[➖] **TASK-009-14 — Créer ScoreIndicator**
+[✅] **TASK-009-14 — Créer ScoreIndicator**
 
-[➖] **TASK-009-15 — Créer SkillMatchPanel**
+[✅] **TASK-009-15 — Créer SkillMatchPanel**
 
-[➖] **TASK-009-16 — Créer le détail des critères**
+[✅] **TASK-009-16 — Créer le détail des critères**
 
-[➖] **TASK-009-17 — Créer les filtres par compatibilité**
+[✅] **TASK-009-17 — Créer les filtres par compatibilité**
 
 ### Critères d'acceptation
 
-- [➖] Score reproductible.
-- [➖] Pondérations configurables.
-- [➖] Justification visible.
-- [➖] Aucun score présenté comme une probabilité réelle d'embauche.
-- [➖] Données manquantes distinguées des compétences absentes.
+- [✅] Score reproductible.
+- [✅] Pondérations configurables.
+- [✅] Justification visible.
+- [✅] Aucun score présenté comme une probabilité réelle d'embauche.
+- [✅] Données manquantes distinguées des compétences absentes.
 
 **Livrable :** moteur de matching explicable.
 
@@ -2032,7 +2032,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |
-| [➖] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 0 | 0.3 |
+| [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 0 | 0.3 |
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 0 | 0.3 |
 | [➖] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 0 | 0.4 |

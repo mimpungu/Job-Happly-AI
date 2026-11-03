@@ -32,6 +32,8 @@ const offre = (surcharge: Partial<OfferSummary> = {}): OfferSummary => ({
   status: "active",
   state: null,
   source_keys: ["france_travail"],
+  match_score: null,
+  match_reliability: null,
   ...surcharge,
 });
 
@@ -218,5 +220,137 @@ describe("JobsExplorer", () => {
     expect(await screen.findByText("Aucune offre sauvegardée")).toBeInTheDocument();
     expect(screen.queryByRole("form", { name: "Recherche d'offres" })).not.toBeInTheDocument();
     expect(appels.find((a) => a.url.includes("/api/v1/offers?"))?.url).toContain("state=saved");
+  });
+
+  it("affiche la compatibilité de chaque offre, ou « Non évalué » quand elle n'existe pas", async () => {
+    simulerApi(() =>
+      json(
+        page([
+          offre({
+            id: "o1",
+            title: "Data Analyst",
+            match_score: "72.00",
+            match_reliability: "medium",
+          }),
+          offre({ id: "o2", title: "Comptable" }),
+        ]),
+      ),
+    );
+    afficher();
+
+    const tableau = await screen.findByRole("table");
+
+    expect(within(tableau).getByRole("meter", { name: "Compatibilité" })).toHaveAttribute(
+      "aria-valuenow",
+      "72",
+    );
+    expect(within(tableau).getByText("Fiabilité moyenne")).toBeInTheDocument();
+    expect(within(tableau).getByText("Non évalué")).toBeInTheDocument();
+  });
+
+  it("met la compatibilité minimale dans l'URL", async () => {
+    simulerApi(() => json(page([])));
+    afficher();
+    await screen.findByText("Aucune offre ne correspond");
+
+    await userEvent.selectOptions(screen.getByLabelText("Compatibilité minimale"), "70");
+    await userEvent.click(screen.getByRole("button", { name: "Rechercher" }));
+
+    expect(push).toHaveBeenCalledWith("/jobs?min_score=70");
+  });
+
+  it("renvoie vers l'Espace CV quand le tri ou le filtre par score est impossible", async () => {
+    recherche = "sort=score_desc";
+    simulerApi(() =>
+      json(
+        {
+          error: {
+            code: "scoring_unavailable",
+            message: "Le tri et le filtre par score exigent un profil validé.",
+          },
+        },
+        409,
+      ),
+    );
+    afficher();
+
+    expect(await screen.findByText("Compatibilité indisponible")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Valider mon profil" })).toHaveAttribute(
+      "href",
+      "/cv-studio",
+    );
+    expect(screen.queryByRole("button", { name: "Réessayer" })).toBeNull();
+  });
+
+  it("calcule les scores à la demande et annonce le résultat", async () => {
+    const appels: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        appels.push(`${init?.method ?? "GET"} ${url}`);
+        if (url.includes("/matching/recompute"))
+          return json({
+            computed: 4,
+            not_computable: 0,
+            profile_version: 1,
+            weights_version: "m1-x",
+          });
+        if (url.includes("/saved-searches") || url.includes("/search-runs")) return json([]);
+        return json(page([offre()]));
+      }),
+    );
+    afficher();
+    await screen.findByRole("table");
+
+    await userEvent.click(screen.getByRole("button", { name: "Calculer les scores" }));
+
+    expect(await screen.findByText("4 offres évaluées.")).toBeInTheDocument();
+    expect(appels.some((a) => a.startsWith("POST") && a.includes("/matching/recompute"))).toBe(
+      true,
+    );
+  });
+
+  it("signale que la liste affichée est en cours de mise à jour pendant un rechargement", async () => {
+    let liberer: (r: Response) => void = () => undefined;
+    let appel = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) => {
+        if (url.includes("/saved-searches") || url.includes("/search-runs"))
+          return Promise.resolve(json([]));
+        appel += 1;
+        if (appel === 1) return Promise.resolve(json(page([offre()], { page_count: 2 })));
+        return new Promise<Response>((resolve) => {
+          liberer = resolve;
+        });
+      }),
+    );
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    // Fonction : chaque appel crée un élément neuf (un élément identique ferait sauter le rendu).
+    const ui = () => (
+      <QueryClientProvider client={client}>
+        <JobsExplorer />
+      </QueryClientProvider>
+    );
+    const { rerender } = render(ui());
+    await screen.findByRole("table");
+    expect(screen.getByRole("region", { name: "Résultats" })).not.toHaveAttribute("aria-busy");
+
+    recherche = "page=2";
+    rerender(ui());
+
+    // L'ancienne page reste visible mais elle est marquée « en cours de mise à jour ».
+    await waitFor(() =>
+      expect(screen.getByRole("region", { name: "Résultats" })).toHaveAttribute(
+        "aria-busy",
+        "true",
+      ),
+    );
+    expect(screen.getByRole("table")).toBeInTheDocument();
+
+    liberer(json(page([offre({ title: "Autre offre" })], { page: 2, page_count: 2 })));
+
+    expect(await screen.findByText("Autre offre")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Résultats" })).not.toHaveAttribute("aria-busy");
   });
 });

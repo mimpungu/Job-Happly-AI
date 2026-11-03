@@ -21,6 +21,7 @@ Les contrats sont des interfaces Python (`Protocol` ou classe abstraite) déclar
 | `AIGateway` | ai_management → job_intelligence, document_generation, interview_preparation | `run(task, inputs, user_context) → résultat validé` ; applique cache, plafond, journal ; refuse si plafond dépassé |
 | `CandidateFactsReader` | candidate_profile → job_intelligence, document_generation | Lecture des faits validés du CV maître, par champs demandés (minimisation) |
 | `JobOfferReader` | job_discovery → job_intelligence, document_generation, application_management | Lecture d'une offre normalisée par identifiant |
+| *(exception de lecture)* | job_intelligence → job_discovery | La recherche d'offres joint `job_match_scores` en lecture seule (tri/filtre par score côté base). Jointure assumée, sans écriture croisée |
 | `DocumentVersionReader` | document_generation → application_management | Versions de CV/lettre associées à une offre |
 | `BudgetStatusReader` | ai_management → notifications, Dashboard | État de consommation et seuils |
 

@@ -9,7 +9,8 @@ export type OfferSort =
   | "title_asc"
   | "company_asc"
   | "salary_desc"
-  | "recently_seen";
+  | "recently_seen"
+  | "score_desc";
 
 export interface OfferSummary {
   id: string;
@@ -26,6 +27,9 @@ export interface OfferSummary {
   status: string;
   state: OfferState | null;
   source_keys: string[];
+  /** Score de compatibilité (0-100, indicatif) ; `null` = pas encore évalué. */
+  match_score: string | null;
+  match_reliability: "high" | "medium" | "low" | null;
 }
 
 export interface OfferSourceView {
@@ -66,6 +70,8 @@ export interface OfferFilters {
   salaryCurrency: string;
   /** Date `AAAA-MM-JJ` : une date absolue rend la recherche reproductible une fois sauvegardée. */
   publishedSince: string;
+  /** Compatibilité minimale (0-100) ; vide = pas de filtre. */
+  minScore: string;
   sort: OfferSort;
   state: StateFilter;
   page: number;

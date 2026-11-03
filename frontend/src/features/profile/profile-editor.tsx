@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Field } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/toaster";
 import { ApiError } from "@/services/api-client";
 import type { ItemSection, ProfileDocument } from "@/types/profile";
@@ -25,23 +26,16 @@ import {
   pendingReview,
   removeItem,
 } from "./draft";
-import { HistoryPanel } from "./history-panel";
-import { PreferencesSection } from "./preferences-section";
-import {
-  CertificationsSection,
-  EducationsSection,
-  ExperiencesSection,
-  IdentitySection,
-  LanguagesSection,
-  SkillsSection,
-  type SectionProps,
-} from "./sections";
+import { ProfileTabs } from "./profile-tabs";
+import type { SectionProps } from "./sections";
 import {
   useImportCv,
   useNewVersion,
   useProfile,
   useSaveDraft,
   useValidateProfile,
+  useVersion,
+  useVersions,
 } from "./use-profile";
 
 interface Probleme {
@@ -82,22 +76,36 @@ export function ProfileEditor() {
     if (serveur) setDraft(serveur.document);
   }
 
+  // Consultation d'une ancienne version : lecture seule, le brouillon en cours n'est pas touché.
+  const versions = useVersions();
+  const [versionVue, setVersionVue] = useState<number | null>(null);
+  const versionConsultee =
+    versionVue !== null && serveur && versionVue !== serveur.meta.version ? versionVue : null;
+  const ancienne = useVersion(versionConsultee);
+
   if (profil.isPending) {
     return (
-      <div className="flex flex-col gap-4" role="status" aria-label="Chargement du profil">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64 w-full" />
+      <div className="flex flex-col gap-4">
+        {/* Le titre de la page existe dès le chargement : repère pour la navigation au clavier. */}
+        <h1 className="text-2xl font-semibold text-foreground">Espace CV</h1>
+        <div className="flex flex-col gap-4" role="status" aria-label="Chargement du profil">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-64 w-full" />
+        </div>
       </div>
     );
   }
   if (profil.isError) {
     return (
-      <EmptyState
-        icon={FileText}
-        title="Impossible de charger le profil"
-        description={profil.error.message}
-        action={<Button onClick={() => void profil.refetch()}>Réessayer</Button>}
-      />
+      <div className="flex flex-col gap-6">
+        <h1 className="text-2xl font-semibold text-foreground">Espace CV</h1>
+        <EmptyState
+          icon={FileText}
+          title="Impossible de charger le profil"
+          description={profil.error.message}
+          action={<Button onClick={() => void profil.refetch()}>Réessayer</Button>}
+        />
+      </div>
     );
   }
 
@@ -205,8 +213,6 @@ export function ProfileEditor() {
       onError: (erreur) => toast.error(erreur.message),
     });
 
-  const total = (cle: ItemSection) => draft[cle].length;
-
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -228,8 +234,25 @@ export function ProfileEditor() {
             ) : null}
           </div>
         </div>
-        <div className="flex flex-wrap gap-3">
-          {lectureSeule ? (
+        <div className="flex flex-wrap items-end gap-3">
+          {versions.data && versions.data.length > 1 ? (
+            <div className="w-56">
+              <Field label="Version affichée">
+                {({ id }) => (
+                  <Select
+                    id={id}
+                    options={versions.data.map((v) => ({
+                      value: String(v.version),
+                      label: `Version ${v.version} · ${v.status === "validated" ? "validée" : "brouillon"}${v.version === serveur?.meta.version ? " (actuelle)" : ""}`,
+                    }))}
+                    value={String(versionConsultee ?? serveur?.meta.version ?? "")}
+                    onChange={(e) => setVersionVue(Number(e.target.value))}
+                  />
+                )}
+              </Field>
+            </div>
+          ) : null}
+          {versionConsultee ? null : lectureSeule ? (
             <Button loading={nouvelleVersion.isPending} onClick={creerVersion}>
               Créer une nouvelle version
             </Button>
@@ -295,42 +318,37 @@ export function ProfileEditor() {
         </div>
       ) : null}
 
-      <Tabs defaultValue="identite">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="identite">Identité</TabsTrigger>
-          <TabsTrigger value="experiences">Expériences ({total("experiences")})</TabsTrigger>
-          <TabsTrigger value="formations">Formations ({total("educations")})</TabsTrigger>
-          <TabsTrigger value="competences">Compétences ({total("skills")})</TabsTrigger>
-          <TabsTrigger value="langues">Langues et certifications</TabsTrigger>
-          <TabsTrigger value="preferences">Préférences</TabsTrigger>
-          <TabsTrigger value="historique">Historique</TabsTrigger>
-        </TabsList>
-        {/* `fieldset disabled` rend tout le formulaire non modifiable pour une version validée. */}
-        <fieldset disabled={lectureSeule} className="min-w-0">
-          <TabsContent value="identite">
-            <IdentitySection doc={draft} onChange={setDraft} />
-          </TabsContent>
-          <TabsContent value="experiences">
-            <ExperiencesSection {...section} />
-          </TabsContent>
-          <TabsContent value="formations">
-            <EducationsSection {...section} />
-          </TabsContent>
-          <TabsContent value="competences">
-            <SkillsSection {...section} />
-          </TabsContent>
-          <TabsContent value="langues" className="flex flex-col gap-8">
-            <LanguagesSection {...section} />
-            <CertificationsSection {...section} />
-          </TabsContent>
-          <TabsContent value="preferences">
-            <PreferencesSection doc={draft} onChange={setDraft} />
-          </TabsContent>
-        </fieldset>
-        <TabsContent value="historique">
-          <HistoryPanel />
-        </TabsContent>
-      </Tabs>
+      {versionConsultee ? (
+        <section
+          aria-label={`Consultation de la version ${versionConsultee}`}
+          className="flex flex-col gap-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface p-4 text-sm">
+            <p className="text-foreground">
+              Vous consultez la version {versionConsultee} en lecture seule.
+            </p>
+            <Button variant="secondary" size="sm" onClick={() => setVersionVue(null)}>
+              Revenir à la version actuelle
+            </Button>
+          </div>
+          {ancienne.isPending ? (
+            <Skeleton className="h-64 w-full" />
+          ) : ancienne.isError ? (
+            <p role="alert" className="text-sm text-danger">
+              {ancienne.error.message}
+            </p>
+          ) : (
+            <ProfileTabs
+              doc={ancienne.data.document}
+              readOnly
+              onChange={() => undefined}
+              section={{ ...section, doc: ancienne.data.document }}
+            />
+          )}
+        </section>
+      ) : (
+        <ProfileTabs doc={draft} readOnly={lectureSeule} onChange={setDraft} section={section} />
+      )}
 
       <ConfirmDialog
         open={importEnAttente !== null}

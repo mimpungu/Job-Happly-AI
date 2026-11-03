@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ScoreIndicator } from "@/features/matching/score-indicator";
 import type { OfferState, OfferSummary } from "@/types/jobs";
 
 import { formatDate, formatEmployment, formatRemote, formatSalary } from "./format";
@@ -30,6 +31,7 @@ export function OffersTable({ offers, onChangeState, busy = false }: OffersTable
       <TableHeader>
         <TableRow>
           <TableHead>Offre</TableHead>
+          <TableHead>Compatibilité</TableHead>
           <TableHead>Lieu</TableHead>
           <TableHead>Contrat</TableHead>
           <TableHead>Télétravail</TableHead>
@@ -54,6 +56,9 @@ export function OffersTable({ offers, onChangeState, busy = false }: OffersTable
               <p className="text-foreground-muted">{offre.company_name ?? "Entreprise inconnue"}</p>
               {offre.state === "saved" ? <Badge variant="accent">Sauvegardée</Badge> : null}
               {offre.state === "ignored" ? <Badge>Ignorée</Badge> : null}
+            </TableCell>
+            <TableCell>
+              <ScoreIndicator score={offre.match_score} reliability={offre.match_reliability} />
             </TableCell>
             <TableCell>{offre.location ?? "Non renseigné"}</TableCell>
             <TableCell>{formatEmployment(offre.employment_type)}</TableCell>

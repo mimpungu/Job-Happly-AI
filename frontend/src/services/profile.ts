@@ -1,4 +1,10 @@
-import type { ChangeRecord, CvImportResult, ProfileDocument, StoredProfile } from "@/types/profile";
+import type {
+  ChangeRecord,
+  CvImportResult,
+  ProfileDocument,
+  ProfileMeta,
+  StoredProfile,
+} from "@/types/profile";
 
 import { apiFetch } from "./api-client";
 
@@ -24,3 +30,8 @@ export function importCv(fichier: File) {
   formulaire.append("fichier", fichier);
   return apiFetch<CvImportResult>("/api/v1/profile/import", { method: "POST", body: formulaire });
 }
+
+export const listVersions = () => apiFetch<ProfileMeta[]>("/api/v1/profile/versions");
+
+export const getVersion = (version: number) =>
+  apiFetch<StoredProfile>(`/api/v1/profile/versions/${version}`);
