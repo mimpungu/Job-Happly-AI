@@ -308,14 +308,14 @@ ADR obligatoires :
 
 ### [➖] FEATURE 002.2 — Configuration et environnements
 
-[➖] **TASK-002-05 — Gestion des variables d'environnement**
+[✅] **TASK-002-05 — Gestion des variables d'environnement**
 
 - `.env.example`.
 - Validation des variables.
 - Séparation dev/test/prod.
 - Gestion des secrets.
 
-[➖] **TASK-002-06 — Docker Compose**
+[✅] **TASK-002-06 — Docker Compose**
 
 Prévoir les services nécessaires au démarrage :
 - Web.
@@ -2025,7 +2025,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Release |
 |---|---|---|---|---|---|---|
 | [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 11 | 0.1 |
-| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 3 | 0.1 |
+| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 5 | 0.1 |
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 0 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 0 | 0.1 |
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
@@ -2044,7 +2044,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03 réalisées, 002-04 partielle (pre-commit configuré mais non exécuté), aucun code applicatif présent.
+État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté), 002-11 (Pytest et Vitest faits, Playwright restant), aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 

@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Sortie autonome : image Docker minimale.
+  output: "standalone",
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

@@ -39,6 +39,18 @@ pnpm lint && pnpm typecheck && pnpm format:check && pnpm build
 
 Variables d'environnement : copier `.env.example` vers `.env` (jamais versionné).
 
+Docker Compose (PostgreSQL, API, frontend ; ports liés à `127.0.0.1`) et scripts, depuis la racine :
+
+```bash
+./infrastructure/scripts/start.sh       # démarrer les services
+./infrastructure/scripts/stop.sh        # arrêter (données conservées)
+./infrastructure/scripts/test.sh        # tests backend et frontend
+./infrastructure/scripts/lint.sh        # formatage, lint, typage
+./infrastructure/scripts/build.sh       # images Docker
+./infrastructure/scripts/reset-test.sh  # base de TEST uniquement (projet Docker dédié)
+./infrastructure/scripts/migrate.sh     # disponible avec Alembic (EPIC 004)
+```
+
 ## Branches
 
 `master` : branche stable. `dev` : intégration. Travail en branches `feat/…`, `fix/…`, `chore/…`, `docs/…`. Commits en français, Conventional Commits.
