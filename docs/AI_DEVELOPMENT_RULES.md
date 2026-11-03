@@ -29,9 +29,9 @@ Never introduce unnecessary complexity or technologies without a clear justifica
 
 Before performing any development task, read and follow the project documentation:
 
-- `HAPPLY_AI_MASTER_SPEC.md`
-- `HAPPLY_AI_MASTER_BACKLOG.md`
-- `AI_DEVELOPMENT_RULES.md`
+- `docs/HAPPLY_AI_MASTER_SPEC.md`
+- `docs/HAPPLY_AI_MASTER_BACKLOG.md`
+- `docs/AI_DEVELOPMENT_RULES.md`
 
 These documents define the product vision, architecture, features, technical constraints, development priorities, and engineering standards.
 
@@ -94,7 +94,7 @@ Never claim that a test passed if it was not executed.
 ### Step 5 — Document
 
 - Update relevant technical documentation.
-- Update the backlog task status.
+- Update the backlog task status in `docs/HAPPLY_AI_MASTER_BACKLOG.md` using the visual convention: [✅] = completed and validated (Definition of Done met), [➖] = not completed. Never switch to [✅] without executed tests, and update the progress table (Part 8.1) as well.
 - Record important architectural decisions.
 - Document configuration changes and environment variables.
 - Mention any known limitations.
@@ -111,7 +111,7 @@ At the end of each task, provide:
 
 ## 4. Architecture and Code Quality
 
-Respect the architecture defined in `HAPPLY_AI_MASTER_SPEC.md`.
+Respect the architecture defined in `docs/HAPPLY_AI_MASTER_SPEC.md`.
 
 Mandatory standards:
 
@@ -325,7 +325,7 @@ Never silently ignore a failure.
 - Keep the repository clean.
 - Update `.gitignore` when introducing new generated or sensitive files.
 
-Do not perform a push, release, deployment, or destructive Git operation without explicit authorization.
+Never run `git add`, `git commit`, or `git push` (see Section 17). Do not perform a release, deployment, or destructive Git operation without explicit authorization.
 
 ## 15. Forbidden Practices
 
@@ -355,15 +355,16 @@ A task can be marked `DONE` only when:
 - No known regression has been introduced.
 - Code quality checks have passed.
 - Documentation has been updated where necessary.
-- The backlog status has been updated.
+- The backlog status has been updated ([➖] switched to [✅] for the task, its FEATURE/EPIC rolled up only when all children are [✅]).
 - Remaining limitations have been disclosed.
 
 If any condition is not met, keep the task in the appropriate status, such as `IN_PROGRESS`, `IN_REVIEW`, `TESTING`, or `BLOCKED`.
 
 ## 17. Final Rule
 
-- GENERATION DE MESSAGE DE COMMIT EN FRANCAIS SELON LES REGLES INTERNATIONNAL, feat, fix,chore etc  
-- TU NE DOIS JAMAIS EFFECTUER DE GIT ADD, GIT COMMIT , GIT COMMIT,
+- À la fin de chaque tâche, génère un message de commit **en français**, selon la convention internationale Conventional Commits (`feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `perf`, `build`, `style`).
+  Exemple : `feat(search): ajouter le connecteur France Travail`
+- Tu ne dois **jamais** exécuter `git add`, `git commit` ni `git push`, **sauf si l'utilisateur te le demande explicitement** : par défaut tu fournis uniquement le message, l'utilisateur commite lui-même.
 
 **Never prioritize finishing a task over building it correctly.**
 

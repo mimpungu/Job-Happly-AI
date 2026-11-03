@@ -266,7 +266,7 @@ Construis une arborescence claire et cohérente.
 Exemple d'organisation cible :
 
 ```text
-job-hunter-ai/
+happly-ai/
 │
 ├── apps/
 │   ├── web/
@@ -736,7 +736,7 @@ Toute modification importante doit être visualisable et validée.
 
 # 10. GÉNÉRATEUR DE CV LATEX
 
-Intègre intégralement la logique du prompt maître de génération de CV.
+Intègre intégralement la logique du prompt maître de génération de CV (`docs/HAPPLY_AI_CV_GENERATION_PROMPT.md`).
 
 Le système doit :
 1. Lire l'offre.
@@ -771,7 +771,7 @@ Ne remplace jamais le CV maître par une version adaptée.
 
 # 11. GÉNÉRATEUR DE LETTRES DE MOTIVATION
 
-Intègre le prompt maître de génération de lettres de motivation.
+Intègre le prompt maître de génération de lettres de motivation (`docs/HAPPLY_AI_COVER_LETTER_PROMPT.md`).
 
 Pour chaque offre :
 
@@ -1391,6 +1391,8 @@ Tu dois agir comme un ingénieur logiciel senior responsable du projet.
 Tu ne dois pas produire l'intégralité du code en une seule réponse gigantesque sans validation architecturale.
 
 Travaille par étapes.
+
+Documents de référence à lire avant toute tâche : `docs/AI_DEVELOPMENT_RULES.md` (règles obligatoires, y compris : aucun `git add`/`git commit`/`git push` par l'agent, message de commit fourni en français) et `docs/HAPPLY_AI_MASTER_BACKLOG.md` (périmètre, dépendances, statuts [✅]/[➖]).
 
 ## Étape 1 — Audit et conception
 
