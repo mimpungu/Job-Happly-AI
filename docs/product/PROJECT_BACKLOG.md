@@ -20,7 +20,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 6 | EPIC 001 |
 | [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 12 | EPIC 002 |
-| [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
+| [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 10 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 18 | EPIC 002 |
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 19 | EPIC 003, EPIC 007 |
@@ -226,25 +226,25 @@ Total : 404 tâches.
 - **Objectif :** créer le référentiel central du candidat.
 - **Dépendances :** EPIC 003, EPIC 004
 
-### [➖] FEATURE 005.1 — Import des documents
+### [✅] FEATURE 005.1 — Import des documents
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-005-01 | Développer l'upload sécurisé | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-02 | Développer l'extraction PDF | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-03 | Développer l'extraction DOCX | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-04 | Normaliser le texte extrait | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-05 | Détecter les documents malformés | P0 | BACKLOG | à estimer |
+| [✅] | TASK-005-01 | Développer l'upload sécurisé | P0 | DONE | à estimer |
+| [✅] | TASK-005-02 | Développer l'extraction PDF | P0 | DONE | à estimer |
+| [✅] | TASK-005-03 | Développer l'extraction DOCX | P0 | DONE | à estimer |
+| [✅] | TASK-005-04 | Normaliser le texte extrait | P0 | DONE | à estimer |
+| [✅] | TASK-005-05 | Détecter les documents malformés | P0 | DONE | à estimer |
 
-### [➖] FEATURE 005.2 — Extraction du profil
+### [✅] FEATURE 005.2 — Extraction du profil
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-005-06 | Extraire les coordonnées | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-07 | Extraire les expériences | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-08 | Extraire les formations | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-09 | Extraire les compétences | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-10 | Extraire les langues et certifications | P0 | BACKLOG | à estimer |
+| [✅] | TASK-005-06 | Extraire les coordonnées | P0 | DONE | à estimer |
+| [✅] | TASK-005-07 | Extraire les expériences | P0 | DONE | à estimer |
+| [✅] | TASK-005-08 | Extraire les formations | P0 | DONE | à estimer |
+| [✅] | TASK-005-09 | Extraire les compétences | P0 | DONE | à estimer |
+| [✅] | TASK-005-10 | Extraire les langues et certifications | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 005.3 — Validation du CV maître
 
@@ -267,7 +267,7 @@ Total : 404 tâches.
 **Critères d'acceptation de l'EPIC**
 
 - [➖] Import de CV fonctionnel.
-- [➖] Extraction testée.
+- [✅] Extraction testée.
 - [➖] Modifications possibles.
 - [➖] Validation humaine disponible.
 - [➖] Profil maître conservé indépendamment des CV ciblés.

@@ -9,6 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.api.errors import register_error_handlers
 from app.core.config import get_settings
 from app.core.database.session import create_engine, create_session_factory
+from app.modules.candidate_profile.presentation.router import (
+    register_document_errors,
+)
+from app.modules.candidate_profile.presentation.router import router as profile_router
 from app.modules.job_discovery.presentation.router import register_domain_errors, router
 
 
@@ -38,12 +42,14 @@ def create_app() -> FastAPI:
     )
     register_error_handlers(application)
     register_domain_errors(application)
+    register_document_errors(application)
 
     @application.get("/api/v1/health", tags=["platform"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
 
     application.include_router(router)
+    application.include_router(profile_router)
     return application
 
 

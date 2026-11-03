@@ -584,34 +584,34 @@ Optimiser notamment :
 
 **Objectif :** créer le référentiel central du candidat.
 
-### [➖] FEATURE 005.1 — Import des documents
+### [✅] FEATURE 005.1 — Import des documents
 
-[➖] **TASK-005-01 — Développer l'upload sécurisé**
+[✅] **TASK-005-01 — Développer l'upload sécurisé**
 
 Formats :
 - PDF.
 - DOCX.
 - TXT.
 
-[➖] **TASK-005-02 — Développer l'extraction PDF**
+[✅] **TASK-005-02 — Développer l'extraction PDF**
 
-[➖] **TASK-005-03 — Développer l'extraction DOCX**
+[✅] **TASK-005-03 — Développer l'extraction DOCX**
 
-[➖] **TASK-005-04 — Normaliser le texte extrait**
+[✅] **TASK-005-04 — Normaliser le texte extrait**
 
-[➖] **TASK-005-05 — Détecter les documents malformés**
+[✅] **TASK-005-05 — Détecter les documents malformés**
 
-### [➖] FEATURE 005.2 — Extraction du profil
+### [✅] FEATURE 005.2 — Extraction du profil
 
-[➖] **TASK-005-06 — Extraire les coordonnées**
+[✅] **TASK-005-06 — Extraire les coordonnées**
 
-[➖] **TASK-005-07 — Extraire les expériences**
+[✅] **TASK-005-07 — Extraire les expériences**
 
-[➖] **TASK-005-08 — Extraire les formations**
+[✅] **TASK-005-08 — Extraire les formations**
 
-[➖] **TASK-005-09 — Extraire les compétences**
+[✅] **TASK-005-09 — Extraire les compétences**
 
-[➖] **TASK-005-10 — Extraire les langues et certifications**
+[✅] **TASK-005-10 — Extraire les langues et certifications**
 
 Les extractions doivent pouvoir fonctionner avec des règles classiques avant d'utiliser l'IA.
 
@@ -646,7 +646,7 @@ Les extractions doivent pouvoir fonctionner avec des règles classiques avant d'
 ### Critères d'acceptation
 
 - [➖] Import de CV fonctionnel.
-- [➖] Extraction testée.
+- [✅] Extraction testée.
 - [➖] Modifications possibles.
 - [➖] Validation humaine disponible.
 - [➖] Profil maître conservé indépendamment des CV ciblés.
@@ -2028,7 +2028,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 6 | 0.1 |
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
-| [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
+| [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 10 | 0.3 |
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |

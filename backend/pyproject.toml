@@ -12,6 +12,9 @@ dependencies = [
   "alembic>=1.13",
   "psycopg[binary]>=3.2",
   "httpx>=0.28.1",
+  "pypdf>=6.21.4",
+  "defusedxml>=0.7.1",
+  "python-multipart>=0.0.33",
 ]
 
 [dependency-groups]
@@ -22,6 +25,7 @@ dev = [
   "ruff>=0.6",
   "mypy>=1.11",
   "pre-commit>=4.7.0",
+  "types-defusedxml>=0.7.0.20260504",
 ]
 
 [tool.ruff]
@@ -33,6 +37,10 @@ select = ["E", "F", "I", "B", "UP", "S", "C4", "SIM", "RUF", "ASYNC"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106", "S107", "S311"]
+# Les puces et tirets typographiques (–, —, ⁃) sont précisément ce que ce module normalise.
+"app/modules/candidate_profile/domain/text_normalization.py" = ["RUF001", "RUF003"]
+"app/modules/candidate_profile/domain/extraction/*.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/unit/candidate_profile/**" = ["RUF001", "RUF003"]
 # Fichiers générés par Alembic : seules les corrections automatiques de formatage s'appliquent.
 "migrations/versions/*" = ["E501", "RUF012"]
 

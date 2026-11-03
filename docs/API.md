@@ -69,7 +69,30 @@ Corps `{"state": "saved" | "ignored" | null}` → 204. Idempotent ; `null` retir
 
 `filter` accepte les mêmes champs que `GET /offers`, hors `page`, qui n'est jamais mémorisée. Le propriétaire n'est jamais fourni par le client (corps inconnus refusés).
 
+## Profil candidat
+
+### `POST /profile/import`
+
+Import d'un CV, en `multipart/form-data` (champ `fichier`). **Lecture seule : le fichier n'est pas conservé et rien n'est enregistré** (minimisation RGPD) ; le texte et le profil proposé sont renvoyés pour validation par l'utilisateur.
+
+| Contrôle | Règle |
+|---|---|
+| Formats | PDF, DOCX, TXT ; le format est déduit du **contenu réel** et une extension qui ment est refusée (415) |
+| Taille | 5 Mo maximum, vérifiée pendant la lecture (413) ; PDF ≤ 30 pages |
+| Fichiers dangereux | PDF protégé par mot de passe refusé (jamais déchiffré) ; DOCX : entités XML externes et « milliard de rires » refusés, taux de compression plafonné, XML plafonné à 20 Mo |
+| Documents inexploitables | corrompu ou sans texte (scan : pas d'OCR) → 422 avec un message explicite |
+
+Réponse : `{filename, format, page_count, warnings, text, proposed_profile}`. `filename` est un nom d'affichage assaini, jamais un chemin.
+
+`proposed_profile` est une **proposition**, pas un fait : coordonnées, expériences, formations, compétences, langues, certifications, résumé. Garanties :
+
+- Une information absente du document vaut `null`. Une date partielle (`{"year": 2020, "month": null}`) n'est jamais complétée.
+- Un niveau de langue n'est reconnu que s'il est explicite (A1–C2 ou langue maternelle) ; « courant » reste du texte (`level_text`), jamais converti en C1.
+- Chaque expérience ou formation porte `source_text` (traçabilité) et `confidence` : `low` signale une lecture ambiguë (ex. intitulé et entreprise interchangeables) à vérifier.
+- `warnings` liste ce qui n'a pas pu être lu.
+
 ## Limites actuelles
 
 - Ces routes lisent les offres **déjà présentes en base**. Le déclenchement d'une collecte auprès des sources (ingestion) n'est pas encore exposé : il viendra avec les connecteurs réels et l'EPIC 015.
+- L'import de CV fonctionne par règles (aucune IA) sur des CV aux sections titrées en français ou en anglais ; une mise en page très inhabituelle (colonnes entremêlées, tableaux) donnera davantage de `low` et d'avertissements. Pas de reconnaissance de caractères pour les scans.
 - Filtres par rayon (`radius_km`) et par niveau d'expérience : non disponibles, car l'offre ne stocke ni coordonnées ni expérience requise.
