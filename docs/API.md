@@ -83,6 +83,18 @@ Une source en échec n'affecte pas les autres (statut `partial`). Un refus d'acc
 
 Un échec de la source (identifiants refusés, quota, panne) est renvoyé dans `error_type` avec `succeeded: false`, jamais présenté comme « 0 offre ».
 
+## IA (réglages et suivi)
+
+Aucun appel de modèle n'est exposé : ces routes règlent et observent la plateforme IA (ADR-0011).
+
+| Route | Rôle |
+|---|---|
+| `GET /ai/settings` | Mode (`disabled`, `economy`, `balanced`, `quality`), préférence (`local_only`, `api_only`, `hybrid`), limites par opération, plafonds, consentement, fournisseurs branchés, `paid_calls_possible`. |
+| `PUT /ai/settings` | Modifie mode, préférence, limites par opération. |
+| `PUT /ai/budget` | `{daily, monthly, currency, alert_thresholds}` : plafonds (> 0, 2 décimales, seuils 1–100 %). Seul l'utilisateur les change. |
+| `PUT /ai/consent` | `{accepted}` : accord (ou retrait) d'envoi de données à une API payante. |
+| `GET /ai/usage` | Dépense du jour et du mois (avec pourcentage du plafond), par fournisseur, derniers appels (refus et cache compris). |
+
 ## Recherches sauvegardées
 
 | Route | Rôle |

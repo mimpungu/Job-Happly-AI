@@ -29,6 +29,7 @@ from app.core.database.base import (
     enum_check,
 )
 from app.modules.ai_management.domain.enums import BudgetPeriod, CallOutcome
+from app.modules.ai_management.domain.models import AIMode, BackendPreference
 
 _DEVISE = "currency ~ '^[A-Z]{3}$'"
 
@@ -112,3 +113,27 @@ class AICacheEntryModel(PrimaryKeyMixin, CreatedAtMixin, OwnedMixin, Base):
     result: Mapped[dict[str, Any]] = mapped_column(JSONB)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     hit_count: Mapped[int] = mapped_column(Integer, server_default="0")
+
+
+class AISettingsModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
+    """Réglages IA d'un propriétaire. Aucune ligne = IA en mode économique, hybride, sans
+    plafond défini (donc aucun appel payant) et sans consentement."""
+
+    __tablename__ = "ai_settings"
+    __table_args__ = (
+        enum_check("mode_valid", "mode", AIMode),
+        enum_check("backend_preference_valid", "backend_preference", BackendPreference),
+        CheckConstraint(
+            "per_operation_level1 > 0 AND per_operation_level2 > 0", name="per_operation_positive"
+        ),
+        CheckConstraint(_DEVISE, name="currency_format"),
+        Index("uq_ai_settings_owner_id", "owner_id", unique=True),
+    )
+
+    mode: Mapped[str] = mapped_column(String(20), server_default="economy")
+    backend_preference: Mapped[str] = mapped_column(String(20), server_default="hybrid")
+    per_operation_level1: Mapped[Decimal] = mapped_column(Numeric(12, 4), server_default="0.02")
+    per_operation_level2: Mapped[Decimal] = mapped_column(Numeric(12, 4), server_default="0.30")
+    currency: Mapped[str] = mapped_column(String(3), server_default="EUR")
+    # Date à laquelle l'utilisateur a accepté l'envoi de données à une API payante.
+    api_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

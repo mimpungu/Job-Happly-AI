@@ -992,27 +992,27 @@ Méthodes :
 
 ### [➖] FEATURE 010.1 — Abstraction IA
 
-[➖] **TASK-010-01 — Définir AIProvider**
+[✅] **TASK-010-01 — Définir AIProvider**
 
 [➖] **TASK-010-02 — Implémenter le premier fournisseur IA**
 
-[➖] **TASK-010-03 — Ajouter le système de configuration**
+[✅] **TASK-010-03 — Ajouter le système de configuration**
 
-[➖] **TASK-010-04 — Ajouter le routage des modèles**
+[✅] **TASK-010-04 — Ajouter le routage des modèles**
 
-[➖] **TASK-010-05 — Ajouter le mode local lorsque disponible**
+[✅] **TASK-010-05 — Ajouter le mode local lorsque disponible**
 
 ### [➖] FEATURE 010.2 — Gestion des coûts
 
-[➖] **TASK-010-06 — Créer AIUsage**
+[✅] **TASK-010-06 — Créer AIUsage**
 
-[➖] **TASK-010-07 — Enregistrer les tokens**
+[✅] **TASK-010-07 — Enregistrer les tokens**
 
-[➖] **TASK-010-08 — Calculer les coûts**
+[✅] **TASK-010-08 — Calculer les coûts**
 
-[➖] **TASK-010-09 — Ajouter les budgets journaliers**
+[✅] **TASK-010-09 — Ajouter les budgets journaliers**
 
-[➖] **TASK-010-10 — Ajouter les budgets mensuels**
+[✅] **TASK-010-10 — Ajouter les budgets mensuels**
 
 [➖] **TASK-010-11 — Ajouter les alertes**
 
@@ -1020,11 +1020,11 @@ Méthodes :
 
 ### [➖] FEATURE 010.3 — Cache et optimisation
 
-[➖] **TASK-010-13 — Développer le cache des analyses**
+[✅] **TASK-010-13 — Développer le cache des analyses**
 
-[➖] **TASK-010-14 — Définir les clés de cache**
+[✅] **TASK-010-14 — Définir les clés de cache**
 
-[➖] **TASK-010-15 — Gérer l'expiration**
+[✅] **TASK-010-15 — Gérer l'expiration**
 
 [➖] **TASK-010-16 — Versionner les prompts**
 
@@ -1032,27 +1032,27 @@ Méthodes :
 
 [➖] **TASK-010-18 — Limiter les contextes envoyés**
 
-### [➖] FEATURE 010.4 — Interface de gestion IA
+### [✅] FEATURE 010.4 — Interface de gestion IA
 
-[➖] **TASK-010-19 — Créer AI Settings**
+[✅] **TASK-010-19 — Créer AI Settings**
 
-[➖] **TASK-010-20 — Créer AI Usage Dashboard**
+[✅] **TASK-010-20 — Créer AI Usage Dashboard**
 
-[➖] **TASK-010-21 — Créer AI Budget Manager**
+[✅] **TASK-010-21 — Créer AI Budget Manager**
 
-[➖] **TASK-010-22 — Ajouter les modes économique, équilibré et qualité**
+[✅] **TASK-010-22 — Ajouter les modes économique, équilibré et qualité**
 
-[➖] **TASK-010-23 — Ajouter le mode IA désactivée**
+[✅] **TASK-010-23 — Ajouter le mode IA désactivée**
 
 ### [➖] FEATURE 010.5 — Fiabilité des traitements IA
 
-[➖] **TASK-010-24 — Valider les sorties structurées**
+[✅] **TASK-010-24 — Valider les sorties structurées**
 
-[➖] **TASK-010-25 — Gérer les réponses incomplètes**
+[✅] **TASK-010-25 — Gérer les réponses incomplètes**
 
-[➖] **TASK-010-26 — Gérer les erreurs fournisseurs**
+[✅] **TASK-010-26 — Gérer les erreurs fournisseurs**
 
-[➖] **TASK-010-27 — Tester le cache et les plafonds**
+[✅] **TASK-010-27 — Tester le cache et les plafonds**
 
 [➖] **TASK-010-28 — Afficher le coût estimé avant les opérations IA importantes**
 
@@ -1065,7 +1065,7 @@ Méthodes :
 - Clé API fournie via variable d'environnement, jamais affichée en clair.
 - Modèle économique pour le niveau 1 (extraction, classification, résumé) et modèle plus performant pour le niveau 2 (CV, lettres, analyse approfondie).
 
-[➖] **TASK-010-30 — Plafond obligatoire avant toute utilisation**
+[✅] **TASK-010-30 — Plafond obligatoire avant toute utilisation**
 
 - Aucun appel payant n'est possible tant qu'un plafond n'est pas défini par l'utilisateur.
 - Valeur par défaut basse, modifiable uniquement par l'utilisateur.
@@ -1082,12 +1082,12 @@ Méthodes :
 - Traitement déterministe d'abord (niveau 0), cache systématique, contextes minimaux, sorties JSON strictes.
 - Modèle le moins cher suffisant pour chaque tâche.
 
-[➖] **TASK-010-33 — Consentement sur les données transmises**
+[✅] **TASK-010-33 — Consentement sur les données transmises**
 
 - Afficher à l'utilisateur quelles données partent vers l'API avant l'activation.
 - Ne jamais envoyer le CV complet par défaut.
 
-[➖] **TASK-010-34 — Tests des plafonds**
+[✅] **TASK-010-34 — Tests des plafonds**
 
 - Plafond atteint, estimation dépassant le reste du budget, absence de plafond, API en erreur, cache réutilisé.
 
@@ -2033,7 +2033,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |
 | [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
-| [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 0 | 0.3 |
+| [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 24 | 0.3 |
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 0 | 0.3 |
 | [➖] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 0 | 0.4 |
 | [➖] | 013 — Cover Letter Generator | P1 | 3 | 18 | 0 | 0.4 |

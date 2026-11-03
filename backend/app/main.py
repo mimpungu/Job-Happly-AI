@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.api.errors import register_error_handlers
 from app.core.config import get_settings
 from app.core.database.session import create_engine, create_session_factory
+from app.modules.ai_management.presentation.router import router as ai_router
 from app.modules.candidate_profile.presentation.router import (
     register_document_errors,
 )
@@ -74,6 +75,7 @@ def create_app() -> FastAPI:
     application.include_router(france_travail_router)
     application.include_router(profile_router)
     application.include_router(matching_router)
+    application.include_router(ai_router)
     return application
 
 

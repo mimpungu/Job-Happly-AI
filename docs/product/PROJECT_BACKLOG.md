@@ -25,7 +25,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 19 | EPIC 003, EPIC 007 |
 | [✅] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 17 | EPIC 005, EPIC 007, EPIC 008 |
-| [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 0 | EPIC 002, EPIC 004 |
+| [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 24 | EPIC 002, EPIC 004 |
 | [➖] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 0 | EPIC 009, EPIC 010 |
 | [➖] | 012 — LATEX RESUME GENERATOR | P1 | 5 | 27 | 0 | EPIC 005, EPIC 010, EPIC 011 |
 | [➖] | 013 — COVER LETTER GENERATOR | P1 | 3 | 18 | 0 | EPIC 005, EPIC 010, EPIC 011, EPIC 012 |
@@ -525,21 +525,21 @@ Total : 404 tâches.
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-010-01 | Définir AIProvider | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-01 | Définir AIProvider | P0 | DONE | à estimer |
 | [➖] | TASK-010-02 | Implémenter le premier fournisseur IA | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-03 | Ajouter le système de configuration | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-04 | Ajouter le routage des modèles | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-05 | Ajouter le mode local lorsque disponible | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-03 | Ajouter le système de configuration | P0 | DONE | à estimer |
+| [✅] | TASK-010-04 | Ajouter le routage des modèles | P0 | DONE | à estimer |
+| [✅] | TASK-010-05 | Ajouter le mode local lorsque disponible | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 010.2 — Gestion des coûts
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-010-06 | Créer AIUsage | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-07 | Enregistrer les tokens | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-08 | Calculer les coûts | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-09 | Ajouter les budgets journaliers | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-10 | Ajouter les budgets mensuels | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-06 | Créer AIUsage | P0 | DONE | à estimer |
+| [✅] | TASK-010-07 | Enregistrer les tokens | P0 | DONE | à estimer |
+| [✅] | TASK-010-08 | Calculer les coûts | P0 | DONE | à estimer |
+| [✅] | TASK-010-09 | Ajouter les budgets journaliers | P0 | DONE | à estimer |
+| [✅] | TASK-010-10 | Ajouter les budgets mensuels | P0 | DONE | à estimer |
 | [➖] | TASK-010-11 | Ajouter les alertes | P0 | BACKLOG | à estimer |
 | [➖] | TASK-010-12 | Ajouter les plafonds par tâche | P0 | BACKLOG | à estimer |
 
@@ -547,31 +547,31 @@ Total : 404 tâches.
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-010-13 | Développer le cache des analyses | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-14 | Définir les clés de cache | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-15 | Gérer l'expiration | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-13 | Développer le cache des analyses | P0 | DONE | à estimer |
+| [✅] | TASK-010-14 | Définir les clés de cache | P0 | DONE | à estimer |
+| [✅] | TASK-010-15 | Gérer l'expiration | P0 | DONE | à estimer |
 | [➖] | TASK-010-16 | Versionner les prompts | P0 | BACKLOG | à estimer |
 | [➖] | TASK-010-17 | Regrouper les tâches compatibles | P0 | BACKLOG | à estimer |
 | [➖] | TASK-010-18 | Limiter les contextes envoyés | P0 | BACKLOG | à estimer |
 
-### [➖] FEATURE 010.4 — Interface de gestion IA
+### [✅] FEATURE 010.4 — Interface de gestion IA
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-010-19 | Créer AI Settings | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-20 | Créer AI Usage Dashboard | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-21 | Créer AI Budget Manager | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-22 | Ajouter les modes économique, équilibré et qualité | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-23 | Ajouter le mode IA désactivée | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-19 | Créer AI Settings | P0 | DONE | à estimer |
+| [✅] | TASK-010-20 | Créer AI Usage Dashboard | P0 | DONE | à estimer |
+| [✅] | TASK-010-21 | Créer AI Budget Manager | P0 | DONE | à estimer |
+| [✅] | TASK-010-22 | Ajouter les modes économique, équilibré et qualité | P0 | DONE | à estimer |
+| [✅] | TASK-010-23 | Ajouter le mode IA désactivée | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 010.5 — Fiabilité des traitements IA
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-010-24 | Valider les sorties structurées | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-25 | Gérer les réponses incomplètes | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-26 | Gérer les erreurs fournisseurs | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-27 | Tester le cache et les plafonds | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-24 | Valider les sorties structurées | P0 | DONE | à estimer |
+| [✅] | TASK-010-25 | Gérer les réponses incomplètes | P0 | DONE | à estimer |
+| [✅] | TASK-010-26 | Gérer les erreurs fournisseurs | P0 | DONE | à estimer |
+| [✅] | TASK-010-27 | Tester le cache et les plafonds | P0 | DONE | à estimer |
 | [➖] | TASK-010-28 | Afficher le coût estimé avant les opérations IA importantes | P0 | BACKLOG | à estimer |
 
 ### [➖] FEATURE 010.6 — API IA payante avec plafonds budgétaires stricts
@@ -579,11 +579,11 @@ Total : 404 tâches.
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
 | [➖] | TASK-010-29 | Fournisseur API payante principal | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-30 | Plafond obligatoire avant toute utilisation | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-30 | Plafond obligatoire avant toute utilisation | P0 | DONE | à estimer |
 | [➖] | TASK-010-31 | Plafonds budgétaires stricts | P0 | BACKLOG | à estimer |
 | [➖] | TASK-010-32 | Réduction de la consommation | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-33 | Consentement sur les données transmises | P0 | BACKLOG | à estimer |
-| [➖] | TASK-010-34 | Tests des plafonds | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-33 | Consentement sur les données transmises | P0 | DONE | à estimer |
+| [✅] | TASK-010-34 | Tests des plafonds | P0 | DONE | à estimer |
 | [➖] | TASK-010-35 | Fournisseur local (optionnel, ultérieur) | P0 | BACKLOG | à estimer |
 
 **Critères d'acceptation de l'EPIC**
