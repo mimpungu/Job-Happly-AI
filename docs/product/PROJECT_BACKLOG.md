@@ -18,7 +18,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 |---|---|---|---|---|---|---|
 | [➖] | 001 — PRODUCT DISCOVERY & SOFTWARE ARCHITECTURE | P0 | 4 | 11 | 11 | — |
 | [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 6 | EPIC 001 |
-| [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 12 | EPIC 002 |
+| [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 0 | EPIC 002 |
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 0 | EPIC 002 |
@@ -154,28 +154,28 @@ Total : 404 tâches.
 | [✅] | TASK-003-10 | Développer Modal et Dialog | P0 | DONE | à estimer |
 | [✅] | TASK-003-11 | Développer Table et Pagination | P0 | DONE | à estimer |
 | [✅] | TASK-003-12 | Développer Toast, Tooltip et Skeleton | P0 | DONE | à estimer |
-| [➖] | TASK-003-18 | Développer IconButton, Tabs, FilterPanel et EmptyState | P0 | BACKLOG | à estimer |
+| [✅] | TASK-003-18 | Développer IconButton, Tabs, FilterPanel et EmptyState | P0 | DONE | à estimer |
 
-### [➖] FEATURE 003.3 — Application Shell
+### [✅] FEATURE 003.3 — Application Shell
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-003-13 | Créer la Sidebar | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-14 | Créer le Header | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-15 | Créer le système de navigation | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-16 | Créer les pages Empty State | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-17 | Développer le responsive design | P0 | BACKLOG | à estimer |
+| [✅] | TASK-003-13 | Créer la Sidebar | P0 | DONE | à estimer |
+| [✅] | TASK-003-14 | Créer le Header | P0 | DONE | à estimer |
+| [✅] | TASK-003-15 | Créer le système de navigation | P0 | DONE | à estimer |
+| [✅] | TASK-003-16 | Créer les pages Empty State | P0 | DONE | à estimer |
+| [✅] | TASK-003-17 | Développer le responsive design | P0 | DONE | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 
 - [➖] Design sombre cohérent.
-- [➖] Aucun dégradé sur les textes ou boutons.
-- [➖] Couleurs centralisées.
-- [➖] Composants réutilisables.
-- [➖] Navigation fonctionnelle.
-- [➖] Responsive desktop/tablette/mobile.
+- [✅] Aucun dégradé sur les textes ou boutons.
+- [✅] Couleurs centralisées.
+- [✅] Composants réutilisables.
+- [✅] Navigation fonctionnelle.
+- [✅] Responsive desktop/tablette/mobile.
 - [➖] Accessibilité clavier.
-- [➖] Contrastes lisibles.
+- [✅] Contrastes lisibles.
 
 ## [➖] EPIC 004 — DATABASE & DOMAIN FOUNDATION
 

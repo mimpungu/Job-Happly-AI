@@ -430,13 +430,13 @@ Utiliser les couleurs du cahier des charges initial.
 
 [✅] **TASK-003-12 — Développer Toast, Tooltip et Skeleton**
 
-[➖] **TASK-003-18 — Développer IconButton, Tabs, FilterPanel et EmptyState**
+[✅] **TASK-003-18 — Développer IconButton, Tabs, FilterPanel et EmptyState**
 
 Composants listés dans la spécification (§15.4) et absents des tâches précédentes.
 
-### [➖] FEATURE 003.3 — Application Shell
+### [✅] FEATURE 003.3 — Application Shell
 
-[➖] **TASK-003-13 — Créer la Sidebar**
+[✅] **TASK-003-13 — Créer la Sidebar**
 
 Navigation :
 - Dashboard.
@@ -449,29 +449,29 @@ Navigation :
 - AI Center.
 - Settings.
 
-[➖] **TASK-003-14 — Créer le Header**
+[✅] **TASK-003-14 — Créer le Header**
 
 - Recherche globale.
 - Notifications.
 - Profil.
 - Accès aux paramètres.
 
-[➖] **TASK-003-15 — Créer le système de navigation**
+[✅] **TASK-003-15 — Créer le système de navigation**
 
-[➖] **TASK-003-16 — Créer les pages Empty State**
+[✅] **TASK-003-16 — Créer les pages Empty State**
 
-[➖] **TASK-003-17 — Développer le responsive design**
+[✅] **TASK-003-17 — Développer le responsive design**
 
 ### Critères d'acceptation
 
 - [➖] Design sombre cohérent.
-- [➖] Aucun dégradé sur les textes ou boutons.
-- [➖] Couleurs centralisées.
-- [➖] Composants réutilisables.
-- [➖] Navigation fonctionnelle.
-- [➖] Responsive desktop/tablette/mobile.
+- [✅] Aucun dégradé sur les textes ou boutons.
+- [✅] Couleurs centralisées.
+- [✅] Composants réutilisables.
+- [✅] Navigation fonctionnelle.
+- [✅] Responsive desktop/tablette/mobile.
 - [➖] Accessibilité clavier.
-- [➖] Contrastes lisibles.
+- [✅] Contrastes lisibles.
 
 **Livrable :** design system et interface principale.
 
@@ -2026,7 +2026,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 |---|---|---|---|---|---|---|
 | [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 11 | 0.1 |
 | [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 6 | 0.1 |
-| [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 12 | 0.1 |
+| [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 0 | 0.1 |
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 0 | 0.2 |
@@ -2044,7 +2044,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : FEATURES 003.1 et 003.2 réalisées (tokens et composants 003-01 à 003-12) ; reste le shell (003-13 à 003-18), aucun code applicatif présent.
+État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé), aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 
