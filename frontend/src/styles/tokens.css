@@ -1,0 +1,108 @@
+/*
+ * Design tokens Happly AI — source unique des couleurs, typographies, espacements,
+ * rayons, ombres, conteneurs et états. Aucune valeur de style ne doit être codée en dur
+ * dans les composants : utiliser ces tokens (utilitaires Tailwind générés ci-dessous).
+ *
+ * Règles : thème sombre, couleurs unies, aucun dégradé (texte, bouton, décor).
+ *
+ * Contrastes mesurés (WCAG, sur --color-background) :
+ *   foreground 18,1:1 · foreground-muted 7,7:1 · accent 5,4:1 · success 9,7:1
+ *   warning 9,6:1 · danger 5,8:1 · foreground-subtle 4,1:1 (réservé aux textes
+ *   secondaires de grande taille, placeholders et indications non essentielles).
+ *   Le texte blanc sur accent ou danger n'atteint pas 4,5:1 : les boutons pleins
+ *   utilisent donc --color-on-accent / --color-on-danger (fond sombre, 5,4:1 et 5,8:1).
+ */
+
+@theme {
+  /* Couleurs — surfaces */
+  --color-background: #0b0b0d;
+  --color-background-secondary: #111114;
+  --color-surface: #17171b;
+  --color-surface-elevated: #202026;
+  --color-border: #303036;
+  --color-border-strong: #44444c;
+
+  /* Couleurs — texte */
+  --color-foreground: #f5f5f7;
+  --color-foreground-muted: #a1a1aa;
+  --color-foreground-subtle: #71717a;
+
+  /* Couleurs — sémantiques */
+  --color-accent: #0a84ff;
+  --color-accent-hover: #3d9bff;
+  --color-accent-pressed: #0070e0;
+  --color-on-accent: #0b0b0d;
+  --color-success: #30d158;
+  --color-warning: #ff9f0a;
+  --color-danger: #ff453a;
+  --color-danger-hover: #ff6961;
+  --color-on-danger: #0b0b0d;
+
+  /* Typographie */
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.625rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.875rem;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.25rem;
+  --text-3xl: 2.25rem;
+  --text-3xl--line-height: 2.75rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --tracking-tight: -0.011em;
+  --tracking-tighter: -0.022em;
+
+  /* Rayons */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-full: 9999px;
+
+  /* Ombres (discrètes, jamais lumineuses) */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.45);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.5);
+
+  /* Conteneurs */
+  --container-content: 72rem;
+  --container-narrow: 40rem;
+  --container-form: 28rem;
+
+  /* Points de rupture */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+
+  /* Transitions sobres */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root {
+  color-scheme: dark;
+
+  /* États visuels transversaux */
+  --border-width: 1px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-accent);
+  --disabled-opacity: 0.45;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}

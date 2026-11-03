@@ -17,8 +17,8 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Dépendances |
 |---|---|---|---|---|---|---|
 | [➖] | 001 — PRODUCT DISCOVERY & SOFTWARE ARCHITECTURE | P0 | 4 | 11 | 11 | — |
-| [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 5 | EPIC 001 |
-| [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 0 | EPIC 002 |
+| [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 6 | EPIC 001 |
+| [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 5 | EPIC 002 |
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 0 | EPIC 002 |
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 0 | EPIC 002 |
@@ -109,7 +109,7 @@ Total : 404 tâches.
 | [✅] | TASK-002-06 | Docker Compose | P0 | DONE | à estimer |
 | [➖] | TASK-002-07 | Scripts de développement | P0 | BACKLOG | à estimer |
 | [➖] | TASK-002-10 | Mode démonstration | P0 | BACKLOG | à estimer |
-| [➖] | TASK-002-11 | Outillage de tests de base | P0 | BACKLOG | à estimer |
+| [✅] | TASK-002-11 | Outillage de tests de base | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 002.3 — CI/CD
 
@@ -133,20 +133,20 @@ Total : 404 tâches.
 - **Objectif :** créer une interface premium cohérente, inspirée de la philosophie de design Apple.
 - **Dépendances :** EPIC 002
 
-### [➖] FEATURE 003.1 — Design tokens
+### [✅] FEATURE 003.1 — Design tokens
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-003-01 | Définir la palette sombre | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-02 | Définir les tokens typographiques | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-03 | Définir les espacements et dimensions | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-04 | Définir les états visuels | P0 | BACKLOG | à estimer |
+| [✅] | TASK-003-01 | Définir la palette sombre | P0 | DONE | à estimer |
+| [✅] | TASK-003-02 | Définir les tokens typographiques | P0 | DONE | à estimer |
+| [✅] | TASK-003-03 | Définir les espacements et dimensions | P0 | DONE | à estimer |
+| [✅] | TASK-003-04 | Définir les états visuels | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 003.2 — Composants fondamentaux
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-003-05 | Développer Button | P0 | BACKLOG | à estimer |
+| [✅] | TASK-003-05 | Développer Button | P0 | DONE | à estimer |
 | [➖] | TASK-003-06 | Développer Input et SearchInput | P0 | BACKLOG | à estimer |
 | [➖] | TASK-003-07 | Développer Select et Dropdown | P0 | BACKLOG | à estimer |
 | [➖] | TASK-003-08 | Développer Badge et StatusBadge | P0 | BACKLOG | à estimer |

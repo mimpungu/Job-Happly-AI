@@ -338,7 +338,7 @@ Prévoir les services nécessaires au démarrage :
 - Données fictives clairement identifiées comme telles dans l'interface.
 - Activable et désactivable explicitement ; jamais mélangées aux données réelles.
 
-[➖] **TASK-002-11 — Outillage de tests de base**
+[✅] **TASK-002-11 — Outillage de tests de base**
 
 - Pytest.
 - Vitest / Testing Library.
@@ -379,13 +379,13 @@ Prévoir les services nécessaires au démarrage :
 
 **Objectif :** créer une interface premium cohérente, inspirée de la philosophie de design Apple.
 
-### [➖] FEATURE 003.1 — Design tokens
+### [✅] FEATURE 003.1 — Design tokens
 
-[➖] **TASK-003-01 — Définir la palette sombre**
+[✅] **TASK-003-01 — Définir la palette sombre**
 
 Utiliser les couleurs du cahier des charges initial.
 
-[➖] **TASK-003-02 — Définir les tokens typographiques**
+[✅] **TASK-003-02 — Définir les tokens typographiques**
 
 - Font family.
 - Font sizes.
@@ -393,7 +393,7 @@ Utiliser les couleurs du cahier des charges initial.
 - Line heights.
 - Letter spacing.
 
-[➖] **TASK-003-03 — Définir les espacements et dimensions**
+[✅] **TASK-003-03 — Définir les espacements et dimensions**
 
 - Spacing.
 - Radius.
@@ -402,7 +402,7 @@ Utiliser les couleurs du cahier des charges initial.
 - Container widths.
 - Breakpoints.
 
-[➖] **TASK-003-04 — Définir les états visuels**
+[✅] **TASK-003-04 — Définir les états visuels**
 
 - Hover.
 - Focus.
@@ -414,7 +414,7 @@ Utiliser les couleurs du cahier des charges initial.
 
 ### [➖] FEATURE 003.2 — Composants fondamentaux
 
-[➖] **TASK-003-05 — Développer Button**
+[✅] **TASK-003-05 — Développer Button**
 
 [➖] **TASK-003-06 — Développer Input et SearchInput**
 
@@ -2025,8 +2025,8 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Release |
 |---|---|---|---|---|---|---|
 | [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 11 | 0.1 |
-| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 5 | 0.1 |
-| [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 0 | 0.1 |
+| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 6 | 0.1 |
+| [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 5 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 0 | 0.1 |
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 0 | 0.2 |
@@ -2044,7 +2044,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté), 002-11 (Pytest et Vitest faits, Playwright restant), aucun code applicatif présent.
+État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : tokens (003-01 à 003-04) et Button (003-05) réalisés, aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 
