@@ -18,7 +18,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 |---|---|---|---|---|---|---|
 | [➖] | 001 — PRODUCT DISCOVERY & SOFTWARE ARCHITECTURE | P0 | 4 | 11 | 11 | — |
 | [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 6 | EPIC 001 |
-| [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 5 | EPIC 002 |
+| [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 12 | EPIC 002 |
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 0 | EPIC 002 |
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 0 | EPIC 002 |
@@ -142,18 +142,18 @@ Total : 404 tâches.
 | [✅] | TASK-003-03 | Définir les espacements et dimensions | P0 | DONE | à estimer |
 | [✅] | TASK-003-04 | Définir les états visuels | P0 | DONE | à estimer |
 
-### [➖] FEATURE 003.2 — Composants fondamentaux
+### [✅] FEATURE 003.2 — Composants fondamentaux
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
 | [✅] | TASK-003-05 | Développer Button | P0 | DONE | à estimer |
-| [➖] | TASK-003-06 | Développer Input et SearchInput | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-07 | Développer Select et Dropdown | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-08 | Développer Badge et StatusBadge | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-09 | Développer Card et Panel | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-10 | Développer Modal et Dialog | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-11 | Développer Table et Pagination | P0 | BACKLOG | à estimer |
-| [➖] | TASK-003-12 | Développer Toast, Tooltip et Skeleton | P0 | BACKLOG | à estimer |
+| [✅] | TASK-003-06 | Développer Input et SearchInput | P0 | DONE | à estimer |
+| [✅] | TASK-003-07 | Développer Select et Dropdown | P0 | DONE | à estimer |
+| [✅] | TASK-003-08 | Développer Badge et StatusBadge | P0 | DONE | à estimer |
+| [✅] | TASK-003-09 | Développer Card et Panel | P0 | DONE | à estimer |
+| [✅] | TASK-003-10 | Développer Modal et Dialog | P0 | DONE | à estimer |
+| [✅] | TASK-003-11 | Développer Table et Pagination | P0 | DONE | à estimer |
+| [✅] | TASK-003-12 | Développer Toast, Tooltip et Skeleton | P0 | DONE | à estimer |
 | [➖] | TASK-003-18 | Développer IconButton, Tabs, FilterPanel et EmptyState | P0 | BACKLOG | à estimer |
 
 ### [➖] FEATURE 003.3 — Application Shell
