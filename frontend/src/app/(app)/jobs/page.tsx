@@ -1,17 +1,12 @@
-import type { Metadata } from "next";
-import { Search } from "lucide-react";
+import { Suspense } from "react";
 
-import { SectionPage } from "@/features/shell/section-page";
+import { JobsExplorer } from "@/features/jobs/jobs-explorer";
 
-export const metadata: Metadata = { title: "Recherche d'emploi — Happly AI" };
-
-export default function Page() {
+export default function JobsPage() {
+  // `useSearchParams` exige une frontière Suspense (rendu statique de la coquille).
   return (
-    <SectionPage
-      title="Recherche d'emploi"
-      icon={Search}
-      emptyTitle="Aucune recherche lancée"
-      emptyDescription="Le moteur de recherche sera disponible une fois une source d'offres configurée."
-    />
+    <Suspense>
+      <JobsExplorer />
+    </Suspense>
   );
 }

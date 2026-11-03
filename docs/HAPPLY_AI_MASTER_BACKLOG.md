@@ -849,23 +849,23 @@ Méthodes :
 
 ### [➖] FEATURE 008.1 — Formulaire de recherche
 
-[➖] **TASK-008-01 — Recherche par intitulé**
+[✅] **TASK-008-01 — Recherche par intitulé**
 
-[➖] **TASK-008-02 — Recherche par mots-clés**
+[✅] **TASK-008-02 — Recherche par mots-clés**
 
-[➖] **TASK-008-03 — Recherche par ville et pays**
+[✅] **TASK-008-03 — Recherche par ville et pays**
 
 [➖] **TASK-008-04 — Recherche par rayon**
 
-[➖] **TASK-008-05 — Recherche par contrat**
+[✅] **TASK-008-05 — Recherche par contrat**
 
-[➖] **TASK-008-06 — Recherche par salaire**
+[✅] **TASK-008-06 — Recherche par salaire**
 
-[➖] **TASK-008-07 — Recherche par télétravail**
+[✅] **TASK-008-07 — Recherche par télétravail**
 
 [➖] **TASK-008-08 — Recherche par expérience**
 
-[➖] **TASK-008-09 — Recherche par date de publication**
+[✅] **TASK-008-09 — Recherche par date de publication**
 
 [➖] **TASK-008-10 — Recherche multilingue**
 
@@ -881,21 +881,21 @@ Méthodes :
 
 [➖] **TASK-008-15 — Afficher les sources interrogées**
 
-### [➖] FEATURE 008.3 — Résultats
+### [✅] FEATURE 008.3 — Résultats
 
-[➖] **TASK-008-16 — Développer Job Results Table**
+[✅] **TASK-008-16 — Développer Job Results Table**
 
-[➖] **TASK-008-17 — Développer les filtres dynamiques**
+[✅] **TASK-008-17 — Développer les filtres dynamiques**
 
-[➖] **TASK-008-18 — Développer le tri**
+[✅] **TASK-008-18 — Développer le tri**
 
-[➖] **TASK-008-19 — Développer la pagination**
+[✅] **TASK-008-19 — Développer la pagination**
 
-[➖] **TASK-008-20 — Développer la vue détaillée**
+[✅] **TASK-008-20 — Développer la vue détaillée**
 
-[➖] **TASK-008-21 — Ajouter la sauvegarde d'une offre**
+[✅] **TASK-008-21 — Ajouter la sauvegarde d'une offre**
 
-### [➖] FEATURE 008.4 — Recherches sauvegardées
+### [✅] FEATURE 008.4 — Recherches sauvegardées
 
 [✅] **TASK-008-22 — Créer SavedSearch**
 
@@ -905,11 +905,11 @@ Méthodes :
 
 [✅] **TASK-008-25 — Relancer une recherche**
 
-[➖] **TASK-008-26 — Afficher l'historique**
+[✅] **TASK-008-26 — Afficher l'historique**
 
 ### [➖] FEATURE 008.5 — Compléments de recherche et d'offre
 
-[➖] **TASK-008-27 — Ignorer une offre**
+[✅] **TASK-008-27 — Ignorer une offre**
 
 [➖] **TASK-008-28 — Recherche par entreprise, secteur et langue de l'annonce**
 
@@ -917,10 +917,10 @@ Méthodes :
 
 - [➖] Recherche fonctionnelle.
 - [➖] Filtres opérationnels.
-- [➖] Résultats paginés.
+- [✅] Résultats paginés.
 - [➖] Sources visibles.
-- [➖] Erreurs clairement affichées.
-- [➖] Recherche sauvegardable et reproductible.
+- [✅] Erreurs clairement affichées.
+- [✅] Recherche sauvegardable et reproductible.
 
 **Livrable :** moteur de recherche opérationnel.
 
@@ -2031,7 +2031,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
-| [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 4 | 0.2 |
+| [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |
 | [➖] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 0 | 0.3 |
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 0 | 0.3 |
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 0 | 0.3 |

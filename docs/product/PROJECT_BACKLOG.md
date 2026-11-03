@@ -23,7 +23,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 18 | EPIC 002 |
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
-| [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 4 | EPIC 003, EPIC 007 |
+| [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 19 | EPIC 003, EPIC 007 |
 | [➖] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 0 | EPIC 005, EPIC 007, EPIC 008 |
 | [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 0 | EPIC 002, EPIC 004 |
 | [➖] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 0 | EPIC 009, EPIC 010 |
@@ -411,15 +411,15 @@ Total : 404 tâches.
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-008-01 | Recherche par intitulé | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-02 | Recherche par mots-clés | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-03 | Recherche par ville et pays | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-01 | Recherche par intitulé | P0 | DONE | à estimer |
+| [✅] | TASK-008-02 | Recherche par mots-clés | P0 | DONE | à estimer |
+| [✅] | TASK-008-03 | Recherche par ville et pays | P0 | DONE | à estimer |
 | [➖] | TASK-008-04 | Recherche par rayon | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-05 | Recherche par contrat | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-06 | Recherche par salaire | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-07 | Recherche par télétravail | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-05 | Recherche par contrat | P0 | DONE | à estimer |
+| [✅] | TASK-008-06 | Recherche par salaire | P0 | DONE | à estimer |
+| [✅] | TASK-008-07 | Recherche par télétravail | P0 | DONE | à estimer |
 | [➖] | TASK-008-08 | Recherche par expérience | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-09 | Recherche par date de publication | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-09 | Recherche par date de publication | P0 | DONE | à estimer |
 | [➖] | TASK-008-10 | Recherche multilingue | P0 | BACKLOG | à estimer |
 
 ### [➖] FEATURE 008.2 — Orchestration multi-sources
@@ -432,18 +432,18 @@ Total : 404 tâches.
 | [➖] | TASK-008-14 | Gérer les erreurs partielles | P0 | BACKLOG | à estimer |
 | [➖] | TASK-008-15 | Afficher les sources interrogées | P0 | BACKLOG | à estimer |
 
-### [➖] FEATURE 008.3 — Résultats
+### [✅] FEATURE 008.3 — Résultats
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-008-16 | Développer Job Results Table | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-17 | Développer les filtres dynamiques | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-18 | Développer le tri | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-19 | Développer la pagination | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-20 | Développer la vue détaillée | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-21 | Ajouter la sauvegarde d'une offre | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-16 | Développer Job Results Table | P0 | DONE | à estimer |
+| [✅] | TASK-008-17 | Développer les filtres dynamiques | P0 | DONE | à estimer |
+| [✅] | TASK-008-18 | Développer le tri | P0 | DONE | à estimer |
+| [✅] | TASK-008-19 | Développer la pagination | P0 | DONE | à estimer |
+| [✅] | TASK-008-20 | Développer la vue détaillée | P0 | DONE | à estimer |
+| [✅] | TASK-008-21 | Ajouter la sauvegarde d'une offre | P0 | DONE | à estimer |
 
-### [➖] FEATURE 008.4 — Recherches sauvegardées
+### [✅] FEATURE 008.4 — Recherches sauvegardées
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
@@ -451,23 +451,23 @@ Total : 404 tâches.
 | [✅] | TASK-008-23 | Enregistrer les critères | P0 | DONE | à estimer |
 | [✅] | TASK-008-24 | Modifier les recherches | P0 | DONE | à estimer |
 | [✅] | TASK-008-25 | Relancer une recherche | P0 | DONE | à estimer |
-| [➖] | TASK-008-26 | Afficher l'historique | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-26 | Afficher l'historique | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 008.5 — Compléments de recherche et d'offre
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-008-27 | Ignorer une offre | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-27 | Ignorer une offre | P0 | DONE | à estimer |
 | [➖] | TASK-008-28 | Recherche par entreprise, secteur et langue de l'annonce | P0 | BACKLOG | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 
 - [➖] Recherche fonctionnelle.
 - [➖] Filtres opérationnels.
-- [➖] Résultats paginés.
+- [✅] Résultats paginés.
 - [➖] Sources visibles.
-- [➖] Erreurs clairement affichées.
-- [➖] Recherche sauvegardable et reproductible.
+- [✅] Erreurs clairement affichées.
+- [✅] Recherche sauvegardable et reproductible.
 
 ## [➖] EPIC 009 — JOB MATCHING & SCORING ENGINE
 

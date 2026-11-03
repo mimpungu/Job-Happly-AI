@@ -1,0 +1,153 @@
+import type { OfferFilters, OfferSort, StateFilter } from "@/types/jobs";
+
+export const SORTS: readonly { value: OfferSort; label: string }[] = [
+  { value: "published_desc", label: "Plus récentes" },
+  { value: "published_asc", label: "Plus anciennes" },
+  { value: "title_asc", label: "Intitulé (A→Z)" },
+  { value: "company_asc", label: "Entreprise (A→Z)" },
+  { value: "salary_desc", label: "Salaire décroissant" },
+  { value: "recently_seen", label: "Vues récemment" },
+];
+
+export const EMPLOYMENT_TYPES = [
+  { value: "permanent", label: "CDI" },
+  { value: "fixed_term", label: "CDD" },
+  { value: "internship", label: "Stage" },
+  { value: "apprenticeship", label: "Alternance" },
+  { value: "freelance", label: "Freelance" },
+  { value: "part_time", label: "Temps partiel" },
+  { value: "temporary", label: "Intérim" },
+  { value: "other", label: "Autre" },
+] as const;
+
+export const REMOTE_TYPES = [
+  { value: "on_site", label: "Sur site" },
+  { value: "hybrid", label: "Hybride" },
+  { value: "remote", label: "Télétravail" },
+] as const;
+
+export const DEFAULT_FILTERS: OfferFilters = {
+  text: "",
+  city: "",
+  country: "",
+  employmentType: "",
+  remoteType: "",
+  salaryMin: "",
+  salaryCurrency: "EUR",
+  publishedSince: "",
+  sort: "published_desc",
+  state: "visible",
+  page: 1,
+};
+
+const SORT_VALUES = new Set<string>(SORTS.map((s) => s.value));
+const STATE_VALUES = new Set<string>(["visible", "saved", "ignored", "all"]);
+
+/** Une valeur d'URL est une entrée non fiable : toute valeur inattendue retombe sur le défaut. */
+export function filtersFromParams(params: URLSearchParams): OfferFilters {
+  const lire = (cle: string) => (params.get(cle) ?? "").trim();
+  const tri = lire("sort");
+  const etat = lire("state");
+  const page = Number.parseInt(lire("page"), 10);
+  return {
+    text: lire("text"),
+    city: lire("city"),
+    country: lire("country").toUpperCase(),
+    employmentType: lire("employment"),
+    remoteType: lire("remote"),
+    salaryMin: lire("salary_min"),
+    salaryCurrency: lire("currency").toUpperCase() || DEFAULT_FILTERS.salaryCurrency,
+    publishedSince: lire("since"),
+    sort: SORT_VALUES.has(tri) ? (tri as OfferSort) : DEFAULT_FILTERS.sort,
+    state: STATE_VALUES.has(etat) ? (etat as StateFilter) : DEFAULT_FILTERS.state,
+    page: Number.isInteger(page) && page >= 1 ? page : 1,
+  };
+}
+
+/** Paramètres d'URL de l'interface : seules les valeurs non vides et non par défaut sont écrites. */
+export function filtersToParams(filters: OfferFilters): URLSearchParams {
+  const params = new URLSearchParams();
+  const ecrire = (cle: string, valeur: string) => {
+    if (valeur) params.set(cle, valeur);
+  };
+  ecrire("text", filters.text.trim());
+  ecrire("city", filters.city.trim());
+  ecrire("country", filters.country.trim().toUpperCase());
+  ecrire("employment", filters.employmentType);
+  ecrire("remote", filters.remoteType);
+  if (filters.salaryMin.trim()) {
+    params.set("salary_min", filters.salaryMin.trim());
+    params.set("currency", filters.salaryCurrency.trim().toUpperCase());
+  }
+  ecrire("since", filters.publishedSince);
+  if (filters.sort !== DEFAULT_FILTERS.sort) params.set("sort", filters.sort);
+  if (filters.state !== DEFAULT_FILTERS.state) params.set("state", filters.state);
+  if (filters.page > 1) params.set("page", String(filters.page));
+  return params;
+}
+
+/** Paramètres de la requête `GET /offers` (voir docs/API.md). */
+export function filtersToApiQuery(filters: OfferFilters, pageSize: number): URLSearchParams {
+  const params = new URLSearchParams();
+  const ecrire = (cle: string, valeur: string) => {
+    if (valeur) params.set(cle, valeur);
+  };
+  ecrire("text", filters.text.trim());
+  ecrire("city", filters.city.trim());
+  ecrire("country_codes", filters.country.trim().toUpperCase());
+  ecrire("employment_types", filters.employmentType);
+  ecrire("remote_types", filters.remoteType);
+  if (filters.salaryMin.trim()) {
+    params.set("salary_min", filters.salaryMin.trim());
+    params.set("salary_currency", filters.salaryCurrency.trim().toUpperCase());
+  }
+  if (filters.publishedSince) params.set("published_since", `${filters.publishedSince}T00:00:00Z`);
+  params.set("sort", filters.sort);
+  params.set("state", filters.state);
+  params.set("page", String(filters.page));
+  params.set("page_size", String(pageSize));
+  return params;
+}
+
+/** Corps `filter` d'une recherche sauvegardée (sans page : jamais mémorisée). */
+export function filtersToSavedCriteria(filters: OfferFilters): Record<string, unknown> {
+  const criteres: Record<string, unknown> = { sort: filters.sort, state: filters.state };
+  if (filters.text.trim()) criteres.text = filters.text.trim();
+  if (filters.city.trim()) criteres.city = filters.city.trim();
+  if (filters.country.trim()) criteres.country_codes = [filters.country.trim().toUpperCase()];
+  if (filters.employmentType) criteres.employment_types = [filters.employmentType];
+  if (filters.remoteType) criteres.remote_types = [filters.remoteType];
+  if (filters.salaryMin.trim()) {
+    criteres.salary_min = filters.salaryMin.trim();
+    criteres.salary_currency = filters.salaryCurrency.trim().toUpperCase();
+  }
+  if (filters.publishedSince) criteres.published_since = `${filters.publishedSince}T00:00:00Z`;
+  return criteres;
+}
+
+/** Inverse de `filtersToSavedCriteria` : réapplique une recherche sauvegardée au formulaire. */
+export function filtersFromSavedCriteria(criteres: Record<string, unknown>): OfferFilters {
+  const texte = (cle: string) =>
+    typeof criteres[cle] === "string" ? (criteres[cle] as string) : "";
+  const premier = (cle: string) => {
+    const valeur = criteres[cle];
+    return Array.isArray(valeur) && typeof valeur[0] === "string" ? valeur[0] : "";
+  };
+  const depuis = texte("published_since");
+  const params = new URLSearchParams();
+  params.set("sort", texte("sort"));
+  params.set("state", texte("state"));
+  const base = filtersFromParams(params);
+  return {
+    ...base,
+    text: texte("text"),
+    city: texte("city"),
+    country: premier("country_codes"),
+    employmentType: premier("employment_types"),
+    remoteType: premier("remote_types"),
+    salaryMin: texte("salary_min"),
+    salaryCurrency: texte("salary_currency") || DEFAULT_FILTERS.salaryCurrency,
+    publishedSince: depuis.slice(0, 10),
+    page: 1,
+  };
+}
