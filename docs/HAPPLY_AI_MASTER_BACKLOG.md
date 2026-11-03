@@ -483,9 +483,9 @@ Navigation :
 
 **Objectif :** construire une base de données fiable et un modèle métier extensible.
 
-### [➖] FEATURE 004.1 — Modèle de données
+### [✅] FEATURE 004.1 — Modèle de données
 
-[➖] **TASK-004-01 — Définir les entités principales** (toute entité appartenant à l'utilisateur porte un `owner_id`, ADR-0008)
+[✅] **TASK-004-01 — Définir les entités principales** (toute entité appartenant à l'utilisateur porte un `owner_id`, ADR-0008)
 
 - Candidate.
 - CandidateProfile.
@@ -504,7 +504,7 @@ Navigation :
 - AIUsage.
 - Notification.
 
-[➖] **TASK-004-02 — Définir les Value Objects**
+[✅] **TASK-004-02 — Définir les Value Objects**
 
 - Money.
 - CountryCode.
@@ -514,7 +514,7 @@ Navigation :
 - DateRange.
 - SkillLevel.
 
-[➖] **TASK-004-03 — Définir les relations**
+[✅] **TASK-004-03 — Définir les relations**
 
 - Candidate / Experience.
 - Candidate / Education.
@@ -524,7 +524,7 @@ Navigation :
 - Application / JobOffer.
 - Application / Documents.
 
-[➖] **TASK-004-04 — Définir les contraintes métier**
+[✅] **TASK-004-04 — Définir les contraintes métier**
 
 - Unicité.
 - Intégrité référentielle.
@@ -533,13 +533,13 @@ Navigation :
 
 ### [➖] FEATURE 004.2 — Persistence Layer
 
-[➖] **TASK-004-05 — Configurer SQLAlchemy**
+[✅] **TASK-004-05 — Configurer SQLAlchemy**
 
-[➖] **TASK-004-06 — Créer les migrations Alembic**
+[✅] **TASK-004-06 — Créer les migrations Alembic**
 
 [➖] **TASK-004-07 — Créer les repositories**
 
-[➖] **TASK-004-08 — Ajouter les index**
+[✅] **TASK-004-08 — Ajouter les index**
 
 Optimiser notamment :
 - Source + external ID.
@@ -550,28 +550,28 @@ Optimiser notamment :
 - Application status.
 - Search history.
 
-[➖] **TASK-004-09 — Définir les transactions**
+[✅] **TASK-004-09 — Définir les transactions**
 
-### [➖] FEATURE 004.3 — Infrastructure de données
+### [✅] FEATURE 004.3 — Infrastructure de données
 
-[➖] **TASK-004-10 — Créer les mécanismes de sauvegarde**
+[✅] **TASK-004-10 — Créer les mécanismes de sauvegarde**
 
-[➖] **TASK-004-11 — Créer la stratégie de restauration**
+[✅] **TASK-004-11 — Créer la stratégie de restauration**
 
-[➖] **TASK-004-12 — Définir les règles de rétention**
+[✅] **TASK-004-12 — Définir les règles de rétention**
 
-[➖] **TASK-004-13 — Définir la stratégie d'archivage**
+[✅] **TASK-004-13 — Définir la stratégie d'archivage**
 
 - Archivage des offres anciennes sans perte de l'historique utile.
 - Pagination côté base : ne jamais charger toutes les offres en mémoire.
 
 ### Critères d'acceptation
 
-- [➖] Modèle cohérent.
-- [➖] Migrations reproductibles.
+- [✅] Modèle cohérent.
+- [✅] Migrations reproductibles.
 - [➖] Repositories testés.
-- [➖] Contraintes SQL fonctionnelles.
-- [➖] Sauvegarde et restauration documentées.
+- [✅] Contraintes SQL fonctionnelles.
+- [✅] Sauvegarde et restauration documentées.
 - [➖] Aucun accès direct à la base depuis la logique métier.
 
 **Livrable :** fondations de persistance.
@@ -2027,7 +2027,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 11 | 0.1 |
 | [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 6 | 0.1 |
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
-| [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 0 | 0.1 |
+| [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
 | [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 0 | 0.2 |
 | [➖] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 0 | 0.2 |
@@ -2044,7 +2044,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé), aucun code applicatif présent.
+État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 

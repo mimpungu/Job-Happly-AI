@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Applique les migrations Alembic.
+# Applique les migrations Alembic sur la base désignée par HAPPLY_DATABASE_URL (ou .env).
 source "$(dirname "$0")/_common.sh"
-if [ ! -f backend/alembic.ini ]; then
-  echo "Alembic n'est pas encore initialisé (TASK-004-06) : aucune migration à appliquer." >&2
-  exit 1
+if [ -z "${HAPPLY_DATABASE_URL:-}" ]; then
+  exiger_env
+  set -a; source .env; set +a
 fi
 (cd backend && uv run alembic upgrade head)

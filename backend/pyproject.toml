@@ -8,8 +8,9 @@ dependencies = [
   "uvicorn[standard]>=0.30",
   "pydantic>=2.8",
   "pydantic-settings>=2.4",
-  "sqlalchemy>=2.0",
+  "sqlalchemy[asyncio]>=2.0",
   "alembic>=1.13",
+  "psycopg[binary]>=3.2",
 ]
 
 [dependency-groups]
@@ -31,6 +32,8 @@ select = ["E", "F", "I", "B", "UP", "S", "C4", "SIM", "RUF", "ASYNC"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+# Fichiers générés par Alembic : seules les corrections automatiques de formatage s'appliquent.
+"migrations/versions/*" = ["E501", "RUF012"]
 
 [tool.mypy]
 python_version = "3.13"
@@ -41,3 +44,4 @@ files = ["app", "tests"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

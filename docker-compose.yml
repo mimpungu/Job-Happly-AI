@@ -28,6 +28,15 @@ services:
       HAPPLY_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     ports:
       - "127.0.0.1:8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - /srv/.venv/bin/python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"
+      interval: 5s
+      timeout: 4s
+      retries: 10
     depends_on:
       postgres:
         condition: service_healthy

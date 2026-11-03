@@ -19,7 +19,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 001 — PRODUCT DISCOVERY & SOFTWARE ARCHITECTURE | P0 | 4 | 11 | 11 | — |
 | [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 6 | EPIC 001 |
 | [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
-| [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 0 | EPIC 002 |
+| [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 12 | EPIC 002 |
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 0 | EPIC 002 |
 | [➖] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 0 | EPIC 004, EPIC 006 |
@@ -183,41 +183,41 @@ Total : 404 tâches.
 - **Objectif :** construire une base de données fiable et un modèle métier extensible.
 - **Dépendances :** EPIC 002
 
-### [➖] FEATURE 004.1 — Modèle de données
+### [✅] FEATURE 004.1 — Modèle de données
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-004-01 | Définir les entités principales | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-02 | Définir les Value Objects | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-03 | Définir les relations | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-04 | Définir les contraintes métier | P0 | BACKLOG | à estimer |
+| [✅] | TASK-004-01 | Définir les entités principales | P0 | DONE | à estimer |
+| [✅] | TASK-004-02 | Définir les Value Objects | P0 | DONE | à estimer |
+| [✅] | TASK-004-03 | Définir les relations | P0 | DONE | à estimer |
+| [✅] | TASK-004-04 | Définir les contraintes métier | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 004.2 — Persistence Layer
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-004-05 | Configurer SQLAlchemy | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-06 | Créer les migrations Alembic | P0 | BACKLOG | à estimer |
+| [✅] | TASK-004-05 | Configurer SQLAlchemy | P0 | DONE | à estimer |
+| [✅] | TASK-004-06 | Créer les migrations Alembic | P0 | DONE | à estimer |
 | [➖] | TASK-004-07 | Créer les repositories | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-08 | Ajouter les index | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-09 | Définir les transactions | P0 | BACKLOG | à estimer |
+| [✅] | TASK-004-08 | Ajouter les index | P0 | DONE | à estimer |
+| [✅] | TASK-004-09 | Définir les transactions | P0 | DONE | à estimer |
 
-### [➖] FEATURE 004.3 — Infrastructure de données
+### [✅] FEATURE 004.3 — Infrastructure de données
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-004-10 | Créer les mécanismes de sauvegarde | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-11 | Créer la stratégie de restauration | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-12 | Définir les règles de rétention | P0 | BACKLOG | à estimer |
-| [➖] | TASK-004-13 | Définir la stratégie d'archivage | P0 | BACKLOG | à estimer |
+| [✅] | TASK-004-10 | Créer les mécanismes de sauvegarde | P0 | DONE | à estimer |
+| [✅] | TASK-004-11 | Créer la stratégie de restauration | P0 | DONE | à estimer |
+| [✅] | TASK-004-12 | Définir les règles de rétention | P0 | DONE | à estimer |
+| [✅] | TASK-004-13 | Définir la stratégie d'archivage | P0 | DONE | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 
-- [➖] Modèle cohérent.
-- [➖] Migrations reproductibles.
+- [✅] Modèle cohérent.
+- [✅] Migrations reproductibles.
 - [➖] Repositories testés.
-- [➖] Contraintes SQL fonctionnelles.
-- [➖] Sauvegarde et restauration documentées.
+- [✅] Contraintes SQL fonctionnelles.
+- [✅] Sauvegarde et restauration documentées.
 - [➖] Aucun accès direct à la base depuis la logique métier.
 
 ## [➖] EPIC 005 — CANDIDATE PROFILE & MASTER CV
