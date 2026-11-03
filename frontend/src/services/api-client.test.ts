@@ -64,4 +64,31 @@ describe("apiFetch", () => {
     );
     expect((appels[1]?.[1]?.headers as Record<string, string>)["Content-Type"]).toBeUndefined();
   });
+
+  it("transporte le détail par champ d'une erreur de validation", async () => {
+    repondre(422, {
+      error: {
+        code: "profile_incomplete",
+        message: "Le profil est incomplet.",
+        details: [{ field: "experiences[0].company", message: "Champ obligatoire." }],
+      },
+    });
+
+    const erreur = (await apiFetch("/x").catch((e: unknown) => e)) as ApiError;
+
+    expect(erreur.details).toEqual([
+      { field: "experiences[0].company", message: "Champ obligatoire." },
+    ]);
+  });
+
+  it("laisse le navigateur fixer le Content-Type d'un envoi de fichier", async () => {
+    repondre(200, {});
+    const formulaire = new FormData();
+    formulaire.append("fichier", new Blob(["x"]), "cv.txt");
+
+    await apiFetch("/x", { method: "POST", body: formulaire });
+
+    const en_tetes = vi.mocked(fetch).mock.calls[0]?.[1]?.headers as Record<string, string>;
+    expect(en_tetes["Content-Type"]).toBeUndefined();
+  });
 });

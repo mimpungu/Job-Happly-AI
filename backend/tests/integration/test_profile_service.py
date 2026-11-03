@@ -171,6 +171,32 @@ class TestBrouillon:
         assert a.id not in {e.id for e in v2.document.experiences}  # A supprimée
         assert [s.name for s in v2.document.skills] == ["Python"]
 
+    async def test_l_ordre_saisi_est_conserve_pour_tous_les_types_d_elements(
+        self, service: ProfileService, user_id: uuid.UUID
+    ) -> None:
+        # Insérés dans la même transaction, ces éléments partagent le même `created_at` : seul
+        # l'ordre explicite (position) garantit qu'on les relit comme saisis.
+        noms = ["Zèbre", "Alpha", "Mike", "Bravo", "Yankee", "Charlie", "X-ray", "Delta"]
+        langues = ["fr", "en", "es", "de", "it", "pt", "nl", "ar"]
+        document = ProfileDocument(
+            skills=tuple(SkillDoc(name=n) for n in noms),
+            languages=tuple(LanguageDoc(language_code=c) for c in langues),
+            educations=tuple(EducationDoc(degree=n) for n in noms),
+            certifications=tuple(CertificationDoc(name=n) for n in noms),
+        )
+
+        relu = (await service.save_draft(owner_id=user_id, document=document)).document
+
+        assert [s.name for s in relu.skills] == noms
+        assert [lg.language_code for lg in relu.languages] == langues
+        assert [e.degree for e in relu.educations] == noms
+        assert [c.name for c in relu.certifications] == noms
+
+        # Réordonner puis réenregistrer doit être pris en compte.
+        inverse = relu.model_copy(update={"skills": tuple(reversed(relu.skills))})
+        apres = (await service.save_draft(owner_id=user_id, document=inverse)).document
+        assert [s.name for s in apres.skills] == list(reversed(noms))
+
     async def test_identifiant_inconnu_refuse_et_rien_n_est_modifie(
         self, service: ProfileService, user_id: uuid.UUID
     ) -> None:

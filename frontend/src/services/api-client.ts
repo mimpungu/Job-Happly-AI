@@ -7,6 +7,8 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly code: string,
+    /** Détail par champ pour une erreur de validation (ex. `experiences[0].company`). */
+    readonly details: readonly { field: string; message: string }[] = [],
   ) {
     super(message);
     this.name = "ApiError";
@@ -31,7 +33,8 @@ export async function apiFetch<T>(chemin: string, init?: RequestInit): Promise<T
       ...init,
       headers: {
         Accept: "application/json",
-        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        // Un FormData fixe lui-même son Content-Type (avec la frontière multipart).
+        ...(typeof init?.body === "string" ? { "Content-Type": "application/json" } : {}),
         ...init?.headers,
       },
     });
@@ -51,7 +54,12 @@ export async function apiFetch<T>(chemin: string, init?: RequestInit): Promise<T
   }
   if (!reponse.ok) {
     if (estCorpsErreur(corps)) {
-      throw new ApiError(corps.error.message, reponse.status, corps.error.code);
+      throw new ApiError(
+        corps.error.message,
+        reponse.status,
+        corps.error.code,
+        corps.error.details ?? [],
+      );
     }
     throw new ApiError("Réponse inattendue du serveur.", reponse.status, "unexpected_response");
   }

@@ -237,13 +237,10 @@ class SqlProfileRepository:
     async def _charger(self, profil: CandidateProfileModel) -> StoredProfile:
         elements: dict[str, tuple[Any, ...]] = {}
         for nom, modele in _ELEMENTS:
-            ordre = (
-                [ExperienceModel.position, ExperienceModel.id]
-                if nom == "experiences"
-                else [modele.created_at, modele.id]
-            )
             lignes = await self._session.scalars(
-                select(modele).where(modele.profile_id == profil.id).order_by(*ordre)
+                select(modele)
+                .where(modele.profile_id == profil.id)
+                .order_by(modele.position, modele.id)
             )
             elements[nom] = tuple(lignes)
         document = ProfileDocument(
@@ -278,8 +275,7 @@ class SqlProfileRepository:
         for nom, modele in _ELEMENTS:
             for position, element in enumerate(getattr(document, nom)):
                 colonnes = _CONVERTISSEURS[nom](element, now, None)
-                if nom == "experiences":
-                    colonnes["position"] = position
+                colonnes["position"] = position
                 self._session.add(modele(owner_id=owner_id, profile_id=profil.id, **colonnes))
         await self._session.flush()
         await self._session.refresh(profil)
@@ -313,8 +309,7 @@ class SqlProfileRepository:
                     if existant is None:
                         raise UnknownItemError(f"{nom} : identifiant inconnu {element.id}.")
                 colonnes = _CONVERTISSEURS[nom](element, now, existant)
-                if nom == "experiences":
-                    colonnes["position"] = position
+                colonnes["position"] = position
                 if existant is None:
                     self._session.add(modele(owner_id=owner_id, profile_id=profile_id, **colonnes))
                 else:

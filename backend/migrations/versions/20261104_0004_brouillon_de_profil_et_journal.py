@@ -25,6 +25,8 @@ _PROFICIENCY = "('a1','a2','b1','b2','c1','c2','native')"
 
 
 _ELEMENTS = ("experiences", "educations", "skills", "profile_languages", "certifications")
+# `experiences.position` existe depuis 0001 ; les autres éléments l'acquièrent ici.
+_SANS_POSITION = ("educations", "skills", "profile_languages", "certifications")
 
 
 def upgrade() -> None:
@@ -39,6 +41,10 @@ def upgrade() -> None:
     )
     for table in _ELEMENTS:
         op.add_column(table, sa.Column("source_text", sa.Text(), nullable=True))
+    for table in _SANS_POSITION:
+        op.add_column(
+            table, sa.Column("position", sa.Integer(), server_default="0", nullable=False)
+        )
     op.alter_column("candidates", "first_name", existing_type=sa.String(120), nullable=True)
     op.alter_column("candidates", "last_name", existing_type=sa.String(120), nullable=True)
 
@@ -183,6 +189,8 @@ def downgrade() -> None:
     op.drop_column("candidate_profiles", "identity")
     for table in _ELEMENTS:
         op.drop_column(table, "source_text")
+    for table in _SANS_POSITION:
+        op.drop_column(table, "position")
 
     op.drop_constraint(
         op.f("ck_profile_languages_validated_is_complete"), "profile_languages", type_="check"

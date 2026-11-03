@@ -20,7 +20,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 6 | EPIC 001 |
 | [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 12 | EPIC 002 |
-| [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 12 | EPIC 003, EPIC 004 |
+| [✅] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 18 | EPIC 003, EPIC 004 |
 | [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 18 | EPIC 002 |
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 19 | EPIC 003, EPIC 007 |
@@ -220,7 +220,7 @@ Total : 404 tâches.
 - [✅] Sauvegarde et restauration documentées.
 - [➖] Aucun accès direct à la base depuis la logique métier.
 
-## [➖] EPIC 005 — CANDIDATE PROFILE & MASTER CV
+## [✅] EPIC 005 — CANDIDATE PROFILE & MASTER CV
 
 - **Priorité :** P0
 - **Objectif :** créer le référentiel central du candidat.
@@ -246,30 +246,30 @@ Total : 404 tâches.
 | [✅] | TASK-005-09 | Extraire les compétences | P0 | DONE | à estimer |
 | [✅] | TASK-005-10 | Extraire les langues et certifications | P0 | DONE | à estimer |
 
-### [➖] FEATURE 005.3 — Validation du CV maître
+### [✅] FEATURE 005.3 — Validation du CV maître
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-005-11 | Créer le formulaire de profil | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-12 | Créer l'éditeur des expériences | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-13 | Créer l'éditeur des compétences | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-14 | Créer la gestion des formations | P0 | BACKLOG | à estimer |
-| [➖] | TASK-005-15 | Ajouter la validation des informations extraites | P0 | BACKLOG | à estimer |
+| [✅] | TASK-005-11 | Créer le formulaire de profil | P0 | DONE | à estimer |
+| [✅] | TASK-005-12 | Créer l'éditeur des expériences | P0 | DONE | à estimer |
+| [✅] | TASK-005-13 | Créer l'éditeur des compétences | P0 | DONE | à estimer |
+| [✅] | TASK-005-14 | Créer la gestion des formations | P0 | DONE | à estimer |
+| [✅] | TASK-005-15 | Ajouter la validation des informations extraites | P0 | DONE | à estimer |
 | [✅] | TASK-005-16 | Ajouter l'historique des modifications | P0 | DONE | à estimer |
 
-### [➖] FEATURE 005.4 — Profil professionnel
+### [✅] FEATURE 005.4 — Profil professionnel
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
 | [✅] | TASK-005-17 | Créer le profil maître versionné | P0 | DONE | à estimer |
-| [➖] | TASK-005-18 | Créer la gestion des préférences professionnelles | P0 | BACKLOG | à estimer |
+| [✅] | TASK-005-18 | Créer la gestion des préférences professionnelles | P0 | DONE | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 
-- [➖] Import de CV fonctionnel.
+- [✅] Import de CV fonctionnel.
 - [✅] Extraction testée.
-- [➖] Modifications possibles.
-- [➖] Validation humaine disponible.
+- [✅] Modifications possibles.
+- [✅] Validation humaine disponible.
 - [✅] Profil maître conservé indépendamment des CV ciblés.
 - [✅] Traçabilité des informations.
 - [✅] Aucune donnée professionnelle inventée.

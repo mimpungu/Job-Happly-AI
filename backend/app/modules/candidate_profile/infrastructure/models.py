@@ -85,6 +85,9 @@ class _ProfileItemMixin(PrimaryKeyMixin, TimestampMixin, OwnedMixin):
     source: Mapped[str] = mapped_column(String(20), server_default=DataOrigin.MANUAL.value)
     # Extrait du document d'origine (traçabilité) : renseigné pour les éléments importés.
     source_text: Mapped[str | None] = mapped_column(Text)
+    # Ordre voulu par l'utilisateur. `created_at` ne convient pas : les lignes insérées dans une
+    # même transaction partagent le même horodatage.
+    position: Mapped[int] = mapped_column(Integer, server_default="0")
     validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
@@ -126,7 +129,6 @@ class ExperienceModel(_ProfileItemMixin, Base):
     is_current: Mapped[bool] = mapped_column(server_default=text("false"))
     description: Mapped[str | None] = mapped_column(Text)
     achievements: Mapped[list[str]] = mapped_column(JSONB, server_default=text("'[]'::jsonb"))
-    position: Mapped[int] = mapped_column(Integer, server_default="0")
 
 
 class EducationModel(_ProfileItemMixin, Base):
