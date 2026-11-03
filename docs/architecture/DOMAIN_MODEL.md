@@ -21,7 +21,7 @@ Règle transversale : une information absente est `None`/`NULL`, jamais zéro ni
 | Contexte | Entités | Invariants principaux |
 |---|---|---|
 | candidate_profile | Candidate, CandidateProfile (versionné), Experience, Education, Certification, Skill, Language | Un candidat par propriétaire ; version de profil unique et ≥ 1 ; période valide ; compétence unique par profil sans tenir compte de la casse ; chaque élément porte son origine (importé/manuel) et sa date de validation |
-| job_discovery | JobSource, JobOffer, JobOfferSource (observation), JobOfferState, SavedSearch, SearchRun | Une observation par (source, identifiant externe) ; offre = fiche normalisée, donnée brute conservée dans l'observation ; fourchette salariale valide et accompagnée d'une devise ; URL canonique unique |
+| job_discovery | JobSource, TargetCompany, JobOffer, JobOfferSource (observation), JobOfferState, SavedSearch, SearchRun | Une observation par (source, identifiant externe) ; offre = fiche normalisée, donnée brute conservée dans l'observation ; fourchette salariale valide et accompagnée d'une devise ; URL canonique unique ; une entreprise ne s'active que si sa source est supportée, et une page non ATS que si ses CGU ont été vérifiées par une personne |
 | job_intelligence | JobAnalysis, JobMatchScore | Une analyse par (offre, type, version du prompt, modèle, empreinte du texte) ; score entre 0 et 100, reproductible pour une version de pondérations |
 | ai_management | AIUsage, AIBudget, AICacheEntry | Tokens et coûts ≥ 0 ; plafond > 0 ; un seul plafond global par période ; clé de cache unique |
 | document_generation | GeneratedDocument, DocumentVersion | Versions immuables et numérotées sans doublon ; stockage par clé générée |

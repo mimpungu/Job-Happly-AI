@@ -731,7 +731,7 @@ Méthodes :
 
 - L'utilisateur fournit les entreprises à surveiller et le(s) intitulé(s) de poste recherché(s).
 
-[➖] **TASK-006-22 — Détecter la source publique d'une entreprise**
+[✅] **TASK-006-22 — Détecter la source publique d'une entreprise**
 
 - Identifier le logiciel de recrutement (ATS) ou la page carrières publique.
 - Conserver la méthode de détection et la date.
@@ -741,7 +741,7 @@ Méthodes :
 - Greenhouse, Lever, Ashby, SmartRecruiters, Workable : uniquement les flux publics prévus pour la lecture des offres.
 - Vérifier les conditions d'utilisation de chaque fournisseur avant son intégration (TASK-006-14).
 
-[➖] **TASK-006-24 — Extraction des données structurées `JobPosting` (schema.org)**
+[✅] **TASK-006-24 — Extraction des données structurées `JobPosting` (schema.org)**
 
 - Lire uniquement les données structurées publiques des pages carrières.
 
@@ -751,15 +751,15 @@ Méthodes :
 - Limiter le débit, User-Agent honnête, cache pour éviter les requêtes répétées.
 - Abandonner proprement en cas de refus (403, CAPTCHA, connexion demandée) : aucun contournement.
 
-[➖] **TASK-006-26 — Filtrer les offres d'entreprise par intitulé de poste**
+[✅] **TASK-006-26 — Filtrer les offres d'entreprise par intitulé de poste**
 
 - Filtrage déterministe (niveau 0), sans appel IA.
 
-[➖] **TASK-006-27 — Sécuriser les requêtes sortantes (SSRF)**
+[✅] **TASK-006-27 — Sécuriser les requêtes sortantes (SSRF)**
 
 - Liste de destinations autorisées, blocage des adresses internes, validation des URL de redirection.
 
-[➖] **TASK-006-28 — Tests avec fixtures anonymisées**
+[✅] **TASK-006-28 — Tests avec fixtures anonymisées**
 
 - Cas nominal, page non supportée, accès refusé, `robots.txt` restrictif, structure modifiée.
 
@@ -2029,7 +2029,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
 | [➖] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 0 | 0.3 |
-| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 13 | 0.2 |
+| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
 | [➖] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 0 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 0 | 0.2 |
 | [➖] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 0 | 0.3 |
@@ -2044,7 +2044,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
-État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 006 : FEATURES 006.1 à 006.3 réalisées (framework, registre, résilience) ; 006-14/15 en attente de vérification des sources officielles (voir docs/DATA_SOURCES.md), 006-16 BLOCKED (identifiants à fournir par le propriétaire) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
+État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 006 : FEATURES 006.1 à 006.3 réalisées (framework, registre, résilience) ; 006.6 en cours : détection par URL, JSON-LD, filtrage, SSRF et tests faits (006-22, 24, 26, 27, 28), connecteurs Greenhouse et Lever implémentés sur fixtures sans appel réel (006-23 partielle : Ashby, SmartRecruiters, Workable restants), 006-25 partielle (robots.txt et refus respectés ; limitation de débit et cache de pages à brancher), 006-21 sans interface ; 006-14/15 en attente de vérification des sources officielles (voir docs/DATA_SOURCES.md), 006-16 BLOCKED (identifiants à fournir par le propriétaire) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
 
 ## 8.2 Contenu de `PROJECT_BACKLOG.md`
 

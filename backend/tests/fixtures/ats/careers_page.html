@@ -1,0 +1,34 @@
+<!doctype html>
+<html><head><title>Carrières Exemple SA</title>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Exemple SA"}</script>
+<script type="application/ld+json">{ceci n'est pas du json}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "JobPosting",
+      "title": "Data Analyst",
+      "description": "<p>Analyse de données</p><script>alert('x')<\/script><ul><li>SQL</li></ul>",
+      "identifier": {"@type": "PropertyValue", "value": "JOB-42"},
+      "datePosted": "2026-10-01",
+      "validThrough": "2026-12-31T00:00:00Z",
+      "employmentType": "PART_TIME",
+      "hiringOrganization": {"@type": "Organization", "name": "Exemple SA"},
+      "jobLocation": {"@type": "Place", "address": {"@type": "PostalAddress", "addressLocality": "Paris", "addressRegion": "Île-de-France", "addressCountry": "FR"}},
+      "baseSalary": {"@type": "MonetaryAmount", "currency": "eur", "value": {"@type": "QuantitativeValue", "minValue": 45000, "maxValue": 55000, "unitText": "YEAR"}},
+      "url": "https://carrieres.exemple.test/offres/42"
+    },
+    {
+      "@type": ["JobPosting", "Thing"],
+      "title": "Développeur Télétravail",
+      "description": "Poste 100 % à distance",
+      "jobLocationType": "TELECOMMUTE",
+      "employmentType": "FULL_TIME",
+      "baseSalary": {"currency": "EUR", "value": {"minValue": 25, "maxValue": 35, "unitText": "HOUR"}}
+    },
+    {"@type": "JobPosting", "description": "Sans titre : doit être ignorée"}
+  ]
+}
+</script>
+</head><body><h1>Offres</h1></body></html>

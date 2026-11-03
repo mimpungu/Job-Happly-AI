@@ -21,7 +21,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
 | [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 12 | EPIC 002 |
 | [➖] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 0 | EPIC 003, EPIC 004 |
-| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 13 | EPIC 002 |
+| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 18 | EPIC 002 |
 | [➖] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 0 | EPIC 004, EPIC 006 |
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 0 | EPIC 003, EPIC 007 |
 | [➖] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 0 | EPIC 005, EPIC 007, EPIC 008 |
@@ -330,13 +330,13 @@ Total : 404 tâches.
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
 | [➖] | TASK-006-21 | Gérer la liste des entreprises ciblées | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-22 | Détecter la source publique d'une entreprise | P0 | BACKLOG | à estimer |
+| [✅] | TASK-006-22 | Détecter la source publique d'une entreprise | P0 | DONE | à estimer |
 | [➖] | TASK-006-23 | Connecteurs d'API publiques d'ATS | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-24 | Extraction des données structurées `JobPosting` (schema.org) | P0 | BACKLOG | à estimer |
+| [✅] | TASK-006-24 | Extraction des données structurées `JobPosting` (schema.org) | P0 | DONE | à estimer |
 | [➖] | TASK-006-25 | Lecture de pages publiques conditionnée à l'autorisation | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-26 | Filtrer les offres d'entreprise par intitulé de poste | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-27 | Sécuriser les requêtes sortantes (SSRF) | P0 | BACKLOG | à estimer |
-| [➖] | TASK-006-28 | Tests avec fixtures anonymisées | P0 | BACKLOG | à estimer |
+| [✅] | TASK-006-26 | Filtrer les offres d'entreprise par intitulé de poste | P0 | DONE | à estimer |
+| [✅] | TASK-006-27 | Sécuriser les requêtes sortantes (SSRF) | P0 | DONE | à estimer |
+| [✅] | TASK-006-28 | Tests avec fixtures anonymisées | P0 | DONE | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 

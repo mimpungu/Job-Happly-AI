@@ -1,0 +1,26 @@
+[
+  {
+    "id": "aaaaaaaa-0000-0000-0000-000000000001",
+    "text": "Data Analyst",
+    "categories": {"location": "Montréal, Canada", "commitment": "Full-time", "team": "Data"},
+    "country": "CA",
+    "descriptionPlain": "Analyse de données avec SQL.",
+    "additionalPlain": "Avantages variés.",
+    "lists": [{"text": "Responsabilités", "content": "<li>Construire des rapports</li>"}],
+    "hostedUrl": "https://jobs.lever.co/exemplesa/aaaaaaaa-0000-0000-0000-000000000001",
+    "applyUrl": "https://jobs.lever.co/exemplesa/aaaaaaaa-0000-0000-0000-000000000001/apply",
+    "workplaceType": "hybrid",
+    "salaryRange": {"min": 60000, "max": 80000, "currency": "cad", "interval": "per-year-salary"},
+    "createdAt": 1760000000000
+  },
+  {
+    "id": "aaaaaaaa-0000-0000-0000-000000000002",
+    "text": "Stagiaire Data",
+    "categories": {"location": "Remote", "commitment": "Intern"},
+    "country": "ZZZ",
+    "descriptionPlain": "Stage.",
+    "hostedUrl": "https://jobs.lever.co/exemplesa/aaaaaaaa-0000-0000-0000-000000000002",
+    "workplaceType": "remote",
+    "salaryRange": {"min": 20, "max": 30, "currency": "USD", "interval": "per-hour-wage"}
+  }
+]

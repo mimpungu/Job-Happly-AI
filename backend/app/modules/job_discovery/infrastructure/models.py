@@ -234,3 +234,48 @@ class SearchRunModel(PrimaryKeyMixin, CreatedAtMixin, OwnedMixin, Base):
     source_outcomes: Mapped[dict[str, Any]] = mapped_column(
         JSONB, server_default=text("'{}'::jsonb")
     )
+
+
+class TargetCompanyModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
+    """Entreprise suivie. La lecture de pages publiques exige une vérification humaine des CGU."""
+
+    __tablename__ = "target_companies"
+    __table_args__ = (
+        CheckConstraint(
+            "ats_kind IS NULL OR ats_kind IN ('greenhouse','lever','careers_page','unsupported')",
+            name="ats_kind_valid",
+        ),
+        CheckConstraint(
+            "detection_status IN ('pending','supported','unsupported')",
+            name="detection_status_valid",
+        ),
+        CheckConstraint(
+            "ats_kind NOT IN ('greenhouse','lever') OR ats_token IS NOT NULL",
+            name="ats_requires_token",
+        ),
+        CheckConstraint(
+            "enabled = false OR detection_status = 'supported'", name="enabled_requires_supported"
+        ),
+        CheckConstraint(
+            "NOT (enabled AND ats_kind = 'careers_page') OR tos_verified_at IS NOT NULL",
+            name="careers_page_requires_tos_check",
+        ),
+        Index(
+            "uq_target_companies_owner_id_name_lower",
+            "owner_id",
+            func.lower(text("name")),
+            unique=True,
+        ),
+    )
+
+    name: Mapped[str] = mapped_column(String(200))
+    careers_url: Mapped[str | None] = mapped_column(Text)
+    ats_kind: Mapped[str | None] = mapped_column(String(20))
+    ats_token: Mapped[str | None] = mapped_column(String(100))
+    ats_region: Mapped[str | None] = mapped_column(String(10))
+    detection_method: Mapped[str | None] = mapped_column(String(40))
+    detection_status: Mapped[str] = mapped_column(String(20), server_default="pending")
+    detected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    # Date à laquelle une personne a lu les CGU et robots.txt du site (pages non ATS).
+    tos_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

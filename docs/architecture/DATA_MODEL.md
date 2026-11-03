@@ -10,9 +10,9 @@ Source de vérité : les migrations Alembic (`backend/migrations/versions/`), v�
 - Montants en `NUMERIC`, jamais en flottant. Données semi-structurées (préférences, critères, résultats d'analyse, charge brute d'une source) en `JSONB`, validées par le domaine avant écriture.
 - Pays, langues et devises : formats contrôlés par `CHECK`, sans liste fermée.
 
-## Tables (26)
+## Tables (27)
 
-`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `job_sources` · `job_offers` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications`
+`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `job_sources` · `target_companies` · `job_offers` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications`
 
 À venir avec leur EPIC : file de tâches (`jobs`, ADR-0009, EPIC 007/015), préférences de notification (EPIC 015), préparation d'entretien (EPIC 016).
 

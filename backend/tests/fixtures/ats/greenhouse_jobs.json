@@ -1,0 +1,33 @@
+{
+  "jobs": [
+    {
+      "id": 4001,
+      "internal_job_id": 9001,
+      "title": "Data Analyst",
+      "updated_at": "2026-10-30T09:00:00-04:00",
+      "location": {"name": "Paris, France"},
+      "absolute_url": "https://job-boards.greenhouse.io/exemplesa/jobs/4001",
+      "language": "fr",
+      "content": "&lt;p&gt;Vous analysez des donn&amp;eacute;es avec &lt;strong&gt;SQL&lt;/strong&gt; et Python.&lt;/p&gt;&lt;script&gt;alert(1)&lt;/script&gt;&lt;ul&gt;&lt;li&gt;Tableaux de bord&lt;/li&gt;&lt;li&gt;Qualit&amp;eacute; des donn&amp;eacute;es&lt;/li&gt;&lt;/ul&gt;",
+      "departments": [{"id": 1, "name": "Data"}],
+      "offices": [{"id": 2, "name": "Paris"}]
+    },
+    {
+      "id": 4002,
+      "title": "Ingénieur Logiciel Senior",
+      "updated_at": "2026-10-29T09:00:00-04:00",
+      "location": {"name": "Remote"},
+      "absolute_url": "https://job-boards.greenhouse.io/exemplesa/jobs/4002",
+      "content": "&lt;p&gt;D&amp;eacute;veloppement backend en Go.&lt;/p&gt;"
+    },
+    {
+      "id": 4003,
+      "title": "Responsable Data Analyst Junior",
+      "updated_at": "2026-10-28T09:00:00-04:00",
+      "location": {"name": "Lyon, France"},
+      "absolute_url": "https://job-boards.greenhouse.io/exemplesa/jobs/4003",
+      "content": ""
+    }
+  ],
+  "meta": {"total": 3}
+}

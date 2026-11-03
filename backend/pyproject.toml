@@ -11,6 +11,7 @@ dependencies = [
   "sqlalchemy[asyncio]>=2.0",
   "alembic>=1.13",
   "psycopg[binary]>=3.2",
+  "httpx>=0.28.1",
 ]
 
 [dependency-groups]
@@ -31,7 +32,7 @@ target-version = "py313"
 select = ["E", "F", "I", "B", "UP", "S", "C4", "SIM", "RUF", "ASYNC"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S311"]
+"tests/**" = ["S101", "S105", "S106", "S107", "S311"]
 # Fichiers générés par Alembic : seules les corrections automatiques de formatage s'appliquent.
 "migrations/versions/*" = ["E501", "RUF012"]
 
