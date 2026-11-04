@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Toaster } from "@/components/ui/toaster";
 import type { AISettings, AIUsage } from "@/types/ai";
 
-import { AICenter, montantValide } from "./ai-center";
+import { AICenter, choixIA, choixIndisponible, montantValide } from "./ai-center";
 
 const json = (corps: unknown, statut = 200) =>
   new Response(JSON.stringify(corps), { status: statut });
@@ -81,7 +81,67 @@ describe("montantValide", () => {
   });
 });
 
+const OLLAMA = {
+  name: "ollama",
+  kind: "local" as const,
+  models: ["gemma4:e4b"],
+  uses_data_for_training: false,
+};
+const GEMINI = {
+  name: "gemini",
+  kind: "api" as const,
+  models: ["gemini-3.1-flash-lite"],
+  uses_data_for_training: true,
+};
+
+describe("choixIA", () => {
+  it("propose Ollama, Gemini et l'automatique quand les deux sont configurés", () => {
+    const options = choixIA([OLLAMA, GEMINI]);
+
+    expect(options.map((o) => o.value)).toEqual(["hybrid", "local_only", "api_only"]);
+    expect(options.every((o) => !o.disabled)).toBe(true);
+    expect(options[0]?.label).toBe("Automatique : Ollama d'abord, Gemini en renfort");
+    expect(options[2]?.label).toMatch(/palier gratuit, textes publics seulement/);
+  });
+
+  it("désactive ce qui n'est pas configuré en disant ce qui manque", () => {
+    const options = choixIA([OLLAMA]);
+
+    expect(options.find((o) => o.value === "api_only")).toMatchObject({
+      disabled: true,
+      label: "Gemini — non configuré (clé absente)",
+    });
+    expect(options.find((o) => o.value === "hybrid")?.disabled).toBe(true);
+    expect(options.find((o) => o.value === "local_only")?.disabled).toBe(false);
+  });
+
+  it("signale un choix enregistré devenu indisponible", () => {
+    const sansGemini = reglages({ backend_preference: "api_only", providers: [OLLAMA] });
+    const ok = reglages({ backend_preference: "local_only", providers: [OLLAMA] });
+
+    expect(choixIndisponible(sansGemini)).toBe(true);
+    expect(choixIndisponible(ok)).toBe(false);
+  });
+});
+
 describe("AICenter", () => {
+  it("change d'IA depuis la liste et refuse un fournisseur non configuré", async () => {
+    const ecritures: { url: string; corps: unknown }[] = [];
+    simuler(reglages({ providers: [OLLAMA] }), consommation(), ecritures);
+    afficher();
+    const user = userEvent.setup();
+
+    const liste = await screen.findByLabelText("IA utilisée");
+    expect(
+      screen.getByRole("option", { name: "Gemini — non configuré (clé absente)" }),
+    ).toBeDisabled();
+    await user.selectOptions(liste, "local_only");
+
+    await waitFor(() =>
+      expect(ecritures.map((e) => e.corps)).toEqual([{ backend_preference: "local_only" }]),
+    );
+  });
+
   it("avertit sur le palier gratuit et lance le test de bout en bout", async () => {
     vi.stubGlobal(
       "fetch",
@@ -183,12 +243,12 @@ describe("AICenter", () => {
 
   it("change le mode et la préférence local/API/hybride", async () => {
     const ecritures: { url: string; corps: unknown }[] = [];
-    simuler(reglages(), consommation(), ecritures);
+    simuler(reglages({ providers: [OLLAMA] }), consommation(), ecritures);
     afficher();
     const user = userEvent.setup();
 
     await user.selectOptions(await screen.findByLabelText("Mode"), "quality");
-    await user.selectOptions(screen.getByLabelText("Où exécuter l'IA"), "local_only");
+    await user.selectOptions(screen.getByLabelText("IA utilisée"), "local_only");
 
     await waitFor(() =>
       expect(ecritures.map((e) => e.corps)).toEqual([

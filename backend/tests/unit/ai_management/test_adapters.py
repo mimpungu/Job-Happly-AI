@@ -55,7 +55,7 @@ class TestGemini:
         envoyee = vues[0]
         assert envoyee.headers["x-goog-api-key"] == CLE
         assert CLE not in str(envoyee.url)
-        assert str(envoyee.url).endswith("/models/gemini-2.5-flash-lite:generateContent")
+        assert str(envoyee.url).endswith("/models/gemini-3.1-flash-lite:generateContent")
         corps = json.loads(envoyee.content)
         assert corps["generationConfig"]["responseMimeType"] == "application/json"
         assert corps["generationConfig"]["maxOutputTokens"] == 300

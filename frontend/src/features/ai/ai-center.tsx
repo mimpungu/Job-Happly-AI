@@ -9,7 +9,8 @@ import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toaster";
-import type { AIMode, AISettings, AIUsage, BackendPreference } from "@/types/ai";
+import type { SelectOption } from "@/components/ui/select";
+import type { AIMode, AIProviderView, AISettings, AIUsage, BackendPreference } from "@/types/ai";
 
 import {
   useAISettings,
@@ -27,11 +28,50 @@ export const MODES = [
   { value: "quality", label: "Qualité" },
 ] as const;
 
-export const PREFERENCES = [
-  { value: "local_only", label: "Local uniquement (gratuit, données sur votre machine)" },
-  { value: "api_only", label: "API payante uniquement" },
-  { value: "hybrid", label: "Hybride : local d'abord, API en renfort" },
-] as const;
+const NOMS: Record<string, string> = { ollama: "Ollama", gemini: "Gemini" };
+const nomAffiche = (p: AIProviderView) => NOMS[p.name] ?? p.name;
+
+/**
+ * Choix de l'IA présenté à l'utilisateur : un fournisseur par nom, plus l'automatique.
+ * Un fournisseur non configuré reste visible (on voit ce qui manque) mais non sélectionnable.
+ * Chaque choix correspond à une préférence du serveur (local seul, API seule, hybride).
+ */
+export function choixIA(providers: AIProviderView[]): SelectOption[] {
+  const local = providers.find((p) => p.kind === "local");
+  const api = providers.find((p) => p.kind === "api");
+  return [
+    {
+      value: "hybrid",
+      label:
+        local && api
+          ? `Automatique : ${nomAffiche(local)} d'abord, ${nomAffiche(api)} en renfort`
+          : "Automatique (nécessite Ollama et Gemini)",
+      disabled: !(local && api),
+    },
+    {
+      value: "local_only",
+      label: local
+        ? `${nomAffiche(local)} — local, gratuit, rien ne quitte votre machine`
+        : "Ollama — non configuré",
+      disabled: !local,
+    },
+    {
+      value: "api_only",
+      label: api
+        ? `${nomAffiche(api)} — ${api.uses_data_for_training ? "palier gratuit, textes publics seulement" : "API payante, sous plafond"}`
+        : "Gemini — non configuré (clé absente)",
+      disabled: !api,
+    },
+  ];
+}
+
+/** Vrai si le choix enregistré désigne une IA aujourd'hui indisponible. */
+export function choixIndisponible(reglages: AISettings): boolean {
+  // Sans aucun fournisseur, le panneau « État » l'explique déjà : pas de seconde alerte.
+  if (reglages.providers.length === 0) return false;
+  const option = choixIA(reglages.providers).find((o) => o.value === reglages.backend_preference);
+  return option?.disabled ?? true;
+}
 
 /** Montant décimal positif avec au plus 2 décimales (aligné sur la contrainte serveur). */
 export function montantValide(valeur: string): boolean {
@@ -102,11 +142,19 @@ function ModeEtPreference({ reglages }: { reglages: AISettings }) {
           />
         )}
       </Field>
-      <Field label="Où exécuter l'IA" hint="Le local passe toujours avant l'API payante.">
+      <Field
+        label="IA utilisée"
+        hint="Choisissez Ollama (local), Gemini ou l'automatique. En automatique, le local passe en premier."
+        error={
+          choixIndisponible(reglages)
+            ? "L'IA choisie n'est pas configurée : les appels IA seront refusés."
+            : undefined
+        }
+      >
         {(c) => (
           <Select
             {...c}
-            options={PREFERENCES}
+            options={choixIA(reglages.providers)}
             value={reglages.backend_preference}
             onChange={(e) => modifier({ backend_preference: e.target.value as BackendPreference })}
           />
