@@ -32,6 +32,21 @@ for (const theme of THEMES) {
           expect(debordement).toBe(false);
         });
       }
+
+      test("« Recherche d'emploi » : la fenêtre « Tous les filtres » est accessible", async ({
+        page,
+      }) => {
+        await page.addInitScript((t) => localStorage.setItem("happly-theme", t), theme);
+        await page.goto("/jobs");
+        await page.getByRole("button", { name: /Tous les filtres/ }).click();
+        await expect(page.getByRole("dialog", { name: "Tous les filtres" })).toBeVisible();
+
+        const resultat = await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+          .analyze();
+
+        expect(resultat.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+      });
     });
   }
 }

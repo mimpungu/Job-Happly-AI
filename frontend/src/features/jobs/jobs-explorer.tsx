@@ -74,17 +74,17 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
         {savedOnly ? "Offres sauvegardées" : "Recherche d'emploi"}
       </h1>
 
+      {savedOnly ? null : (
+        <SearchForm
+          key={params.toString()}
+          filters={filters}
+          onSubmit={appliquer}
+          onSaveSearch={setASauvegarder}
+        />
+      )}
+
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <div className="flex min-w-0 flex-col gap-4">
-          {savedOnly ? null : (
-            <SearchForm
-              key={params.toString()}
-              filters={filters}
-              onSubmit={appliquer}
-              onSaveSearch={setASauvegarder}
-            />
-          )}
-
           <section
             aria-label="Résultats"
             // Pendant le rechargement, l'ancienne page reste affichée : on le signale pour ne pas

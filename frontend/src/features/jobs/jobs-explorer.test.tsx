@@ -178,14 +178,40 @@ describe("JobsExplorer", () => {
     expect(push).toHaveBeenCalledWith("/jobs?text=python&city=Lyon");
   });
 
+  it("n'affiche que l'intitulé, le contrat et la ville tant que la fenêtre des filtres est fermée", async () => {
+    simulerApi(() => json(page([])));
+    afficher();
+    await screen.findByText("Aucune offre ne correspond");
+
+    expect(screen.getByLabelText("Intitulé ou mot-clé")).toBeInTheDocument();
+    expect(screen.getByLabelText("Contrat")).toBeInTheDocument();
+    expect(screen.getByLabelText("Ville")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Entreprise")).toBeNull();
+
+    await userEvent.click(screen.getByRole("button", { name: "Tous les filtres" }));
+
+    expect(screen.getByRole("dialog", { name: "Tous les filtres" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Entreprise")).toBeInTheDocument();
+    expect(screen.getByLabelText("Salaire minimum")).toBeInTheDocument();
+  });
+
+  it("compte les filtres avancés actifs sur le bouton", async () => {
+    recherche = "company=BNP&min_score=70";
+    simulerApi(() => json(page([])));
+    afficher();
+
+    expect(await screen.findByRole("button", { name: /Tous les filtres/ })).toHaveTextContent("2");
+  });
+
   it("filtre par nom d'entreprise et par ville", async () => {
     simulerApi(() => json(page([])));
     afficher();
     await screen.findByText("Aucune offre ne correspond");
 
-    await userEvent.type(screen.getByLabelText("Entreprise"), "BNP Paribas");
     await userEvent.type(screen.getByLabelText("Ville"), "Paris");
-    await userEvent.click(screen.getByRole("button", { name: "Rechercher" }));
+    await userEvent.click(screen.getByRole("button", { name: "Tous les filtres" }));
+    await userEvent.type(screen.getByLabelText("Entreprise"), "BNP Paribas");
+    await userEvent.click(screen.getByRole("button", { name: "Appliquer les filtres" }));
 
     expect(push).toHaveBeenCalledWith("/jobs?company=BNP+Paribas&city=Paris");
   });
@@ -195,11 +221,12 @@ describe("JobsExplorer", () => {
     afficher();
     await screen.findByText("Aucune offre ne correspond");
 
+    await userEvent.click(screen.getByRole("button", { name: "Tous les filtres" }));
     await userEvent.type(screen.getByLabelText("Salaire minimum"), "40000");
     await userEvent.clear(screen.getByLabelText("Devise"));
 
     expect(screen.getByRole("alert")).toHaveTextContent("La devise est obligatoire");
-    expect(screen.getByRole("button", { name: "Rechercher" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Appliquer les filtres" })).toBeDisabled();
   });
 
   it("pagine via l'URL", async () => {
@@ -265,8 +292,9 @@ describe("JobsExplorer", () => {
     afficher();
     await screen.findByText("Aucune offre ne correspond");
 
+    await userEvent.click(screen.getByRole("button", { name: "Tous les filtres" }));
     await userEvent.selectOptions(screen.getByLabelText("Compatibilité minimale"), "70");
-    await userEvent.click(screen.getByRole("button", { name: "Rechercher" }));
+    await userEvent.click(screen.getByRole("button", { name: "Appliquer les filtres" }));
 
     expect(push).toHaveBeenCalledWith("/jobs?min_score=70");
   });
