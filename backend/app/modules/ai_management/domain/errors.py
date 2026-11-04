@@ -53,3 +53,9 @@ class IncompleteOutputError(AIError):
     """Réponse tronquée par la limite de tokens."""
 
     code = "ai_incomplete_output"
+
+
+class PersonalDataBlockedError(AIError):
+    """Les réglages de confidentialité interdisent d'envoyer des données personnelles à l'IA."""
+
+    code = "ai_personal_data_blocked"

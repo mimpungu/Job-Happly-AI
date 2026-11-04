@@ -9,6 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.api.errors import register_error_handlers
 from app.core.config import get_settings
 from app.core.database.session import create_engine, create_session_factory
+from app.core.observability.logging import configure_logging
+from app.core.observability.metrics import MetricsRegistry
+from app.core.observability.middleware import ObservabilityMiddleware
+from app.core.observability.rate_limit import SlidingWindowLimiter
 from app.modules.ai_management.presentation.router import register_ai_errors
 from app.modules.ai_management.presentation.router import router as ai_router
 from app.modules.application_management.presentation.errors import register_application_errors
@@ -49,6 +53,9 @@ from app.modules.notifications.presentation.router import (
     notifications_router,
     scheduler_router,
 )
+from app.modules.platform.presentation.router import router as health_router
+from app.modules.privacy.presentation.errors import register_privacy_errors
+from app.modules.privacy.presentation.router import router as privacy_router
 
 
 @asynccontextmanager
@@ -68,12 +75,23 @@ async def _lifespan(application: FastAPI) -> AsyncGenerator[None]:
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    configure_logging(settings.log_level)
     application = FastAPI(title="Happly AI API", version="0.1.0", lifespan=_lifespan)
+    application.state.metrics = MetricsRegistry()
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_allowed_origins,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allow_headers=["Content-Type"],
+        allow_headers=["Content-Type", "X-Request-ID"],
+        expose_headers=["X-Request-ID", "Retry-After"],
+    )
+    # Ajouté en dernier = le plus externe : il voit aussi les refus de CORS et les erreurs.
+    application.add_middleware(
+        ObservabilityMiddleware,
+        metrics=application.state.metrics,
+        limiter=SlidingWindowLimiter(settings.rate_limit_per_minute),
+        expensive_limiter=SlidingWindowLimiter(settings.rate_limit_expensive_per_minute),
+        max_body_bytes=settings.max_request_body_mb * 1024 * 1024,
     )
     register_error_handlers(application)
     register_domain_errors(application)
@@ -86,11 +104,13 @@ def create_app() -> FastAPI:
     register_manual_errors(application)
     register_ai_errors(application)
     register_interview_errors(application)
+    register_privacy_errors(application)
 
     @application.get("/api/v1/health", tags=["platform"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    application.include_router(health_router)
     application.include_router(manual_router)
     application.include_router(router)
     application.include_router(companies_router)
@@ -106,6 +126,7 @@ def create_app() -> FastAPI:
     application.include_router(notifications_router)
     application.include_router(scheduler_router)
     application.include_router(interview_router)
+    application.include_router(privacy_router)
     return application
 
 

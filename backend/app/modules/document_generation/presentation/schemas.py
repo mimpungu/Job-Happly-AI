@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from app.modules.document_generation.domain.enums import (
     LengthTarget,
@@ -33,7 +34,9 @@ class CompileVersionRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     latex_source: str = Field(min_length=10, max_length=1_000_000)
-    expected_keywords: list[str] = Field(default_factory=list, max_length=100)
+    expected_keywords: list[Annotated[str, StringConstraints(max_length=100)]] = Field(
+        default_factory=list, max_length=100
+    )
 
 
 class ATSCheckResponse(BaseModel):

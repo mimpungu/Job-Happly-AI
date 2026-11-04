@@ -1601,85 +1601,85 @@ Méthodes :
 
 Cet EPIC doit être traité dès la phase initiale et non uniquement en fin de développement.
 
-### [➖] FEATURE 018.1 — Sécurité applicative
+### [✅] FEATURE 018.1 — Sécurité applicative
 
-[➖] **TASK-018-01 — Définir le modèle de menaces**
+[✅] **TASK-018-01 — Définir le modèle de menaces**
 
-[➖] **TASK-018-02 — Sécuriser les API**
+[✅] **TASK-018-02 — Sécuriser les API**
 
-[➖] **TASK-018-03 — Valider toutes les entrées**
+[✅] **TASK-018-03 — Valider toutes les entrées**
 
-[➖] **TASK-018-04 — Configurer les permissions**
+[✅] **TASK-018-04 — Configurer les permissions**
 
-[➖] **TASK-018-05 — Protéger les secrets**
+[✅] **TASK-018-05 — Protéger les secrets**
 
-[➖] **TASK-018-06 — Configurer les limites de requêtes**
+[✅] **TASK-018-06 — Configurer les limites de requêtes**
 
-[➖] **TASK-018-07 — Protéger contre SSRF**
+[✅] **TASK-018-07 — Protéger contre SSRF**
 
-[➖] **TASK-018-08 — Protéger contre les injections**
+[✅] **TASK-018-08 — Protéger contre les injections**
 
-### [➖] FEATURE 018.2 — Sécurité IA
+### [✅] FEATURE 018.2 — Sécurité IA
 
-[➖] **TASK-018-09 — Définir les frontières de confiance**
+[✅] **TASK-018-09 — Définir les frontières de confiance**
 
-[➖] **TASK-018-10 — Protéger contre prompt injection**
+[✅] **TASK-018-10 — Protéger contre prompt injection**
 
-[➖] **TASK-018-11 — Séparer instructions et données externes**
+[✅] **TASK-018-11 — Séparer instructions et données externes**
 
-[➖] **TASK-018-12 — Limiter les données envoyées aux fournisseurs**
+[✅] **TASK-018-12 — Limiter les données envoyées aux fournisseurs**
 
-[➖] **TASK-018-13 — Valider les réponses structurées**
+[✅] **TASK-018-13 — Valider les réponses structurées**
 
-### [➖] FEATURE 018.3 — Sécurité documentaire
+### [✅] FEATURE 018.3 — Sécurité documentaire
 
-[➖] **TASK-018-14 — Isoler les fichiers importés**
+[✅] **TASK-018-14 — Isoler les fichiers importés**
 
-[➖] **TASK-018-15 — Sécuriser la compilation LaTeX**
+[✅] **TASK-018-15 — Sécuriser la compilation LaTeX**
 
-[➖] **TASK-018-16 — Contrôler les fichiers générés**
+[✅] **TASK-018-16 — Contrôler les fichiers générés**
 
-[➖] **TASK-018-17 — Définir les limites de ressources**
+[✅] **TASK-018-17 — Définir les limites de ressources**
 
-### [➖] FEATURE 018.4 — RGPD et confidentialité
+### [✅] FEATURE 018.4 — RGPD et confidentialité
 
-[➖] **TASK-018-18 — Définir la politique de conservation**
+[✅] **TASK-018-18 — Définir la politique de conservation**
 
-[➖] **TASK-018-19 — Ajouter l'export des données**
+[✅] **TASK-018-19 — Ajouter l'export des données**
 
-[➖] **TASK-018-20 — Ajouter la suppression des données**
+[✅] **TASK-018-20 — Ajouter la suppression des données**
 
-[➖] **TASK-018-21 — Documenter les transferts vers les fournisseurs IA**
+[✅] **TASK-018-21 — Documenter les transferts vers les fournisseurs IA**
 
-[➖] **TASK-018-22 — Ajouter les paramètres de confidentialité**
+[✅] **TASK-018-22 — Ajouter les paramètres de confidentialité**
 
-### [➖] FEATURE 018.5 — Observabilité
+### [✅] FEATURE 018.5 — Observabilité
 
-[➖] **TASK-018-23 — Créer les logs structurés**
+[✅] **TASK-018-23 — Créer les logs structurés**
 
-[➖] **TASK-018-24 — Ajouter les identifiants de corrélation**
+[✅] **TASK-018-24 — Ajouter les identifiants de corrélation**
 
-[➖] **TASK-018-25 — Ajouter les health checks**
+[✅] **TASK-018-25 — Ajouter les health checks**
 
-[➖] **TASK-018-26 — Mesurer les performances**
+[✅] **TASK-018-26 — Mesurer les performances**
 
-[➖] **TASK-018-27 — Ajouter le tableau de santé**
+[✅] **TASK-018-27 — Ajouter le tableau de santé**
 
-[➖] **TASK-018-28 — Ajouter le monitoring des tâches**
+[✅] **TASK-018-28 — Ajouter le monitoring des tâches**
 
 ### [➖] FEATURE 018.6 — Résilience
 
-[➖] **TASK-018-29 — Tester les interruptions**
+[✅] **TASK-018-29 — Tester les interruptions**
 
-[➖] **TASK-018-30 — Tester la restauration**
+[✅] **TASK-018-30 — Tester la restauration**
 
-[➖] **TASK-018-31 — Tester les défaillances de fournisseurs**
+[✅] **TASK-018-31 — Tester les défaillances de fournisseurs**
 
-[➖] **TASK-018-32 — Documenter les procédures de récupération**
+[✅] **TASK-018-32 — Documenter les procédures de récupération**
 
-[➖] **TASK-018-33 — Protéger l'accès réseau en mode local et configurer un CORS restrictif**
+[✅] **TASK-018-33 — Protéger l'accès réseau en mode local et configurer un CORS restrictif**
 
-[➖] **TASK-018-34 — Gérer la rotation des clés et le masquage des secrets dans l'interface**
+[✅] **TASK-018-34 — Gérer la rotation des clés et le masquage des secrets dans l'interface**
 
 [➖] **TASK-018-35 — Intégrer l'authentification (différée, ADR-0008)**
 
@@ -1690,21 +1690,25 @@ Cet EPIC doit être traité dès la phase initiale et non uniquement en fin de d
 
 - Autorisations par ressource sur la base de `owner_id`, migration des données de l'utilisateur local, tests d'isolation entre utilisateurs.
 
-[➖] **TASK-018-37 — Documenter et vérifier le mode local sans authentification**
+[✅] **TASK-018-37 — Documenter et vérifier le mode local sans authentification**
 
 - Liaison à `127.0.0.1`, ports Docker locaux, CORS restrictif ; voir `docs/security/LOCAL_NO_AUTH_NOTICE.md`.
 
 ### Critères d'acceptation
 
-- [➖] Modèle de menaces documenté.
-- [➖] Secrets protégés.
-- [➖] Documents isolés.
-- [➖] Compilation sécurisée.
-- [➖] Données personnelles contrôlables.
-- [➖] Logs non sensibles.
-- [➖] Procédures de restauration testées.
+- [✅] Modèle de menaces documenté.
+- [✅] Secrets protégés.
+- [✅] Documents isolés.
+- [✅] Compilation sécurisée.
+- [✅] Données personnelles contrôlables.
+- [✅] Logs non sensibles.
+- [✅] Procédures de restauration testées.
 
 **Livrable :** socle de sécurité et d'exploitation.
+
+> **Réalisé (ADR-0019)** : modèle de menaces, garde-fous exécutés par la CI (entrées bornées, surface sortante, SQL, secrets, mode local, catalogue RGPD, appels IA documentés), middleware de corrélation / en-têtes / limites / mesures, logs JSON masqués, santé et tableau de santé, module `privacy` (export ZIP, effacement confirmé, conservation, transferts IA, politique `local_only`/`never`), contrôle des PDF générés, restauration testée.
+>
+> **Reste à faire : TASK-018-35 (authentification) et TASK-018-36 (multi-utilisateur)**, volontairement différées par ADR-0008 tant que l'application reste locale ; obligatoires avant tout accès distant. L'EPIC reste donc `[➖]` (35/37). Voir `docs/security/LOCAL_NO_AUTH_NOTICE.md`.
 
 ---
 
@@ -2053,7 +2057,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 19 | 0.5 |
 | [✅] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 14 | 0.5 |
 | [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 0 | 1.0 |
-| [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
+| [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 35 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
 
 État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 007 : réalisé et testé sur connecteurs de test (aucune source réelle encore intégrée) ; la planification des nettoyages (007-19) et le branchement des gestionnaires de tâches sont faits avec l'EPIC 015 ; EPIC 006 : FEATURES 006.1 à 006.3 réalisées (framework, registre, résilience) ; 006.6 en cours : détection par URL, JSON-LD, filtrage, SSRF et tests faits (006-22, 24, 26, 27, 28), connecteurs Greenhouse et Lever implémentés sur fixtures sans appel réel (006-23 partielle : Ashby, SmartRecruiters, Workable restants), 006-25 partielle (robots.txt et refus respectés ; limitation de débit et cache de pages à brancher), 006-21 sans interface ; 006-14/15 en attente de vérification des sources officielles (voir docs/DATA_SOURCES.md), 006-16 BLOCKED (identifiants à fournir par le propriétaire) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.

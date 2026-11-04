@@ -7,7 +7,7 @@ from typing import Annotated, Self
 
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 from starlette.types import ExceptionHandler
 
 from app.core.api.dependencies import UnitOfWorkDep, get_owner_id
@@ -34,7 +34,9 @@ class SearchBody(BaseModel):
 
     title: str | None = Field(default=None, max_length=200)
     company: str | None = Field(default=None, max_length=200)
-    keywords: list[str] = Field(default_factory=list, max_length=10)
+    keywords: list[Annotated[str, StringConstraints(max_length=100)]] = Field(
+        default_factory=list, max_length=10
+    )
     city: str | None = Field(default=None, max_length=200)
     department: str | None = Field(default=None, pattern=r"^(\d{2}|2[AB]|97\d)$")
     max_pages: int = Field(default=3, ge=1, le=8)

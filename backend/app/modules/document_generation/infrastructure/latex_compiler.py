@@ -35,6 +35,7 @@ from app.modules.document_generation.domain.latex_safety import (
     ForbiddenLaTeXError,
     validate_latex_source,
 )
+from app.modules.document_generation.domain.pdf_safety import UnsafePdfError, assert_safe_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +187,12 @@ class IsolatedLaTeXCompiler(LaTeXCompilerPort):
                     f"Échec compilation pdfLaTeX ({code}) : {message_erreur}",
                     log_snippet=log_snippet,
                 )
-            return pdf_file.read_bytes()
+            contenu = pdf_file.read_bytes()
+            try:
+                assert_safe_pdf(contenu)
+            except UnsafePdfError as erreur:
+                raise UnsafeLaTeXSourceError(str(erreur)) from erreur
+            return contenu
 
     @staticmethod
     def _tuer(processus: subprocess.Popen[bytes]) -> None:

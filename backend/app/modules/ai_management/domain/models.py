@@ -26,6 +26,17 @@ class BackendPreference(StrEnum):
     """Local d'abord quand il sait faire la tâche ; l'API payante prend le relais, sous plafond."""
 
 
+class PersonalDataPolicy(StrEnum):
+    """Ce que l'utilisateur autorise pour ses données personnelles (CV, réponses, profil)."""
+
+    ALLOWED = "allowed"
+    """Autorisé selon les réglages habituels (consentement, plafonds, paliers sûrs)."""
+    LOCAL_ONLY = "local_only"
+    """Seulement vers un modèle local : rien ne quitte la machine."""
+    NEVER = "never"
+    """Aucun appel IA qui contienne des données personnelles."""
+
+
 class ProviderKind(StrEnum):
     API = "api"  # payant, les données quittent la machine
     LOCAL = "local"  # gratuit, les données restent sur la machine

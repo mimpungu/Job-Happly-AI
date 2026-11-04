@@ -23,6 +23,7 @@ from app.modules.ai_management.domain.errors import (
     ConsentRequiredError,
     IncompleteOutputError,
     InvalidOutputError,
+    PersonalDataBlockedError,
     ProviderFailureError,
 )
 from app.modules.ai_management.domain.models import AIMode, AIRequest, BackendPreference
@@ -46,6 +47,8 @@ class ProviderView(BaseModel):
     name: str
     kind: str
     models: list[str]
+    key_hint: str | None = None
+    """Fin masquée de la clé d'API (jamais la clé) : permet de vérifier une rotation."""
     uses_data_for_training: bool
     """Palier gratuit : le fournisseur peut réutiliser et faire relire les contenus."""
 
@@ -151,6 +154,7 @@ async def _reglages(
                 name=p.name,
                 kind=p.kind.value,
                 models=sorted(p.pricing),
+                key_hint=getattr(p, "key_hint", None),
                 uses_data_for_training=p.uses_data_for_training,
             )
             for p in providers
@@ -335,6 +339,7 @@ async def run_test(gateway: GatewayDep, owner_id: Owner, body: TestRequest) -> T
 _ERREURS_HTTP: dict[type[AIError], int] = {
     AIDisabledError: 409,
     AINotConfiguredError: 409,
+    PersonalDataBlockedError: 409,
     ConsentRequiredError: 409,
     BudgetNotDefinedError: 409,
     BudgetExceededError: 409,

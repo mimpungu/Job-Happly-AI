@@ -31,5 +31,6 @@ Un ADR documente une décision d'architecture importante : contexte, décision, 
 | [0016](0016-planification-automatisation-et-notifications.md) | Planification, automatisation des recherches et centre de notifications | Accepté |
 | [0017](0017-page-d-accueil-themes-et-derogation-graphique.md) | Page d'accueil, thèmes clair et sombre, dérogation du graphique d'entonnoir | Accepté |
 | [0018](0018-preparation-aux-entretiens.md) | Préparation aux entretiens et suivi des entretiens | Accepté |
+| [0019](0019-securite-confidentialite-et-exploitation.md) | Sécurité, confidentialité et exploitation (EPIC 018) | Accepté |
 
 Modèle : [TEMPLATE.md](TEMPLATE.md)

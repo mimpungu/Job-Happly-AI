@@ -23,7 +23,7 @@ import time
 import uuid
 from collections import defaultdict
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -40,13 +40,16 @@ from app.modules.ai_management.domain.errors import (
     ConsentRequiredError,
     IncompleteOutputError,
     InvalidOutputError,
+    PersonalDataBlockedError,
     ProviderFailureError,
 )
+from app.modules.ai_management.domain.framing import injection_markers
 from app.modules.ai_management.domain.models import (
     AIMode,
     AIRequest,
     FinishReason,
     ModelPricing,
+    PersonalDataPolicy,
     ProviderKind,
 )
 from app.modules.ai_management.domain.provider import AIProvider
@@ -121,6 +124,14 @@ class AIGateway:
             config = await SqlAIConfigRepository(session).get(owner_id)
         if config.mode is AIMode.DISABLED:
             raise AIDisabledError("L'IA est désactivée dans vos réglages.")
+        request = self._appliquer_confidentialite(request, config)
+        marqueurs = injection_markers(request.content)
+        if marqueurs:
+            # Signalement seulement : le contenu reste une donnée encadrée, jamais une consigne.
+            logger.warning(
+                "Formulation d'injection de prompt repérée dans un contenu externe",
+                extra={"task_type": request.task_type, "markers": marqueurs},
+            )
         routes = plan_routes(
             self._providers, request, mode=config.mode, preference=config.preference
         )
@@ -136,6 +147,21 @@ class AIGateway:
             except ProviderFailureError:
                 continue  # hybride : la route suivante (l'API) prend le relais du local
         return await self._essayer(owner_id, operation, config, routes[-1], request, validate)
+
+    @staticmethod
+    def _appliquer_confidentialite(request: AIRequest, config: AIConfig) -> AIRequest:
+        """Politique de confidentialité de l'utilisateur : elle ne peut que restreindre l'appel."""
+        if not request.contains_personal_data:
+            return request
+        if config.personal_data_policy is PersonalDataPolicy.NEVER:
+            raise PersonalDataBlockedError(
+                "Vos réglages de confidentialité interdisent d'envoyer des données personnelles "
+                "à l'IA."
+            )
+        if config.personal_data_policy is PersonalDataPolicy.LOCAL_ONLY:
+            autorises = request.allowed_kinds or frozenset(ProviderKind)
+            return replace(request, allowed_kinds=autorises & {ProviderKind.LOCAL})
+        return request
 
     # ------------------------------------------------------------------ une route
 

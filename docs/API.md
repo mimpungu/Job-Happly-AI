@@ -176,6 +176,31 @@ Score indicatif, déterministe, expliqué (`docs/architecture/MATCHING.md`). Cal
 
 Les critères dont les données manquent ont `status: "missing_data"` et `score: null` : ils ne sont pas comptés.
 
+## Confidentialité (RGPD)
+
+| Route | Rôle |
+|---|---|
+| `GET /privacy/summary` | Ce qui est stocké, par catégorie (lignes, volume de fichiers, détail par table) |
+| `GET /privacy/export` | Archive ZIP : `manifest.json`, un JSON par table, les PDF générés |
+| `POST /privacy/erase` | `{scope, confirmation}` : `scope` = catégorie ou `all` ; `confirmation` doit valoir `SUPPRIMER` (422 `confirmation_required`) ; 409 `deletion_blocked` si les offres sont encore suivies par des candidatures ; 422 `unknown_category` |
+| `GET /privacy/retention` | Politique de conservation (durée, purge automatique ou non) |
+| `POST /privacy/retention/purge` | Applique maintenant la conservation automatique → lignes purgées par table |
+| `GET /privacy/ai-transfers` | Ce qui part vers un fournisseur d'IA, par usage ; `personal_data` indique les données personnelles |
+| `GET`/`PUT /privacy/settings` | Politique d'envoi des données personnelles à l'IA : `allowed`, `local_only`, `never` (409 `ai_personal_data_blocked` côté IA si interdit) |
+
+## Santé et mesures
+
+| Route | Rôle |
+|---|---|
+| `GET /health` | Vivacité (sans base) |
+| `GET /health/ready` | Base et stockage ; 503 si l'un est en panne |
+| `GET /health/details` | `{status, components[]}` : base, stockage, LaTeX, IA, sources, tâches (`ok`, `degraded`, `down`, `not_configured`) |
+| `GET /health/metrics` | Durées (moyenne, p50, p95) et volumes par modèle de route, depuis le démarrage |
+
+Toutes les réponses portent `X-Request-ID` (corrélation avec les logs) et les en-têtes de sécurité.
+Au-delà des limites : `429 rate_limited` avec `Retry-After` ; requête trop grande : `413
+payload_too_large`.
+
 ## Limites actuelles
 
 - Ces routes lisent les offres **déjà présentes en base**. Le déclenchement d'une collecte auprès des sources (ingestion) n'est pas encore exposé : il viendra avec les connecteurs réels et l'EPIC 015.

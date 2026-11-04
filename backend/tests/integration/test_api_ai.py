@@ -95,6 +95,7 @@ async def test_un_fournisseur_configure_est_liste_sans_rendre_les_appels_possibl
         "name": "api-test",
         "kind": "api",
         "models": ["grand", "petit"],
+        "key_hint": None,
         "uses_data_for_training": False,
     }
     assert avant["paid_calls_possible"] is False
@@ -180,3 +181,27 @@ async def test_une_sortie_invalide_du_fournisseur_est_une_erreur_502_claire(
     reponse = await client.post("/api/v1/ai/test", json={})
 
     assert reponse.status_code == 502 and reponse.json()["error"]["code"] == "ai_invalid_output"
+
+
+async def test_la_cle_d_api_n_est_jamais_exposee_seul_un_indice_masque_l_est(
+    client: httpx.AsyncClient,
+) -> None:
+    from pydantic import SecretStr
+
+    from app.modules.ai_management.infrastructure.gemini import GeminiProvider
+
+    cle = "AIzaSyA1234567890abcdefghij"
+    application = client._transport.app  # type: ignore[attr-defined]
+    application.dependency_overrides[get_providers] = lambda: [
+        GeminiProvider(
+            api_key=SecretStr(cle),
+            tier="paid",
+            model_level1="gemini-3.1-flash-lite",
+            model_level2="gemini-3-flash-preview",
+        )
+    ]
+
+    reponse = await client.get("/api/v1/ai/settings")
+
+    assert reponse.json()["providers"][0]["key_hint"] == "…ghij"
+    assert cle not in reponse.text and "AIzaSy" not in reponse.text

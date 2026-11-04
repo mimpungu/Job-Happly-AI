@@ -270,3 +270,19 @@ class TestVariablesVides:
         reglages = Settings(_env_file=None, ollama_url="http://host.docker.internal:11434")
 
         assert reglages.ollama_url.endswith(":11434")
+
+
+def test_le_fournisseur_expose_un_indice_masque_de_sa_cle_jamais_la_cle() -> None:
+    from pydantic import SecretStr
+
+    from app.modules.ai_management.infrastructure.gemini import GeminiProvider
+
+    fournisseur = GeminiProvider(
+        api_key=SecretStr("AIzaSyA1234567890abcdefghij"),
+        tier="free",
+        model_level1="gemini-3.1-flash-lite",
+        model_level2="gemini-3-flash-preview",
+    )
+
+    assert fournisseur.key_hint == "…ghij"
+    assert "AIzaSyA1234567890" not in repr(fournisseur.__dict__)

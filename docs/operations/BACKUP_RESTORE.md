@@ -40,7 +40,7 @@ Recommandation initiale : une sauvegarde avant toute migration et au moins une p
 
 ## Vérifié
 
-Test manuel de bout en bout sur la base de test : sauvegarde, refus sans `--yes`, restauration dans une base distincte (26 tables et la donnée de test retrouvées), refus d'un fichier altéré, rétention. Une restauration planifiée régulière reste à instaurer (EPIC 018, TASK-018-30).
+Test manuel de bout en bout sur la base de test : sauvegarde, refus sans `--yes`, restauration dans une base distincte (26 tables et la donnée de test retrouvées), refus d'un fichier altéré, rétention. Depuis l'EPIC 018, ce parcours est aussi couvert par un **test automatisé** exécuté en CI (`tests/integration/test_resilience.py` : migrations, données, `pg_dump`, `pg_restore` vers une autre base, comparaison, détection d'un fichier altéré). Une restauration d'essai manuelle reste recommandée après une mise à jour majeure de PostgreSQL ; voir `RECOVERY.md`.
 
 ## Limites connues
 

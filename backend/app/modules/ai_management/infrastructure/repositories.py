@@ -13,7 +13,12 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.ai_management.domain.enums import BudgetPeriod, CallOutcome
-from app.modules.ai_management.domain.models import AIMode, BackendPreference, BudgetLimits
+from app.modules.ai_management.domain.models import (
+    AIMode,
+    BackendPreference,
+    BudgetLimits,
+    PersonalDataPolicy,
+)
 from app.modules.ai_management.infrastructure.models import (
     AIBudgetModel,
     AICacheEntryModel,
@@ -69,6 +74,7 @@ class AIConfig:
     preference: BackendPreference
     limits: BudgetLimits
     api_consent_at: datetime | None
+    personal_data_policy: PersonalDataPolicy = PersonalDataPolicy.ALLOWED
 
 
 class SqlAIConfigRepository:
@@ -106,6 +112,9 @@ class SqlAIConfigRepository:
                 else _SEUILS_PAR_DEFAUT,
             ),
             api_consent_at=reglages.api_consent_at if reglages else None,
+            personal_data_policy=PersonalDataPolicy(reglages.personal_data_policy)
+            if reglages
+            else PersonalDataPolicy.ALLOWED,
         )
 
     async def update_settings(
@@ -126,6 +135,13 @@ class SqlAIConfigRepository:
             reglages.per_operation_level1 = per_operation_level1
         if per_operation_level2 is not None:
             reglages.per_operation_level2 = per_operation_level2
+        await self._session.flush()
+
+    async def set_personal_data_policy(
+        self, owner_id: uuid.UUID, policy: PersonalDataPolicy
+    ) -> None:
+        reglages = await self._settings_ou_creer(owner_id)
+        reglages.personal_data_policy = policy.value
         await self._session.flush()
 
     async def set_consent(self, owner_id: uuid.UUID, at: datetime | None) -> None:

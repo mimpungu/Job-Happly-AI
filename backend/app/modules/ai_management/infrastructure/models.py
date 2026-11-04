@@ -29,7 +29,7 @@ from app.core.database.base import (
     enum_check,
 )
 from app.modules.ai_management.domain.enums import BudgetPeriod, CallOutcome
-from app.modules.ai_management.domain.models import AIMode, BackendPreference
+from app.modules.ai_management.domain.models import AIMode, BackendPreference, PersonalDataPolicy
 
 _DEVISE = "currency ~ '^[A-Z]{3}$'"
 
@@ -123,6 +123,7 @@ class AISettingsModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
     __table_args__ = (
         enum_check("mode_valid", "mode", AIMode),
         enum_check("backend_preference_valid", "backend_preference", BackendPreference),
+        enum_check("personal_data_policy_valid", "personal_data_policy", PersonalDataPolicy),
         CheckConstraint(
             "per_operation_level1 > 0 AND per_operation_level2 > 0", name="per_operation_positive"
         ),
@@ -137,3 +138,7 @@ class AISettingsModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
     currency: Mapped[str] = mapped_column(String(3), server_default="EUR")
     # Date à laquelle l'utilisateur a accepté l'envoi de données à une API payante.
     api_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Politique de confidentialité (TASK-018-22) : jamais plus permissif que le consentement.
+    personal_data_policy: Mapped[str] = mapped_column(
+        String(20), server_default=PersonalDataPolicy.ALLOWED.value
+    )
