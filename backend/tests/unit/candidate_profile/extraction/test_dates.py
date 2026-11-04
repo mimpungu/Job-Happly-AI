@@ -68,3 +68,39 @@ def test_position_du_texte_reconnu() -> None:
 def test_annee_improbable_refusee() -> None:
     with pytest.raises(ValueError, match="improbable"):
         PartialDate(1800)
+
+
+@pytest.mark.parametrize("prefixe", ["De ", "du "])
+def test_le_mot_qui_introduit_la_periode_fait_partie_du_texte_reconnu(prefixe: str) -> None:
+    # « De mai 2025 à août 2025 Inetum » : sans cela, « De » resterait collé à l'entreprise.
+    ligne = f"{prefixe}mai 2025 à août 2025 Inetum Pessac"
+    plage = find_date_range(ligne)
+
+    assert plage is not None
+    assert ligne[plage.span[1] :].strip() == "Inetum Pessac"
+    assert ligne[: plage.span[0]] == ""
+
+
+@pytest.mark.parametrize(
+    ("ligne", "debut", "fin"),
+    [
+        ("From 2020 to 2023", (2020, None), (2023, None)),
+        ("From Jan 2020 to Mar 2023", (2020, 1), (2023, 3)),
+    ],
+)
+def test_une_periode_anglaise_from_to_n_est_pas_prise_pour_un_poste_en_cours(
+    ligne: str, debut: tuple[int, int | None], fin: tuple[int, int | None]
+) -> None:
+    plage = find_date_range(ligne)
+
+    assert plage is not None
+    assert plage.is_current is False
+    assert (plage.start, plage.end) == (PartialDate(*debut), PartialDate(*fin))
+    assert ligne[plage.span[0] : plage.span[1]] == ligne  # « From » fait partie de la période
+
+
+def test_since_reste_une_periode_en_cours() -> None:
+    plage = find_date_range("Since 2020")
+
+    assert plage is not None
+    assert plage.is_current is True

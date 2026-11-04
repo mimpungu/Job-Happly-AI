@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import re
 
+from app.modules.candidate_profile.domain.extraction.geography import (
+    CountryResolver,
+    no_countries,
+)
 from app.modules.candidate_profile.domain.extraction.models import ExtractedContact
+from app.modules.candidate_profile.domain.extraction.names import ressemble_a_un_nom
 from app.modules.candidate_profile.domain.extraction.sections import section_kind
 
 _EMAIL = re.compile(
@@ -16,19 +21,30 @@ _LINKEDIN = re.compile(
     r"(?:https?://)?(?:[a-z]{2,3}\.)?linkedin\.com/in/[^\s<>\"')]+", re.IGNORECASE
 )
 _CODE_POSTAL_VILLE = re.compile(r"\b\d{5}\s+([A-ZÀ-ÖØ-Ý][\w'’ -]{1,40}?)(?=\s*(?:[,;|·•\n]|$))")
-_NOM = re.compile(r"^[^\W\d_]+(?:[ '’-][^\W\d_]+){1,3}$")
 _MOTS_NON_NOMINAUX = {"curriculum vitae", "cv", "resume", "résumé", "profil", "profile"}
 _MIN_CHIFFRES, _MAX_CHIFFRES = 9, 15
 
 
-def extract_contact(preambule: tuple[str, ...], texte_complet: str) -> ExtractedContact:
-    """Cherche d'abord dans l'en-tête, puis dans tout le document pour e-mail et liens."""
-    entete = "\n".join(preambule)
+def extract_contact(
+    preambule: tuple[str, ...],
+    texte_complet: str,
+    entetes_colonnes: tuple[tuple[str, ...], ...] = (),
+    country_of: CountryResolver = no_countries,
+) -> ExtractedContact:
+    """Cherche d'abord dans l'en-tête, puis dans tout le document pour e-mail et liens.
+
+    `entetes_colonnes` : texte sans titre en tête des colonnes suivantes d'un CV à colonne
+    latérale, où se trouve souvent le nom.
+    """
+    entete = "\n".join(ligne for bloc in (preambule, *entetes_colonnes) for ligne in bloc)
+    nom = next((n for bloc in (preambule, *entetes_colonnes) if (n := _nom(bloc))), None)
+    ville, code_pays = _lieu(entete, country_of)
     return ExtractedContact(
-        full_name=_nom(preambule),
+        full_name=nom,
         email=_premier(_EMAIL, entete) or _premier(_EMAIL, texte_complet),
         phone=_telephone(entete) or _telephone(texte_complet),
-        city=_ville(entete),
+        city=_ville(entete) or ville,
+        country_code=code_pays,
         linkedin_url=_linkedin(entete) or _linkedin(texte_complet),
         website_url=_site(entete) or _site(texte_complet),
     )
@@ -74,6 +90,21 @@ def _ville(entete: str) -> str | None:
     return m.group(1).strip() if m else None
 
 
+_VILLE_ET_PAYS = re.compile(
+    r"^(?P<ville>[A-ZÀ-ÖØ-Ý][\w'’.-]*(?:[ -][A-ZÀ-ÖØ-Ý][\w'’.-]*){0,2}),\s*(?P<pays>[^,\d]{2,40})$"
+)
+
+
+def _lieu(entete: str, country_of: CountryResolver) -> tuple[str | None, str | None]:
+    """« Talence, France » -> (Talence, FR), seulement si « France » est un pays du référentiel :
+    « Talence, Gironde » n'est pas deviné (région, pays ou faute ?)."""
+    for ligne in entete.split("\n"):
+        m = _VILLE_ET_PAYS.match(ligne.strip())
+        if m and (code := country_of(m.group("pays"))) is not None:
+            return m.group("ville"), code
+    return None, None
+
+
 def _nom(preambule: tuple[str, ...]) -> str | None:
     for ligne in preambule:
         texte = ligne.strip()
@@ -82,5 +113,5 @@ def _nom(preambule: tuple[str, ...]) -> str | None:
         if texte.lower() in _MOTS_NON_NOMINAUX or section_kind(texte) is not None:
             continue
         # Seule la première ligne utile est candidate : un nom en milieu de page serait un pari.
-        return texte if _NOM.match(texte) and len(texte) <= 50 else None
+        return texte if ressemble_a_un_nom(texte) else None
     return None

@@ -58,4 +58,25 @@ describe("SpendChart", () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  describe("compact (carte du dashboard)", () => {
+    it("garde le résumé accessible mais sans axes ni bouton de tableau", () => {
+      render(<SpendChart days={jours} currency="EUR" dailyBudget="1" compact />);
+
+      expect(screen.getByRole("img")).toHaveAccessibleName(/0,75 EUR au total sur 4 jours/);
+      expect(screen.queryByRole("button")).toBeNull();
+      expect(screen.queryByText("Plafond journalier : 1 EUR")).toBeNull();
+    });
+
+    it("donne toujours la valeur d'un jour au survol", async () => {
+      const { container } = render(
+        <SpendChart days={jours} currency="EUR" dailyBudget={null} compact />,
+      );
+
+      const colonnes = container.querySelectorAll("[class*='flex-1'][class*='items-end']");
+      await userEvent.hover(colonnes[3] as Element);
+
+      expect(await screen.findByRole("tooltip")).toHaveTextContent("4 nov. : 0,5 EUR");
+    });
+  });
 });

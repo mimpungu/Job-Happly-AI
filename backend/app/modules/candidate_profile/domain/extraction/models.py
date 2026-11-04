@@ -24,6 +24,10 @@ class ExtractedContact:
     email: str | None = None
     phone: str | None = None
     city: str | None = None
+    country_code: str | None = None
+    """Code ISO seulement si le pays écrit dans le CV est reconnu par le référentiel."""
+    headline: str | None = None
+    """Titre professionnel sous le nom (« Recherche d'une alternance en SI »)."""
     linkedin_url: str | None = None
     website_url: str | None = None
 

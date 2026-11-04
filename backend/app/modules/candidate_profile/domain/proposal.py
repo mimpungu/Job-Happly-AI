@@ -25,12 +25,24 @@ def _date(valeur: PartialDate | None) -> DocDate | None:
     return DocDate(year=valeur.year, month=valeur.month) if valeur else None
 
 
+def _en_capitales(mot: str) -> bool:
+    return len(mot) > 1 and mot.isupper()
+
+
 def _nom_et_prenom(nom_complet: str | None) -> tuple[str | None, str | None]:
-    """« Marie Dupont » -> (Marie, Dupont). Au-delà de deux mots, le découpage est ambigu
-    (« Jean Pierre Martin »), donc le nom est laissé à l'utilisateur plutôt que deviné."""
+    """Prénom et nom, seulement si le CV en fournit la preuve.
+
+    - Capitales mêlées à des minuscules (« Deo MIMPUNGU GRACIA ») : convention française, les
+      capitales sont le nom de famille.
+    - Deux mots sans capitales : « Marie Dupont » -> (Marie, Dupont).
+    - Sinon (« Jean Pierre Martin ») le découpage est ambigu : laissé à l'utilisateur.
+    """
     if not nom_complet:
         return None, None
     mots = nom_complet.split()
+    capitales = [m for m in mots if _en_capitales(m)]
+    if capitales and len(capitales) < len(mots):
+        return " ".join(m for m in mots if not _en_capitales(m)), " ".join(capitales)
     return (mots[0], mots[1]) if len(mots) == 2 else (None, None)
 
 
@@ -44,6 +56,8 @@ def proposal_to_document(extrait: ExtractedProfile) -> ProfileDocument:
             email=_email_ou_none(contact.email),
             phone=contact.phone,
             city=contact.city,
+            country_code=contact.country_code,
+            headline=contact.headline,
         ),
         summary=extrait.summary,
         experiences=tuple(

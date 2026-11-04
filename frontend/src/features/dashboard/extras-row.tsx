@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatDateTime } from "@/features/applications/format";
 import type { AIBudget, RecentSearch } from "@/types/applications";
 
+import { BudgetChart } from "./budget-chart";
 import { DashCard } from "./dash-card";
 import { formatMoney } from "./format";
 
@@ -73,6 +74,7 @@ export function ExtrasRow({
         icon={Wallet}
         moreHref="/ai-center"
         moreLabel="Ouvrir le Centre IA"
+        className="flex flex-col"
       >
         <p className="mt-5 text-sm text-foreground">
           Dépensé : <strong>{formatMoney(budget.spent, budget.currency)}</strong>
@@ -95,6 +97,7 @@ export function ExtrasRow({
             n&apos;existe pas.
           </p>
         )}
+        <BudgetChart />
       </DashCard>
 
       <DashCard

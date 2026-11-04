@@ -51,3 +51,14 @@ def test_texte_vide_ou_blanc() -> None:
 def test_idempotente() -> None:
     brut = "• dévelop-\npement\u00a0web\r\n\r\n\r\n\r\nﬁn"
     assert n(n(brut)) == n(brut)
+
+
+def test_les_icones_de_police_sont_retirees() -> None:
+    # Glyphes de la zone d'usage privé (icônes d'e-mail, de téléphone) : aucun sens textuel.
+    assert n(" marie@exemple.test\n Permis B") == "marie@exemple.test\nPermis B"
+
+
+def test_la_frontiere_de_colonne_survit_a_la_normalisation() -> None:
+    from app.modules.candidate_profile.domain.text_columns import COLUMN_BREAK
+
+    assert n(f"a\n{COLUMN_BREAK}\nb") == f"a\n{COLUMN_BREAK}\nb"

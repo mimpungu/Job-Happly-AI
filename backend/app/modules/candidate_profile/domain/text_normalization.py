@@ -11,6 +11,8 @@ _ESPACES_SPECIAUX = dict.fromkeys((160, *range(8192, 8203), 8239, 8287, 12288), 
 # Césure conditionnelle, espaces de largeur nulle, joncteurs, BOM.
 _INVISIBLES = dict.fromkeys((0x00AD, 0x200B, 0x200C, 0x200D, 0x2060, 0xFEFF))
 _CTRL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+# Zone d'usage privé : icônes des polices de symboles (e-mail, téléphone…), sans sens textuel.
+_ICONES = re.compile("[\ue000-\uf8ff]")
 _COUPURE_MOT = re.compile(r"(?<=[^\W\d_])-\n(?=[a-zàâäçéèêëîïôöùûüÿœæ])")
 _PUCE_DEBUT = re.compile(rf"^[ \t]*[{re.escape(_PUCES)}][ \t]+(?=\S)")
 _LIGNES_VIDES = re.compile(r"\n{3,}")
@@ -20,7 +22,7 @@ def normalize_document_text(brut: str) -> str:
     """Rend le texte stable et lisible sans en altérer le sens.
 
     - Unicode NFC (« é » en un seul caractère), ligatures PDF (ﬁ, ﬂ) dépliées par NFKC ciblé.
-    - Retours à la ligne unifiés, caractères de contrôle et invisibles retirés.
+    - Retours à la ligne unifiés, caractères de contrôle, invisibles et icônes de police retirés.
     - Mot coupé en fin de ligne par un tiret (« dévelop-\\npement ») recollé, **uniquement** si la
       ligne suivante commence par une minuscule : « full-\\nStack » reste intact.
     - Puces de toute forme ramenées à « - », lignes vides multiples réduites à une.
@@ -30,6 +32,7 @@ def normalize_document_text(brut: str) -> str:
     texte = texte.replace("\r\n", "\n").replace("\r", "\n")
     texte = texte.translate(_ESPACES_SPECIAUX).translate(_INVISIBLES)
     texte = _CTRL.sub("", texte)
+    texte = _ICONES.sub("", texte)
     texte = _COUPURE_MOT.sub("", texte)
 
     lignes = []

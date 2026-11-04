@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 import { formatDateParts, formatNumber } from "@/lib/regional";
 import type { AIDailySpend } from "@/types/ai";
 
@@ -33,35 +34,42 @@ export interface SpendChartProps {
   currency: string;
   /** Plafond journalier (trait de référence) ; `null` s'il n'est pas défini. */
   dailyBudget: string | null;
+  /** Version réduite pour une carte : sans axes, sans plafond étiqueté ni vue en tableau. */
+  compact?: boolean;
 }
 
 /**
  * Dépense par jour du mois en cours. Une barre fine par jour (jours sans dépense inclus, à zéro),
  * le plafond journalier en trait de référence, une info-bulle par barre et une vue en tableau
- * pour qui ne lit pas un graphique.
+ * pour qui ne lit pas un graphique. En mode compact, le résumé accessible et l'info-bulle
+ * restent : seul l'habillage disparaît.
  */
-export function SpendChart({ days, currency, dailyBudget }: SpendChartProps) {
+export function SpendChart({ days, currency, dailyBudget, compact = false }: SpendChartProps) {
   const [survol, setSurvol] = useState<number | null>(null);
   const [tableau, setTableau] = useState(false);
   const valeurs = days.map((j) => Number(j.cost));
   const plafond = dailyBudget === null ? null : Number(dailyBudget);
-  const max = maximumRond(Math.max(0, ...valeurs, plafond ?? 0));
+  const max = maximumRond(Math.max(0, ...valeurs, compact ? 0 : (plafond ?? 0)));
   const total = valeurs.reduce((a, b) => a + b, 0);
   const resume = `Dépense du mois par jour : ${montant(total, currency)} au total sur ${days.length} jour${days.length > 1 ? "s" : ""}.`;
 
   if (days.length === 0) return null;
-  const hauteurDe = (v: number) => (v > 0 ? Math.max(2, (v / max) * HAUTEUR) : 0);
+  // Compact : la carte donne sa hauteur au graphique (pourcentages), jamais l'inverse.
+  const hauteurDe = (v: number) =>
+    v <= 0 ? 0 : compact ? `${Math.max(3, (v / max) * 100)}%` : Math.max(2, (v / max) * HAUTEUR);
 
   return (
-    <figure className="flex flex-col gap-2">
+    <figure className={compact ? "flex h-full min-h-0 flex-col gap-2" : "flex flex-col gap-2"}>
       <figcaption className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <span className="text-foreground-muted">Dépense par jour, ce mois-ci</span>
-        <Button variant="ghost" size="sm" onClick={() => setTableau((v) => !v)}>
-          {tableau ? "Afficher le graphique" : "Afficher en tableau"}
-        </Button>
+        {compact ? null : (
+          <Button variant="ghost" size="sm" onClick={() => setTableau((v) => !v)}>
+            {tableau ? "Afficher le graphique" : "Afficher en tableau"}
+          </Button>
+        )}
       </figcaption>
 
-      {tableau ? (
+      {tableau && !compact ? (
         <div
           className="max-h-64 overflow-auto"
           tabIndex={0}
@@ -90,21 +98,27 @@ export function SpendChart({ days, currency, dailyBudget }: SpendChartProps) {
           </table>
         </div>
       ) : (
-        <div className="flex gap-2" role="img" aria-label={resume}>
+        <div
+          className={compact ? "flex min-h-0 flex-1" : "flex gap-2"}
+          role="img"
+          aria-label={resume}
+        >
           {/* Axe vertical : 0, moitié, maximum, en texte discret. */}
-          <div
-            className="flex flex-col justify-between text-right text-xs text-foreground-muted"
-            style={{ height: HAUTEUR }}
-            aria-hidden="true"
-          >
-            <span>{formatNumber(max, { maximumFractionDigits: 4 })}</span>
-            <span>{formatNumber(max / 2, { maximumFractionDigits: 4 })}</span>
-            <span>0</span>
-          </div>
-          <div className="relative min-w-0 flex-1">
+          {compact ? null : (
             <div
-              className="relative flex items-end border-b border-border"
+              className="flex flex-col justify-between text-right text-xs text-foreground-muted"
               style={{ height: HAUTEUR }}
+              aria-hidden="true"
+            >
+              <span>{formatNumber(max, { maximumFractionDigits: 4 })}</span>
+              <span>{formatNumber(max / 2, { maximumFractionDigits: 4 })}</span>
+              <span>0</span>
+            </div>
+          )}
+          <div className={compact ? "relative min-h-0 min-w-0 flex-1" : "relative min-w-0 flex-1"}>
+            <div
+              className={cn("relative flex items-end border-b border-border", compact && "h-full")}
+              style={compact ? undefined : { height: HAUTEUR }}
               onMouseLeave={() => setSurvol(null)}
             >
               {[0, 0.5, 1].map((niveau) => (
@@ -115,7 +129,7 @@ export function SpendChart({ days, currency, dailyBudget }: SpendChartProps) {
                   style={{ bottom: `${niveau * 100}%` }}
                 />
               ))}
-              {plafond !== null ? (
+              {plafond !== null && !compact ? (
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-x-0 border-t-2 border-warning"
@@ -150,7 +164,10 @@ export function SpendChart({ days, currency, dailyBudget }: SpendChartProps) {
                 </div>
               ))}
             </div>
-            <div className="flex pt-1 text-xs text-foreground-muted" aria-hidden="true">
+            <div
+              className={compact ? "hidden" : "flex pt-1 text-xs text-foreground-muted"}
+              aria-hidden="true"
+            >
               {days.map((j, i) => (
                 <span key={j.date} className="flex-1 text-center">
                   {i === 0 || i === days.length - 1 || (i + 1) % 5 === 0 ? i + 1 : ""}

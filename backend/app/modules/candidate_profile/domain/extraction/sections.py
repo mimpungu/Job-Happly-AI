@@ -7,6 +7,9 @@ import unicodedata
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.modules.candidate_profile.domain.extraction.names import ressemble_a_un_nom
+from app.modules.candidate_profile.domain.text_columns import COLUMN_BREAK, SOFT_WRAP
+
 
 class SectionKind(StrEnum):
     SUMMARY = "summary"
@@ -38,7 +41,8 @@ _TITRES: dict[SectionKind, tuple[str, ...]] = {
     SectionKind.SKILLS: (
         "competences", "competences techniques", "competences cles", "skills", "technical skills",
         "key skills", "core skills", "technologies", "outils", "outils et technologies",
-        "savoir-faire", "expertise", "hard skills", "soft skills",
+        "savoir-faire", "expertise", "hard skills", "soft skills", "atouts", "qualites",
+        "points forts", "strengths",
     ),
     SectionKind.LANGUAGES: ("langues", "languages", "competences linguistiques", "langue"),
     SectionKind.CERTIFICATIONS: (
@@ -100,6 +104,9 @@ class SplitDocument:
     preamble: tuple[str, ...]
     """Lignes avant le premier titre : en général l'identité et les coordonnées."""
     sections: tuple[Section, ...]
+    column_heads: tuple[tuple[str, ...], ...] = ()
+    """Texte sans titre en tête d'une colonne suivante, quand il commence par un nom : le nom
+    et l'introduction d'un CV à colonne latérale, à ne pas confondre avec la dernière section."""
 
     def lines_of(self, kind: SectionKind) -> tuple[str, ...]:
         """Lignes de toutes les sections de ce type (un titre peut apparaître deux fois)."""
@@ -109,14 +116,50 @@ class SplitDocument:
 def split_sections(texte: str) -> SplitDocument:
     preambule: list[str] = []
     sections: list[tuple[SectionKind, str, list[str]]] = []
+    tetes: list[list[str]] = []
+    # Texte lu après une frontière de colonne, avant le prochain titre ; `precedent` est la
+    # section (ou le préambule, `None`) à laquelle il se rattache s'il n'ouvre pas la colonne.
+    tete: list[str] | None = None
+    precedent: int | None = None
+
+    def clore_tete() -> None:
+        nonlocal tete
+        if tete is None:
+            return
+        premiere = next((ligne for ligne in tete if ligne.strip()), None)
+        if premiere is not None and ressemble_a_un_nom(premiere):
+            tetes.append(tete)
+        else:  # rien n'indique une introduction : c'est la suite de la section précédente
+            (preambule if precedent is None else sections[precedent][2]).extend(tete)
+        tete = None
+
     for ligne in texte.split("\n"):
+        if ligne.strip() == COLUMN_BREAK:
+            clore_tete()
+            tete = []
+            precedent = len(sections) - 1 if sections else None
+            continue
         kind = section_kind(ligne)
         if kind is not None:
+            clore_tete()
             sections.append((kind, ligne.strip(), []))
+        elif tete is not None:
+            tete.append(ligne)
         elif sections:
             sections[-1][2].append(ligne)
         else:
             preambule.append(ligne)
+    clore_tete()
+    # Le marqueur de coupure n'a de sens que pour les compétences : ailleurs il serait du bruit.
     return SplitDocument(
-        tuple(preambule), tuple(Section(k, t, tuple(lignes)) for k, t, lignes in sections)
+        _sans_marqueur(preambule),
+        tuple(
+            Section(k, t, tuple(lignes) if k is SectionKind.SKILLS else _sans_marqueur(lignes))
+            for k, t, lignes in sections
+        ),
+        tuple(_sans_marqueur(t) for t in tetes),
     )
+
+
+def _sans_marqueur(lignes: list[str]) -> tuple[str, ...]:
+    return tuple(ligne.replace(SOFT_WRAP, "") for ligne in lignes)

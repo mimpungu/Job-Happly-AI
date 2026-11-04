@@ -5,8 +5,14 @@ import zipfile
 from xml.sax.saxutils import escape
 
 
-def make_pdf(pages: list[list[str]]) -> bytes:
-    """PDF minimal valide : une police Helvetica (WinAnsi), un texte par ligne et par page."""
+def _echapper(ligne: str) -> bytes:
+    return (
+        ligne.encode("cp1252").replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)")
+    )
+
+
+def _assembler_pdf(flux_par_page: list[bytes]) -> bytes:
+    """PDF minimal valide : une police Helvetica (WinAnsi) et un flux de contenu par page."""
     objets: list[bytes] = []
 
     def ajouter(corps: bytes) -> int:
@@ -19,17 +25,7 @@ def make_pdf(pages: list[list[str]]) -> bytes:
         b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
     )
     numeros: list[int] = []
-    for lignes in pages:
-        flux = b"BT /F1 12 Tf 14 TL 50 750 Td\n"
-        for ligne in lignes:
-            texte = (
-                ligne.encode("cp1252")
-                .replace(b"\\", b"\\\\")
-                .replace(b"(", b"\\(")
-                .replace(b")", b"\\)")
-            )
-            flux += b"(" + texte + b") Tj T*\n"
-        flux += b"ET"
+    for flux in flux_par_page:
         contenu = ajouter(b"<< /Length %d >>\nstream\n" % len(flux) + flux + b"\nendstream")
         numeros.append(
             ajouter(
@@ -54,6 +50,29 @@ def make_pdf(pages: list[list[str]]) -> bytes:
         debut_xref,
     )
     return bytes(sortie)
+
+
+def make_pdf(pages: list[list[str]]) -> bytes:
+    """Un texte par ligne et par page, du haut vers le bas."""
+    flux_par_page = []
+    for lignes in pages:
+        flux = b"BT /F1 12 Tf 14 TL 50 750 Td\n"
+        for ligne in lignes:
+            flux += b"(" + _echapper(ligne) + b") Tj T*\n"
+        flux_par_page.append(flux + b"ET")
+    return _assembler_pdf(flux_par_page)
+
+
+def make_pdf_positioned(fragments: list[tuple[int, int, str]]) -> bytes:
+    """Une page dont chaque texte (x, y, texte) est posé à sa position, dans l'ordre donné.
+
+    L'ordre du flux n'est pas l'ordre de lecture : reproduit les CV issus de modèles graphiques,
+    où les titres de section sont dessinés avant leur contenu.
+    """
+    flux = b""
+    for x, y, texte in fragments:
+        flux += b"BT /F1 10 Tf %d %d Td (" % (x, y) + _echapper(texte) + b") Tj ET\n"
+    return _assembler_pdf([flux])
 
 
 _NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'

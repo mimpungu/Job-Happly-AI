@@ -42,9 +42,17 @@ def extract_languages(lignes: tuple[str, ...]) -> tuple[ExtractedLanguage, ...]:
         # contient parfois une virgule, on découpe donc hors parenthèses.
         for morceau in _decouper_hors_parentheses(texte):
             langue = _langue(morceau)
-            if langue and langue.name.casefold() not in trouvees:
-                trouvees[langue.name.casefold()] = langue
+            if langue is None:
+                continue
+            cle = langue.name.casefold()
+            # « Français » puis « Français - C2 » : la mention la plus précise l'emporte.
+            if cle not in trouvees or (_sans_niveau(trouvees[cle]) and not _sans_niveau(langue)):
+                trouvees[cle] = langue
     return tuple(trouvees.values())
+
+
+def _sans_niveau(langue: ExtractedLanguage) -> bool:
+    return langue.proficiency is None and langue.level_text is None
 
 
 def _decouper_hors_parentheses(texte: str) -> list[str]:

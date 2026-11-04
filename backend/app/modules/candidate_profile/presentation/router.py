@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, File, Query, Request, UploadFile
@@ -13,6 +14,7 @@ from starlette.types import ExceptionHandler
 
 from app.core.api.dependencies import SessionDep, get_owner_id
 from app.core.api.errors import error_response
+from app.modules.candidate_profile.application.country_resolver import build_country_resolver
 from app.modules.candidate_profile.application.import_document import DocumentReader
 from app.modules.candidate_profile.application.profile_service import ProfileService
 from app.modules.candidate_profile.domain.documents import (
@@ -24,6 +26,7 @@ from app.modules.candidate_profile.domain.documents import (
     display_filename,
 )
 from app.modules.candidate_profile.domain.extraction.extractor import extract_profile
+from app.modules.candidate_profile.domain.extraction.geography import CountryResolver
 from app.modules.candidate_profile.domain.extraction.models import ExtractedProfile
 from app.modules.candidate_profile.domain.profile import ProfileDocument
 from app.modules.candidate_profile.domain.proposal import proposal_to_document
@@ -37,8 +40,10 @@ from app.modules.candidate_profile.domain.repository import (
     StoredProfile,
     UnknownItemError,
 )
+from app.modules.candidate_profile.domain.text_columns import readable_text
 from app.modules.candidate_profile.infrastructure.extraction import extract_document_text
 from app.modules.candidate_profile.infrastructure.profile_repository import SqlProfileRepository
+from app.modules.localization.infrastructure.cldr import BabelGeographyReference
 
 router = APIRouter(prefix="/api/v1/profile", tags=["candidate-profile"])
 
@@ -55,6 +60,12 @@ class CvImportResponse(BaseModel):
     proposed_profile: ExtractedProfile
     # Même proposition sous forme de brouillon éditable : éléments importés, non validés.
     proposed_document: ProfileDocument
+
+
+@lru_cache(maxsize=1)
+def _country_resolver() -> CountryResolver:
+    """Noms de pays du référentiel CLDR : construits une fois, réutilisés à chaque import."""
+    return build_country_resolver(BabelGeographyReference())
 
 
 async def _lire_borne(fichier: UploadFile) -> bytes:
@@ -81,13 +92,13 @@ async def import_cv(fichier: Annotated[UploadFile, File()], request: Request) ->
         raise DocumentTooLargeError(_TROP_GROS)
     contenu = await _lire_borne(fichier)
     lu = await DocumentReader(extract_document_text).read(fichier.filename or "", contenu)
-    proposition = extract_profile(lu.text)
+    proposition = extract_profile(lu.text, country_of=_country_resolver())
     return CvImportResponse(
         filename=display_filename(fichier.filename or ""),
         format=lu.format,
         page_count=lu.page_count,
         warnings=list(lu.warnings),
-        text=lu.text,
+        text=readable_text(lu.text),
         proposed_profile=proposition,
         proposed_document=proposal_to_document(proposition),
     )

@@ -72,8 +72,9 @@ _PLAGE = re.compile(
     rf"(?![\w/])",
     re.IGNORECASE,
 )
+# « from » n'y figure pas : « From 2020 to 2023 » est une période bornée, lue par `_PLAGE`.
 _DEPUIS = re.compile(
-    rf"(?<![\w/.])(?:depuis|since|from|d[ée]s)\s+{_DATE.format(p='a')}(?![\w/])", re.IGNORECASE
+    rf"(?<![\w/.])(?:depuis|since|d[ée]s)\s+{_DATE.format(p='a')}(?![\w/])", re.IGNORECASE
 )
 
 
@@ -91,6 +92,17 @@ def _lire(m: re.Match[str], prefixe: str) -> PartialDate | None:
         return PartialDate(int(annee), mois)
     except ValueError:
         return None
+
+
+_INTRODUCTION = re.compile(r"\s*(?:de|du|from)\s+", re.IGNORECASE)
+
+
+def _debut_avec_introduction(texte: str, debut: int) -> int:
+    """« De mai 2025 à août 2025 » : « De » appartient à la période, pas à l'entreprise qui suit.
+
+    Seulement s'il est seul avant la date : « Master de 2024 » n'est pas touché.
+    """
+    return 0 if _INTRODUCTION.fullmatch(texte[:debut]) else debut
 
 
 def find_date_range(ligne: str) -> DateRange | None:
@@ -113,7 +125,7 @@ def find_date_range(ligne: str) -> DateRange | None:
         fin = None if courant else _lire(m, "b")
         if fin is not None and _avant(fin, debut):
             continue  # « 2023 - 2020 » : incohérent, on ne devine pas l'ordre
-        return DateRange(debut, fin, courant, m.span())
+        return DateRange(debut, fin, courant, (_debut_avec_introduction(texte, m.start()), m.end()))
     return None
 
 

@@ -14,7 +14,7 @@ from xml.etree.ElementTree import Element
 
 from defusedxml import ElementTree as SafeElementTree
 from defusedxml.common import DefusedXmlException
-from pypdf import PdfReader
+from pypdf import PageObject, PdfReader
 from pypdf.errors import PyPdfError
 
 from app.modules.candidate_profile.domain.documents import (
@@ -29,6 +29,7 @@ from app.modules.candidate_profile.domain.documents import (
     MalformedDocumentError,
     detect_format,
 )
+from app.modules.candidate_profile.domain.text_columns import TextFragment, read_in_columns
 
 _W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
@@ -60,13 +61,40 @@ def _extraire_pdf(content: bytes) -> ExtractedText:
             raise MalformedDocumentError("Le PDF ne contient aucune page.")
         if nombre > MAX_PDF_PAGES:
             raise DocumentTooLargeError(f"Le PDF dépasse {MAX_PDF_PAGES} pages.")
-        textes = [page.extract_text() or "" for page in pages]
+        textes = [_texte_de_page(page) for page in pages]
     except (EncryptedDocumentError, MalformedDocumentError, DocumentTooLargeError):
         raise
     except (PyPdfError, ValueError, KeyError, TypeError, AttributeError, RecursionError) as erreur:
         # pypdf lève des types variés sur un fichier corrompu : tous deviennent une erreur claire.
         raise MalformedDocumentError("Le PDF est corrompu ou illisible.") from erreur
     return ExtractedText("\n\n".join(textes), DocumentFormat.PDF, page_count=nombre)
+
+
+def _texte_de_page(page: PageObject) -> str:
+    """Texte brut de la page ; lu colonne par colonne si la page a deux colonnes nettes."""
+    brut = page.extract_text() or ""
+    fragments: list[TextFragment] = []
+
+    def collecter(
+        texte: str, cm: list[float], tm: list[float], _police: object, taille: float
+    ) -> None:
+        # Position réelle sur la page : la matrice de texte (tm) vit dans l'espace défini par cm.
+        fragments.append(
+            TextFragment(
+                x=tm[4] * cm[0] + tm[5] * cm[2] + cm[4],
+                y=tm[4] * cm[1] + tm[5] * cm[3] + cm[5],
+                size=abs(taille * tm[0] * cm[0]) or abs(taille),
+                text=texte,
+            )
+        )
+
+    try:
+        page.extract_text(visitor_text=collecter)
+        en_colonnes = read_in_columns(fragments)
+    except (PyPdfError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
+        # Une lecture par position qui échoue ne doit pas rendre illisible un PDF lisible.
+        return brut
+    return en_colonnes if en_colonnes is not None else brut
 
 
 def _extraire_docx(content: bytes) -> ExtractedText:

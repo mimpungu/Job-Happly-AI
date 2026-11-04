@@ -14,10 +14,33 @@ import { formatMoney } from "./format";
 const MAINTENANT = new Date(2026, 10, 4, 12, 0);
 const local = (jour: number, h: number, m = 0) => new Date(2026, 10, jour, h, m).toISOString();
 
-function afficher(metrics: DashboardMetrics | (() => Response)) {
+const USAGE_IA = {
+  daily_spend: [
+    { date: "2026-11-01", cost: "0" },
+    { date: "2026-11-02", cost: "0.25" },
+    { date: "2026-11-03", cost: "0.15" },
+    { date: "2026-11-04", cost: "0" },
+  ],
+  alerts: [],
+  currency: "EUR",
+  spent_today: "0",
+  spent_month: "0.4",
+  daily_budget: "1",
+};
+
+/** `usage` : réponse de `/ai/usage` ; `null` simule une panne de ce seul service. */
+function afficher(
+  metrics: DashboardMetrics | (() => Response),
+  usage: typeof USAGE_IA | null = USAGE_IA,
+) {
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => (typeof metrics === "function" ? metrics() : json(metrics))),
+    vi.fn(async (url: string) => {
+      if (String(url).includes("/ai/usage")) {
+        return usage === null ? erreurApi("internal_error", "Erreur interne.", 500) : json(usage);
+      }
+      return typeof metrics === "function" ? metrics() : json(metrics);
+    }),
   );
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -400,6 +423,22 @@ describe("DashboardView — compléments", () => {
     const jauge = await within(zone).findByRole("progressbar", { name: /plafond mensuel/ });
     expect(jauge).toHaveAttribute("aria-valuenow", "4");
     expect(within(zone).getByText(/Dépensé/)).toHaveTextContent(/0,40\s€ sur 10,00\s€/);
+  });
+
+  it("montre la dépense par jour du mois dans la carte", async () => {
+    afficher(donnees());
+    const zone = await carte("Budget IA du mois");
+
+    const graphique = await within(zone).findByRole("img", { name: /Dépense du mois par jour/ });
+    expect(graphique).toHaveAccessibleName(/0,4 EUR au total sur 4 jours/);
+  });
+
+  it("garde la jauge si le graphique ne peut pas être chargé", async () => {
+    afficher(donnees(), null);
+    const zone = await carte("Budget IA du mois");
+
+    expect(await within(zone).findByRole("progressbar", { name: /plafond mensuel/ })).toBeVisible();
+    expect(within(zone).queryByRole("img")).not.toBeInTheDocument();
   });
 
   it("explique l'absence de plafond au lieu d'afficher une jauge vide", async () => {

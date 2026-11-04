@@ -4,7 +4,7 @@ import pytest
 from app.main import create_app
 from app.modules.candidate_profile.domain.documents import MAX_UPLOAD_BYTES
 
-from .builders import make_docx, make_pdf, paragraphe
+from .builders import make_docx, make_pdf, make_pdf_positioned, paragraphe
 from .extraction.cv_samples import CV_FR
 
 
@@ -85,3 +85,23 @@ async def test_champ_fichier_manquant(client: httpx.AsyncClient) -> None:
 
     assert reponse.status_code == 422
     assert reponse.json()["error"]["code"] == "validation_error"
+
+
+async def test_le_texte_renvoye_ne_contient_aucun_marqueur_interne(
+    client: httpx.AsyncClient,
+) -> None:
+    from .test_coupures_de_ligne import _DROITE, _GAUCHE, _colonne
+
+    fragments = [
+        *((int(f.x), int(f.y), f.text) for f in _colonne(40, _GAUCHE)),
+        *((int(f.x), int(f.y), f.text) for f in _colonne(272, _DROITE)),
+    ]
+
+    reponse = await _envoyer(client, "cv.pdf", make_pdf_positioned(fragments), "application/pdf")
+
+    corps = reponse.json()
+    assert reponse.status_code == 200
+    assert "￻" not in corps["text"] and "￼" not in corps["text"]
+    assert "Wmware" in corps["text"]
+    noms = [c["name"] for c in corps["proposed_profile"]["skills"]]
+    assert "Wmware Fusion" in noms
