@@ -14,8 +14,11 @@ const iconButtonVariants = cva(
       variant: {
         ghost: "text-foreground-muted hover:bg-surface hover:text-foreground",
         secondary: "border-border bg-surface-elevated text-foreground hover:border-border-strong",
+        /** Bouton rond détaché du fond (en-tête de page). */
+        circle:
+          "rounded-full border-border bg-surface-elevated text-foreground shadow-md hover:border-border-strong",
       },
-      size: { sm: "size-8", md: "size-10" },
+      size: { sm: "size-8", md: "size-10", lg: "size-12" },
     },
     defaultVariants: { variant: "ghost", size: "md" },
   },

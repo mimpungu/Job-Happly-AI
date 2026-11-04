@@ -7,7 +7,7 @@ test.describe("bureau", () => {
 
   test("la barre latérale se parcourt à Tab et s'active à Entrée", async ({ page }) => {
     await page.goto("/dashboard");
-    await expect(page.getByRole("heading", { level: 1, name: "Tableau de bord" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Bon retour/ })).toBeVisible();
 
     const lien = page
       .getByRole("navigation", { name: "Navigation principale" })
@@ -24,7 +24,7 @@ test.describe("bureau", () => {
 
   test("tout contrôle atteint au clavier a un anneau de focus visible", async ({ page }) => {
     await page.goto("/dashboard");
-    await expect(page.getByRole("heading", { level: 1, name: "Tableau de bord" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Bon retour/ })).toBeVisible();
 
     for (let i = 0; i < 14; i++) {
       await page.keyboard.press("Tab");

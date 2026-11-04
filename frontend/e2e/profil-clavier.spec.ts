@@ -88,7 +88,8 @@ async function simulerApi(page: Page) {
 }
 
 /** Avance au clavier jusqu'à l'élément voulu ; échoue si on ne l'atteint pas (piège à focus). */
-async function tabJusqua(page: Page, nom: RegExp | string, max = 60) {
+// Garde-fou contre une boucle infinie : un tour complet de la page (coque comprise) doit tenir.
+async function tabJusqua(page: Page, nom: RegExp | string, max = 120) {
   for (let i = 0; i < max; i++) {
     await page.keyboard.press("Tab");
     const actif = await page.evaluate(() => {

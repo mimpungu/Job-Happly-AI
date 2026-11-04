@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CirclePlus } from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
@@ -27,7 +28,12 @@ export function adresseValide(valeur: string): boolean {
 
 const VIDE = { title: "", company_name: "", location: "", application_url: "", description: "" };
 
-export function ManualOfferDialog() {
+export interface ManualOfferDialogProps {
+  /** Bouton d'ouverture : discret dans la recherche, action principale dans l'en-tête. */
+  trigger?: "secondary" | "primary";
+}
+
+export function ManualOfferDialog({ trigger = "secondary" }: ManualOfferDialogProps) {
   const client = useQueryClient();
   const [ouvert, setOuvert] = useState(false);
   const [champs, setChamps] = useState(VIDE);
@@ -69,7 +75,13 @@ export function ManualOfferDialog() {
 
   return (
     <>
-      <Button variant="secondary" onClick={() => setOuvert(true)}>
+      <Button
+        variant={trigger}
+        size={trigger === "primary" ? "lg" : "md"}
+        className={trigger === "primary" ? "rounded-full px-6" : undefined}
+        onClick={() => setOuvert(true)}
+      >
+        {trigger === "primary" ? <CirclePlus className="size-5" aria-hidden="true" /> : null}
         Ajouter une offre
       </Button>
       <Dialog open={ouvert} onOpenChange={(o) => (o ? setOuvert(true) : fermer())}>
