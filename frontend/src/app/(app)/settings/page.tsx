@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { CompaniesPanel } from "@/features/companies/companies-panel";
 import { FranceTravailPanel } from "@/features/companies/france-travail-panel";
 import { WeightsEditor } from "@/features/matching/weights-editor";
+import { HealthPanel } from "@/features/privacy/health-panel";
+import { PrivacyPanel } from "@/features/privacy/privacy-panel";
 
 export const metadata: Metadata = { title: "Paramètres — Happly AI" };
 
@@ -13,9 +15,8 @@ export default function Page() {
       <FranceTravailPanel />
       <CompaniesPanel />
       <WeightsEditor />
-      <p className="text-sm text-foreground-muted">
-        D&apos;autres réglages (langue, confidentialité, sauvegarde) arriveront ici.
-      </p>
+      <PrivacyPanel />
+      <HealthPanel />
     </div>
   );
 }

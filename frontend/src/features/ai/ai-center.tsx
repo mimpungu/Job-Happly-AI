@@ -113,7 +113,11 @@ function Etat({ reglages }: { reglages: AISettings }) {
         </p>
       ) : (
         <p className="text-foreground-muted">
-          Fournisseurs : {[...locaux, ...api].map((p) => `${p.name} (${p.kind})`).join(", ")}.
+          Fournisseurs :{" "}
+          {[...locaux, ...api]
+            .map((p) => `${p.name} (${p.kind})${p.key_hint ? `, clé ${p.key_hint}` : ""}`)
+            .join(", ")}
+          . La clé n&apos;est jamais affichée : seule sa fin l&apos;est, pour vérifier une rotation.
         </p>
       )}
     </div>

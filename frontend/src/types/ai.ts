@@ -7,6 +7,8 @@ export interface AIProviderView {
   name: string;
   kind: "api" | "local";
   models: string[];
+  /** Fin masquée de la clé d'API (jamais la clé) : permet de vérifier une rotation. */
+  key_hint?: string | null;
   /** Palier gratuit : le fournisseur peut réutiliser et faire relire les contenus. */
   uses_data_for_training: boolean;
 }
