@@ -8,8 +8,10 @@ import httpx
 
 from app.modules.job_discovery.domain.connector import JobSourceConnector
 from app.modules.job_discovery.domain.target_company import AtsKind
+from app.modules.job_discovery.infrastructure.ats.ashby import AshbyConnector
 from app.modules.job_discovery.infrastructure.ats.greenhouse import GreenhouseConnector
 from app.modules.job_discovery.infrastructure.ats.lever import LeverConnector
+from app.modules.job_discovery.infrastructure.ats.workable import WorkableConnector
 from app.modules.job_discovery.infrastructure.models import TargetCompanyModel
 
 
@@ -30,5 +32,13 @@ def connector_for(
             company_name=entreprise.name,
             client=client,
             region=region,
+        )
+    if entreprise.ats_kind == AtsKind.ASHBY.value:
+        return AshbyConnector(
+            board_name=entreprise.ats_token, company_name=entreprise.name, client=client
+        )
+    if entreprise.ats_kind == AtsKind.WORKABLE.value:
+        return WorkableConnector(
+            subdomain=entreprise.ats_token, company_name=entreprise.name, client=client
         )
     return None

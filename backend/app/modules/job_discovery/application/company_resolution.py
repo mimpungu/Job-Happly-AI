@@ -2,8 +2,8 @@
 
 Quand l'utilisateur renseigne une entreprise, la recherche doit aller lire **ses** offres :
 - si l'entreprise est déjà suivie, on la lit ;
-- sinon on cherche son site carrières public (Greenhouse, Lever) à partir du nom, et on ne la suit
-  automatiquement que si le nom du site correspond bien à celui saisi ;
+- sinon on cherche son site carrières public (Greenhouse, Lever, Ashby, Workable) à partir du
+  nom, et on ne la suit automatiquement que si le nom du site correspond bien à celui saisi ;
 - en cas de doute (nom proche, plusieurs sites), on propose les candidats sans rien activer ;
 - si rien n'est trouvé, on le dit : l'entreprise utilise peut-être un outil non pris en charge.
 

@@ -19,7 +19,7 @@ import {
 } from "./use-companies";
 import { formatDateParts } from "@/lib/regional";
 
-const ATS_LABELS: Record<string, string> = { greenhouse: "Greenhouse", lever: "Lever" };
+import { SUPPORTED_ATS_TEXT, atsLabel } from "./ats";
 
 function pluriel(n: number, mot: string) {
   return `${n} ${mot}${n > 1 ? "s" : ""}`;
@@ -36,7 +36,7 @@ export function resumeCollecte(rapport: CollectionReport): string {
 }
 
 /**
- * Recherche du site carrières public d'une entreprise (Greenhouse, Lever) puis suivi en un clic.
+ * Recherche du site carrières public d'une entreprise (Greenhouse, Lever, Ashby, Workable) puis suivi en un clic.
  * `onFollowed` permet à l'appelant d'enchaîner (par exemple lancer la collecte de ses offres).
  */
 export function CompanyFinder({ onFollowed }: { onFollowed?: () => void }) {
@@ -108,7 +108,7 @@ export function CompanyFinder({ onFollowed }: { onFollowed?: () => void }) {
       {decouvrir.isSuccess ? (
         decouvrir.data.length === 0 ? (
           <p role="status" className="text-sm text-foreground-muted">
-            Aucun site carrières public (Greenhouse ou Lever) trouvé pour « {interroge} ». Cela ne
+            Aucun site carrières public ({SUPPORTED_ATS_TEXT}) trouvé pour « {interroge} ». Cela ne
             veut pas dire que l&apos;entreprise n&apos;a pas d&apos;offres : elle utilise peut-être
             un autre outil, non pris en charge. Essayez l&apos;orthographe exacte du nom, ou collez
             l&apos;adresse de sa page carrières ci-dessous.
@@ -122,7 +122,7 @@ export function CompanyFinder({ onFollowed }: { onFollowed?: () => void }) {
               >
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-foreground">
-                    {b.board_name ?? b.token} · {ATS_LABELS[b.ats_kind] ?? b.ats_kind}
+                    {b.board_name ?? b.token} · {atsLabel(b.ats_kind)}
                   </span>
                   <span className="text-xs text-foreground-muted">
                     {pluriel(b.offer_count, "offre")} publiée{b.offer_count > 1 ? "s" : ""} ·{" "}
@@ -133,7 +133,7 @@ export function CompanyFinder({ onFollowed }: { onFollowed?: () => void }) {
                   variant="secondary"
                   loading={ajouter.isPending}
                   onClick={() => suivre(b)}
-                  aria-label={`Suivre ${b.board_name ?? b.token} (${ATS_LABELS[b.ats_kind] ?? b.ats_kind})`}
+                  aria-label={`Suivre ${b.board_name ?? b.token} (${atsLabel(b.ats_kind)})`}
                 >
                   Suivre
                 </Button>
@@ -181,7 +181,7 @@ function AjoutParUrl() {
       <div className="min-w-64 flex-[2]">
         <Field
           label="Adresse de la page carrières"
-          hint="Greenhouse ou Lever, ex. https://boards.greenhouse.io/entreprise"
+          hint={`${SUPPORTED_ATS_TEXT}, ex. https://boards.greenhouse.io/entreprise`}
         >
           {(champ) => (
             <Input
@@ -240,7 +240,7 @@ function Liste({ entreprises }: { entreprises: Company[] }) {
             <div className="flex flex-col gap-1">
               <span className="text-sm font-medium text-foreground">{e.name}</span>
               <span className="text-xs text-foreground-muted">
-                {e.ats_kind ? (ATS_LABELS[e.ats_kind] ?? e.ats_kind) : "Source inconnue"}
+                {e.ats_kind ? atsLabel(e.ats_kind) : "Source inconnue"}
                 {e.last_success_at
                   ? ` · dernière collecte réussie le ${formatDateParts(new Date(e.last_success_at), { dateStyle: "short", timeStyle: "medium" })}`
                   : ""}
@@ -320,7 +320,7 @@ export function CompaniesPanel() {
     >
       <div className="flex flex-col gap-5">
         <p className="text-sm text-foreground-muted">
-          Les offres viennent uniquement de sites carrières publics (API Greenhouse et Lever), à
+          Les offres viennent uniquement de sites carrières publics (API {SUPPORTED_ATS_TEXT}), à
           débit réduit et sans contournement. Aucune liste d&apos;entreprises n&apos;est imposée :
           cherchez celles qui vous intéressent.
         </p>

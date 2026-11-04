@@ -16,7 +16,7 @@ Tant que le profil n'est pas validé, rien n'est généré (score, CV, lettre, e
 ## 2. Trouver des offres (Recherche d'emploi)
 
 - **Ajouter une offre** : collez l'adresse et le texte d'une offre lue dans votre navigateur. Aucune requête n'est envoyée au site d'origine.
-- **Suivre des entreprises** (Paramètres) : les offres publiques de leurs sites carrières (Greenhouse, Lever) sont collectées à la demande.
+- **Suivre des entreprises** (Paramètres) : les offres publiques de leurs sites carrières (Greenhouse, Lever, Ashby, Workable) sont collectées à la demande.
 - Filtrez par texte, entreprise, ville, pays, contrat, télétravail, salaire, date et **compatibilité minimale**. Chaque offre affiche un score expliqué ; un critère sans donnée est « non évalué », jamais compté comme zéro.
 - Sauvegardez des recherches pour les relancer.
 

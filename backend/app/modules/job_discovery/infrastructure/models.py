@@ -278,7 +278,8 @@ class TargetCompanyModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
     __tablename__ = "target_companies"
     __table_args__ = (
         CheckConstraint(
-            "ats_kind IS NULL OR ats_kind IN ('greenhouse','lever','careers_page','unsupported')",
+            "ats_kind IS NULL OR ats_kind IN ("
+            "'greenhouse','lever','ashby','workable','careers_page','unsupported')",
             name="ats_kind_valid",
         ),
         CheckConstraint(
@@ -286,7 +287,7 @@ class TargetCompanyModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
             name="detection_status_valid",
         ),
         CheckConstraint(
-            "ats_kind NOT IN ('greenhouse','lever') OR ats_token IS NOT NULL",
+            "ats_kind NOT IN ('greenhouse','lever','ashby','workable') OR ats_token IS NOT NULL",
             name="ats_requires_token",
         ),
         CheckConstraint(

@@ -3,8 +3,10 @@ import pytest
 
 from app.modules.job_discovery.application.target_connectors import connector_for
 from app.modules.job_discovery.domain.target_company import AtsKind, detect_from_url
+from app.modules.job_discovery.infrastructure.ats.ashby import AshbyConnector
 from app.modules.job_discovery.infrastructure.ats.greenhouse import GreenhouseConnector
 from app.modules.job_discovery.infrastructure.ats.lever import LeverConnector
+from app.modules.job_discovery.infrastructure.ats.workable import WorkableConnector
 from app.modules.job_discovery.infrastructure.http import create_http_client
 from app.modules.job_discovery.infrastructure.models import TargetCompanyModel
 
@@ -23,6 +25,8 @@ class TestDetection:
             ("https://jobs.lever.co/exemplesa/abc-def", AtsKind.LEVER, "exemplesa", "global"),
             ("https://jobs.eu.lever.co/exemplesa", AtsKind.LEVER, "exemplesa", "eu"),
             ("https://JOBS.LEVER.CO/Exemple", AtsKind.LEVER, "Exemple", "global"),
+            ("https://jobs.ashbyhq.com/exemplesa/abc-123", AtsKind.ASHBY, "exemplesa", None),
+            ("https://apply.workable.com/exemplesa/", AtsKind.WORKABLE, "exemplesa", None),
         ],
     )
     def test_reconnait_un_ats_public(
@@ -42,6 +46,8 @@ class TestDetection:
             "https://boards.greenhouse.io/",  # pas de jeton
             "https://evil.test/boards.greenhouse.io/exemplesa",
             "https://boards.greenhouse.io.evil.test/exemplesa",
+            "https://apply.workable.com/j/ABC123DEF4",  # lien court sans le compte
+            "https://apply.workable.com/api/v1/widget/accounts/x",
             "pas une url",
             "",
         ],
@@ -76,12 +82,29 @@ class TestConstructionDuConnecteur:
         assert isinstance(connecteur, LeverConnector)
 
     @pytest.mark.parametrize(
+        ("ats_kind", "classe", "cle"),
+        [
+            ("ashby", AshbyConnector, "ashby:exemplesa"),
+            ("workable", WorkableConnector, "workable:exemplesa"),
+        ],
+    )
+    def test_ashby_et_workable(self, ats_kind: str, classe: type, cle: str) -> None:
+        connecteur = connector_for(
+            _entreprise(ats_kind=ats_kind, ats_token="exemplesa"), create_http_client()
+        )
+
+        assert connecteur is not None
+        assert isinstance(connecteur, classe)
+        assert connecteur.key == cle
+
+    @pytest.mark.parametrize(
         "champs",
         [
             {"detection_status": "pending", "ats_kind": "greenhouse", "ats_token": "x"},
             {"detection_status": "unsupported", "ats_kind": "unsupported"},
             {"ats_kind": "careers_page"},
             {"ats_kind": "greenhouse", "ats_token": None},
+            {"ats_kind": "workable", "ats_token": None},
         ],
     )
     def test_aucun_connecteur_pour_une_source_non_supportee(

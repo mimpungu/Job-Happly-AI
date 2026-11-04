@@ -31,6 +31,25 @@ async def test_ajoute_une_entreprise_et_detecte_son_ats(
     assert entreprise.detected_at == MAINTENANT
 
 
+@pytest.mark.parametrize(
+    ("url", "type_"),
+    [
+        ("https://jobs.ashbyhq.com/exemplesa", "ashby"),
+        ("https://apply.workable.com/exemplesa/", "workable"),
+    ],
+)
+async def test_ashby_et_workable_sont_acceptes_par_la_base(
+    session: AsyncSession, user_id: uuid.UUID, url: str, type_: str
+) -> None:
+    entreprise = await SqlTargetCompanyRepository(session).add(
+        user_id, name="Exemple SA", careers_url=url, now=MAINTENANT
+    )
+    await session.flush()  # les contraintes CHECK de la base s'appliquent ici
+
+    assert (entreprise.ats_kind, entreprise.ats_token) == (type_, "exemplesa")
+    assert entreprise.detection_status == "supported"
+
+
 async def test_une_url_inconnue_reste_en_attente_de_detection(
     session: AsyncSession, user_id: uuid.UUID
 ) -> None:

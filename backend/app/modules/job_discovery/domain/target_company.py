@@ -10,6 +10,8 @@ from urllib.parse import urlsplit
 class AtsKind(StrEnum):
     GREENHOUSE = "greenhouse"
     LEVER = "lever"
+    ASHBY = "ashby"
+    WORKABLE = "workable"
     CAREERS_PAGE = "careers_page"
     UNSUPPORTED = "unsupported"
 
@@ -30,6 +32,11 @@ class DetectedSource:
 
 _HOTES_GREENHOUSE = {"boards.greenhouse.io", "job-boards.greenhouse.io", "boards.eu.greenhouse.io"}
 _HOTES_LEVER = {"jobs.lever.co": "global", "jobs.eu.lever.co": "eu"}
+_HOTE_ASHBY = "jobs.ashbyhq.com"
+_HOTE_WORKABLE = "apply.workable.com"
+# Chemins d'apply.workable.com qui ne désignent pas un compte (« /j/<code> » est le lien court
+# d'une offre, sans le compte : il ne permet pas de retrouver le board).
+_CHEMINS_WORKABLE_RESERVES = frozenset({"j", "api"})
 
 
 def detect_from_url(url: str) -> DetectedSource | None:
@@ -49,4 +56,8 @@ def detect_from_url(url: str) -> DetectedSource | None:
         return DetectedSource(AtsKind.GREENHOUSE, jeton, None, "url_pattern")
     if hote in _HOTES_LEVER:
         return DetectedSource(AtsKind.LEVER, jeton, _HOTES_LEVER[hote], "url_pattern")
+    if hote == _HOTE_ASHBY:
+        return DetectedSource(AtsKind.ASHBY, jeton, None, "url_pattern")
+    if hote == _HOTE_WORKABLE and jeton.lower() not in _CHEMINS_WORKABLE_RESERVES:
+        return DetectedSource(AtsKind.WORKABLE, jeton, None, "url_pattern")
     return None

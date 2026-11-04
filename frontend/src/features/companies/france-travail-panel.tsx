@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toaster";
 import type { FranceTravailResult } from "@/types/companies";
 
+import { SUPPORTED_ATS_TEXT } from "./ats";
 import { useFranceTravailSearch, useFranceTravailStatus } from "./use-companies";
 
 const ERREURS: Record<string, string> = {
@@ -110,7 +111,7 @@ export function FranceTravailPanel() {
     <Panel title="France Travail (API officielle)">
       <div className="flex flex-col gap-4">
         <p className="text-sm text-foreground-muted">
-          Source officielle qui couvre les grands employeurs sans site Greenhouse ou Lever. Aucune
+          Source officielle qui couvre les grands employeurs sans site {SUPPORTED_ATS_TEXT}. Aucune
           candidature n&apos;est envoyée.
         </p>
         {statut.isPending ? (

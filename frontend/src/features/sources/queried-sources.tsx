@@ -1,8 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SUPPORTED_ATS_TEXT, atsLabel } from "@/features/companies/ats";
 import type { CompanySearch, GeographicCoverage, SourceSearchResult } from "@/types/sources";
-
-const ATS: Record<string, string> = { greenhouse: "Greenhouse", lever: "Lever" };
 
 export type CandidateBoard = CompanySearch["boards"][number];
 
@@ -78,7 +77,7 @@ function Entreprise({
     case "not_found":
       return (
         <p role="status" className="text-sm text-foreground">
-          Aucun site carrières public (Greenhouse ou Lever) trouvé pour « {nom} ». Cela ne veut pas
+          Aucun site carrières public ({SUPPORTED_ATS_TEXT}) trouvé pour « {nom} ». Cela ne veut pas
           dire que l&apos;entreprise n&apos;a pas d&apos;offres : elle utilise peut-être un autre
           outil, que l&apos;application ne sait pas encore lire. Vérifiez l&apos;orthographe du nom.
         </p>
@@ -97,15 +96,14 @@ function Entreprise({
                 className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border px-3 py-2"
               >
                 <span className="text-foreground">
-                  {b.board_name ?? b.token} · {ATS[b.ats_kind] ?? b.ats_kind} · {b.offer_count}{" "}
-                  offre
+                  {b.board_name ?? b.token} · {atsLabel(b.ats_kind)} · {b.offer_count} offre
                   {b.offer_count > 1 ? "s" : ""}
                 </span>
                 {onFollowBoard ? (
                   <Button
                     variant="secondary"
                     onClick={() => onFollowBoard(b)}
-                    aria-label={`Suivre ${b.board_name ?? b.token} (${ATS[b.ats_kind] ?? b.ats_kind})`}
+                    aria-label={`Suivre ${b.board_name ?? b.token} (${atsLabel(b.ats_kind)})`}
                   >
                     Suivre
                   </Button>

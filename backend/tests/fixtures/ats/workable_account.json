@@ -1,0 +1,51 @@
+{
+  "name": "Exemple SA",
+  "description": "<p>Entreprise fictive.</p>",
+  "jobs": [
+    {
+      "title": "Data Analyst",
+      "shortcode": "ABC123DEF4",
+      "code": null,
+      "employment_type": "Full-time",
+      "telecommuting": false,
+      "department": "Data",
+      "url": "https://apply.workable.com/j/ABC123DEF4",
+      "shortlink": "https://apply.workable.com/j/ABC123DEF4",
+      "application_url": "https://apply.workable.com/j/ABC123DEF4/apply",
+      "published_on": "2026-10-20",
+      "created_at": "2026-09-01",
+      "country": "France",
+      "city": "Paris",
+      "state": "Île-de-France",
+      "locations": [
+        {"country": "France", "countryCode": "FR", "city": "Paris", "region": "Île-de-France", "hidden": false}
+      ],
+      "description": "<p>Analyse de données avec <strong>SQL</strong>.</p><script>alert(1)</script>"
+    },
+    {
+      "title": "Stagiaire Data",
+      "shortcode": "XYZ987WVU6",
+      "employment_type": "Internship",
+      "telecommuting": true,
+      "url": "https://apply.workable.com/j/XYZ987WVU6",
+      "country": "Germany",
+      "city": "Berlin",
+      "locations": [
+        {"countryCode": "DE", "hidden": false},
+        {"countryCode": "FR", "hidden": false}
+      ],
+      "description": "<p>Stage.</p>"
+    },
+    {
+      "title": "Office Manager",
+      "shortcode": "OFF1CE0001",
+      "employment_type": "Part-time",
+      "telecommuting": false,
+      "workplace_type": "hybrid",
+      "url": "https://apply.workable.com/j/OFF1CE0001",
+      "application_url": "https://apply.workable.com/j/OFF1CE0001/apply",
+      "locations": [{"countryCode": "ZZZ", "hidden": false}],
+      "description": "<p>Gestion du bureau.</p>"
+    }
+  ]
+}

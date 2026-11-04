@@ -1,8 +1,9 @@
 """Découverte du job board public d'une entreprise à partir de son nom.
 
 Aucune liste fermée d'entreprises : on déduit des jetons plausibles du nom saisi, puis on vérifie
-auprès des API publiques de lecture (Greenhouse, Lever) qu'ils existent réellement. Rien n'est
-inventé : un jeton n'est proposé que si la source a répondu avec une structure valide.
+auprès des API publiques de lecture (Greenhouse, Lever, Ashby, Workable) qu'ils existent
+réellement. Rien n'est inventé : un jeton n'est proposé que si la source a répondu avec une
+structure valide.
 
 Limite assumée : deux entreprises peuvent partager un jeton. Le résultat est donc proposé à
 l'utilisateur (nom du board, nombre d'offres) avant tout suivi ; il n'est jamais activé seul.
@@ -19,8 +20,10 @@ import httpx
 
 from app.modules.job_discovery.domain.connector import ConnectorError
 from app.modules.job_discovery.domain.target_company import AtsKind
+from app.modules.job_discovery.infrastructure.ats.ashby import BASE_URL as ASHBY_URL
 from app.modules.job_discovery.infrastructure.ats.greenhouse import BASE_URL as GREENHOUSE_URL
 from app.modules.job_discovery.infrastructure.ats.lever import BASE_URLS as LEVER_URLS
+from app.modules.job_discovery.infrastructure.ats.workable import BASE_URL as WORKABLE_URL
 from app.modules.job_discovery.infrastructure.http import get_json
 
 logger = logging.getLogger("happly.discovery")
@@ -64,7 +67,13 @@ async def discover_boards(name: str, client: httpx.AsyncClient) -> list[Discover
     texte = name.strip()[:MAX_NAME_LENGTH]
     trouves: list[DiscoveredBoard] = []
     for jeton in slug_candidates(texte):
-        for sonde in (_sonder_greenhouse, _sonder_lever_global, _sonder_lever_eu):
+        for sonde in (
+            _sonder_greenhouse,
+            _sonder_lever_global,
+            _sonder_lever_eu,
+            _sonder_ashby,
+            _sonder_workable,
+        ):
             try:
                 board = await sonde(jeton, client)
             except ConnectorError as erreur:
@@ -130,3 +139,49 @@ async def _sonder_lever_global(jeton: str, client: httpx.AsyncClient) -> Discove
 
 async def _sonder_lever_eu(jeton: str, client: httpx.AsyncClient) -> DiscoveredBoard | None:
     return await _sonder_lever(jeton, client, region="eu", hote="jobs.eu.lever.co")
+
+
+async def _sonder_ashby(jeton: str, client: httpx.AsyncClient) -> DiscoveredBoard | None:
+    donnees = await get_json(
+        client,
+        f"{ASHBY_URL}/{jeton}",
+        source_key=f"ashby:{jeton}",
+        params={"includeCompensation": "false"},
+        not_found_is_error=False,
+    )
+    liste = donnees.get("jobs") if isinstance(donnees, dict) else None
+    if not isinstance(liste, list):
+        return None
+    return DiscoveredBoard(
+        ats_kind=AtsKind.ASHBY,
+        token=jeton,
+        region=None,
+        careers_url=f"https://jobs.ashbyhq.com/{jeton}",
+        board_name=None,
+        # Les offres non listées ne sont pas publiées : elles ne comptent pas.
+        offer_count=sum(
+            1 for j in liste if not (isinstance(j, dict) and j.get("isListed") is False)
+        ),
+    )
+
+
+async def _sonder_workable(jeton: str, client: httpx.AsyncClient) -> DiscoveredBoard | None:
+    donnees = await get_json(
+        client,
+        f"{WORKABLE_URL}/{jeton}",
+        source_key=f"workable:{jeton}",
+        params={"details": "false"},
+        not_found_is_error=False,
+    )
+    liste = donnees.get("jobs") if isinstance(donnees, dict) else None
+    if not isinstance(donnees, dict) or not isinstance(liste, list):
+        return None
+    nom = donnees.get("name")
+    return DiscoveredBoard(
+        ats_kind=AtsKind.WORKABLE,
+        token=jeton,
+        region=None,
+        careers_url=f"https://apply.workable.com/{jeton}",
+        board_name=nom.strip() if isinstance(nom, str) and nom.strip() else None,
+        offer_count=len(liste),
+    )

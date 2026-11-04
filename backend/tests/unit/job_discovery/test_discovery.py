@@ -79,3 +79,24 @@ async def test_une_source_en_panne_est_ignoree_sans_masquer_les_autres() -> None
 async def test_refuse_une_structure_inattendue() -> None:
     async with _client(lambda _: httpx.Response(200, json={"surprise": True})) as client:
         assert await discover_boards("Acme", client) == []
+
+
+async def test_trouve_un_board_ashby_et_un_compte_workable() -> None:
+    def handler(requete: httpx.Request) -> httpx.Response:
+        chemin = requete.url.path
+        if requete.url.host == "api.ashbyhq.com" and chemin == "/posting-api/job-board/acme":
+            jobs = [{"id": "a"}, {"id": "b", "isListed": False}]
+            return httpx.Response(200, json={"apiVersion": "1", "jobs": jobs})
+        if requete.url.host == "apply.workable.com" and chemin == "/api/v1/widget/accounts/acme":
+            return httpx.Response(200, json={"name": "Acme Corp", "jobs": [{}, {}, {}]})
+        return httpx.Response(404)
+
+    async with _client(handler) as client:
+        boards = await discover_boards("Acme", client)
+
+    assert [(b.ats_kind, b.token, b.offer_count, b.board_name) for b in boards] == [
+        (AtsKind.ASHBY, "acme", 1, None),  # l'offre non listée n'est pas comptée
+        (AtsKind.WORKABLE, "acme", 3, "Acme Corp"),
+    ]
+    assert boards[0].careers_url == "https://jobs.ashbyhq.com/acme"
+    assert boards[1].careers_url == "https://apply.workable.com/acme"

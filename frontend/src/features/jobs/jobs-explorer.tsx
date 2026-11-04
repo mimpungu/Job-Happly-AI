@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/table";
 import { toast } from "@/components/ui/toaster";
 import { useRecompute } from "@/features/matching/use-matching";
+import { SUPPORTED_ATS_LIST } from "@/features/companies/ats";
 import { CompanyFinder, resumeCollecte } from "@/features/companies/companies-panel";
 import { useAddCompany, useRunCollection } from "@/features/companies/use-companies";
 import { usePreferences } from "@/features/localization/use-localization";
@@ -137,9 +138,9 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
           </summary>
           <div className="mt-3 flex flex-col gap-3">
             <p className="text-sm text-foreground-muted">
-              Happly AI lit les sites carrières publics (Greenhouse, Lever) des entreprises que vous
-              suivez : une recherche ne trouve que leurs offres. Pour voir celles d&apos;une autre
-              entreprise, ajoutez-la ici ; ses offres sont récupérées aussitôt.
+              Happly AI lit les sites carrières publics ({SUPPORTED_ATS_LIST}) des entreprises que
+              vous suivez : une recherche ne trouve que leurs offres. Pour voir celles d&apos;une
+              autre entreprise, ajoutez-la ici ; ses offres sont récupérées aussitôt.
             </p>
             <CompanyFinder onFollowed={recupererOffres} />
           </div>

@@ -1,0 +1,54 @@
+{
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "id": "aaaaaaaa-1111-0000-0000-000000000001",
+      "title": "Data Analyst",
+      "department": "Data",
+      "team": "Analytics",
+      "employmentType": "FullTime",
+      "location": "Paris",
+      "secondaryLocations": [],
+      "publishedAt": "2026-10-20T09:00:00.000+00:00",
+      "isListed": true,
+      "isRemote": true,
+      "workplaceType": "Hybrid",
+      "address": {"postalAddress": {"addressLocality": "Paris", "addressCountry": "France"}},
+      "jobUrl": "https://jobs.ashbyhq.com/exemplesa/aaaaaaaa-1111-0000-0000-000000000001",
+      "applyUrl": "https://jobs.ashbyhq.com/exemplesa/aaaaaaaa-1111-0000-0000-000000000001/application",
+      "descriptionHtml": "<p>Analyse de données avec <strong>SQL</strong>.</p><script>alert(1)</script>",
+      "descriptionPlain": "Analyse de données avec SQL.",
+      "compensation": {
+        "summaryComponents": [
+          {"compensationType": "Salary", "interval": "1 YEAR", "currencyCode": "eur", "minValue": 45000, "maxValue": 55000},
+          {"compensationType": "EquityPercentage", "interval": "NONE", "currencyCode": null, "minValue": null, "maxValue": null}
+        ]
+      }
+    },
+    {
+      "id": "aaaaaaaa-1111-0000-0000-000000000002",
+      "title": "Stagiaire Data",
+      "employmentType": "Intern",
+      "location": "Remote - European Union",
+      "isListed": true,
+      "workplaceType": "Remote",
+      "jobUrl": "https://jobs.ashbyhq.com/exemplesa/aaaaaaaa-1111-0000-0000-000000000002",
+      "descriptionHtml": "<p>Stage en <em>équipe data</em>.</p>",
+      "compensation": {
+        "summaryComponents": [
+          {"compensationType": "Salary", "interval": "1 HOUR", "currencyCode": "EUR", "minValue": 12, "maxValue": 15}
+        ]
+      }
+    },
+    {
+      "id": "aaaaaaaa-1111-0000-0000-000000000003",
+      "title": "Data Engineer (confidentiel)",
+      "employmentType": "Contract",
+      "location": "Lyon",
+      "isListed": false,
+      "workplaceType": "OnSite",
+      "jobUrl": "https://jobs.ashbyhq.com/exemplesa/aaaaaaaa-1111-0000-0000-000000000003",
+      "descriptionPlain": "Offre non listée."
+    }
+  ]
+}

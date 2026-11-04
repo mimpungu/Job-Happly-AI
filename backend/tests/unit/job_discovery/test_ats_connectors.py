@@ -15,8 +15,10 @@ from app.modules.job_discovery.domain.connector import (
     SourceUnavailableError,
 )
 from app.modules.job_discovery.domain.criteria import SearchCriteria
+from app.modules.job_discovery.infrastructure.ats.ashby import AshbyConnector
 from app.modules.job_discovery.infrastructure.ats.greenhouse import GreenhouseConnector
 from app.modules.job_discovery.infrastructure.ats.lever import LeverConnector
+from app.modules.job_discovery.infrastructure.ats.workable import WorkableConnector
 from app.modules.job_discovery.infrastructure.http import create_http_client
 
 FIXTURES = Path(__file__).resolve().parents[2] / "fixtures" / "ats"
@@ -236,3 +238,225 @@ class TestLever:
     def test_refuse_un_jeton_dangereux(self, token: str) -> None:
         with pytest.raises(NotConfiguredError):
             _lever(create_http_client(), token)
+
+
+def _ashby(client: httpx.AsyncClient, token: str = "exemplesa") -> AshbyConnector:
+    return AshbyConnector(board_name=token, company_name="Exemple SA", client=client)
+
+
+def _workable(client: httpx.AsyncClient, token: str = "exemplesa") -> WorkableConnector:
+    return WorkableConnector(subdomain=token, company_name="Exemple SA", client=client)
+
+
+class TestAshby:
+    CHEMIN = "/posting-api/job-board/exemplesa"
+
+    async def _search(self, criteres: SearchCriteria):  # type: ignore[no-untyped-def]
+        client, requetes = _client(
+            {self.CHEMIN: httpx.Response(200, json=_charger("ashby_job_board.json"))}
+        )
+        async with client:
+            return await _ashby(client).search(criteres), requetes
+
+    def test_respecte_le_contrat_des_connecteurs(self) -> None:
+        assert isinstance(_ashby(create_http_client()), JobSourceConnector)
+
+    async def test_normalise_teletravail_salaire_et_date(self) -> None:
+        page, requetes = await self._search(SearchCriteria(title="Data Analyst"))
+
+        assert requetes[0].url.host == "api.ashbyhq.com"
+        assert requetes[0].url.params["includeCompensation"] == "true"
+        offre = page.offers[0].offer
+        assert page.offers[0].external_id == "aaaaaaaa-1111-0000-0000-000000000001"
+        assert offre.company_name == "Exemple SA"
+        assert offre.location == "Paris"
+        assert offre.remote_type is RemoteType.HYBRID
+        assert (str(offre.salary_min), str(offre.salary_max)) == ("45000", "55000")
+        assert offre.salary_currency == "EUR"
+        assert offre.published_at is not None
+        assert offre.application_url.endswith("/application")
+        assert offre.canonical_url is not None
+        assert offre.description == "Analyse de données avec SQL."
+
+    async def test_ne_devine_ni_pays_ni_contrat_ambigu(self) -> None:
+        page, _ = await self._search(SearchCriteria(title="Data"))
+        analyste, stagiaire = page.offers
+
+        assert analyste.offer.country_code is None  # « France » en toutes lettres : non deviné
+        assert analyste.offer.employment_type is None  # « FullTime » ne dit pas CDI/CDD
+        assert stagiaire.offer.employment_type is EmploymentType.INTERNSHIP
+        assert stagiaire.offer.remote_type is RemoteType.REMOTE
+
+    async def test_un_salaire_horaire_et_une_date_absente_ne_sont_pas_retenus(self) -> None:
+        page, _ = await self._search(SearchCriteria(title="Stagiaire"))
+        offre = page.offers[0].offer
+
+        assert offre.salary_min is None
+        assert offre.salary_currency is None
+        assert offre.published_at is None
+        assert offre.application_url == offre.canonical_url  # repli sans applyUrl
+
+    async def test_la_description_html_est_du_texte_sans_script(self) -> None:
+        page, _ = await self._search(SearchCriteria(title="Stagiaire"))
+        description = page.offers[0].offer.description
+
+        assert "équipe data" in description
+        assert "<" not in description
+
+    async def test_une_offre_non_listee_n_est_pas_diffusee(self) -> None:
+        page, _ = await self._search(SearchCriteria(keywords=("data",)))
+
+        assert page.total == 2
+        assert "aaaaaaaa-1111-0000-0000-000000000003" not in {o.external_id for o in page.offers}
+
+    async def test_plusieurs_paliers_de_salaire_ne_donnent_pas_de_fourchette(self) -> None:
+        board = _charger("ashby_job_board.json")
+        board["jobs"][0]["compensation"]["summaryComponents"].append(
+            {
+                "compensationType": "Salary",
+                "interval": "1 YEAR",
+                "currencyCode": "USD",
+                "minValue": 90000,
+                "maxValue": 120000,
+            }
+        )
+        client, _ = _client({self.CHEMIN: httpx.Response(200, json=board)})
+        async with client:
+            page = await _ashby(client).search(SearchCriteria(title="Data Analyst"))
+
+        assert page.offers[0].offer.salary_min is None
+
+    async def test_detail_relit_le_board(self) -> None:
+        client, _ = _client(
+            {self.CHEMIN: httpx.Response(200, json=_charger("ashby_job_board.json"))}
+        )
+        async with client:
+            connecteur = _ashby(client)
+            detail = await connecteur.get_details("aaaaaaaa-1111-0000-0000-000000000001")
+            assert detail is not None
+            assert await connecteur.get_details("aaaaaaaa-1111-0000-0000-000000000003") is None
+            assert await connecteur.get_details("bbbbbbbb-0000") is None
+            with pytest.raises(InvalidResponseError):
+                await connecteur.get_details("../x")
+
+    @pytest.mark.parametrize("token", ["", "a/b", "..", "x y", "x%2f"])
+    def test_refuse_un_jeton_dangereux(self, token: str) -> None:
+        with pytest.raises(NotConfiguredError):
+            _ashby(create_http_client(), token)
+
+    @pytest.mark.parametrize(
+        ("code", "erreur"),
+        [(404, NotConfiguredError), (403, AccessDeniedError), (503, SourceUnavailableError)],
+    )
+    async def test_traduit_les_erreurs_http(self, code: int, erreur: type[Exception]) -> None:
+        client, _ = _client(code=code)
+        async with client:
+            with pytest.raises(erreur):
+                await _ashby(client).search(SearchCriteria(title="Data"))
+
+    async def test_structure_modifiee_est_signalee(self) -> None:
+        client, _ = _client({self.CHEMIN: httpx.Response(200, json=[{"id": "x"}])})
+        async with client:
+            with pytest.raises(InvalidResponseError):
+                await _ashby(client).search(SearchCriteria(title="Data"))
+
+    async def test_sante(self) -> None:
+        client, _ = _client({self.CHEMIN: httpx.Response(200, json={"jobs": []})})
+        async with client:
+            assert (await _ashby(client).health_check()).state is HealthState.OK
+
+
+class TestWorkable:
+    CHEMIN = "/api/v1/widget/accounts/exemplesa"
+
+    async def _search(self, criteres: SearchCriteria):  # type: ignore[no-untyped-def]
+        client, requetes = _client(
+            {self.CHEMIN: httpx.Response(200, json=_charger("workable_account.json"))}
+        )
+        async with client:
+            return await _workable(client).search(criteres), requetes
+
+    def test_respecte_le_contrat_des_connecteurs(self) -> None:
+        assert isinstance(_workable(create_http_client()), JobSourceConnector)
+
+    async def test_normalise_lieu_pays_date_et_description(self) -> None:
+        page, requetes = await self._search(SearchCriteria(title="Data Analyst"))
+
+        assert requetes[0].url.host == "apply.workable.com"
+        assert requetes[0].url.params["details"] == "true"
+        connecteur_offre = page.offers[0]
+        offre = connecteur_offre.offer
+        assert connecteur_offre.external_id == "ABC123DEF4"
+        assert offre.location == "Paris, Île-de-France, France"
+        assert offre.country_code == CountryCode("FR")
+        assert offre.published_at is not None
+        assert offre.published_at.date().isoformat() == "2026-10-20"
+        assert offre.application_url.endswith("/apply")
+        assert "SQL" in offre.description
+        assert "alert" not in offre.description
+        assert "<" not in offre.description
+
+    async def test_ne_devine_ni_contrat_ambigu_ni_teletravail_incertain(self) -> None:
+        page, _ = await self._search(SearchCriteria(title="Data Analyst"))
+        offre = page.offers[0].offer
+
+        assert offre.employment_type is None  # « Full-time » ne dit pas CDI/CDD
+        assert offre.remote_type is None  # `telecommuting = false` : sur site ou hybride ?
+
+    async def test_plusieurs_pays_ou_code_invalide_ne_donnent_pas_de_pays(self) -> None:
+        page_stage, _ = await self._search(SearchCriteria(title="Stagiaire"))
+        page_bureau, _ = await self._search(SearchCriteria(title="Office Manager"))
+
+        stagiaire, office = page_stage.offers[0].offer, page_bureau.offers[0].offer
+        assert stagiaire.country_code is None
+        assert stagiaire.remote_type is RemoteType.REMOTE
+        assert stagiaire.employment_type is EmploymentType.INTERNSHIP
+        assert stagiaire.published_at is None  # `created_at` n'est pas une publication
+        assert stagiaire.application_url == stagiaire.canonical_url
+        assert office.country_code is None
+        assert office.remote_type is RemoteType.HYBRID  # `workplace_type` prime
+        assert office.employment_type is EmploymentType.PART_TIME
+
+    async def test_detail_relit_la_liste(self) -> None:
+        client, _ = _client(
+            {self.CHEMIN: httpx.Response(200, json=_charger("workable_account.json"))}
+        )
+        async with client:
+            connecteur = _workable(client)
+            assert (await connecteur.get_details("ABC123DEF4")) is not None
+            assert await connecteur.get_details("INCONNU000") is None
+            with pytest.raises(InvalidResponseError):
+                await connecteur.get_details("../x")
+
+    @pytest.mark.parametrize("token", ["", "a/b", "..", "x y", "x%2f"])
+    def test_refuse_un_jeton_dangereux(self, token: str) -> None:
+        with pytest.raises(NotConfiguredError):
+            _workable(create_http_client(), token)
+
+    @pytest.mark.parametrize(
+        ("code", "erreur"),
+        [(404, NotConfiguredError), (403, AccessDeniedError), (503, SourceUnavailableError)],
+    )
+    async def test_traduit_les_erreurs_http(self, code: int, erreur: type[Exception]) -> None:
+        client, _ = _client(code=code)
+        async with client:
+            with pytest.raises(erreur):
+                await _workable(client).search(SearchCriteria(title="Data"))
+
+    async def test_une_redirection_n_est_pas_suivie(self) -> None:
+        client, _ = _client(code=302)
+        async with client:
+            with pytest.raises(InvalidResponseError):
+                await _workable(client).search(SearchCriteria(title="Data"))
+
+    async def test_offre_sans_identifiant_est_rejetee(self) -> None:
+        compte = {"jobs": [{"title": "X", "url": "https://apply.workable.com/j/1"}]}
+        client, _ = _client({self.CHEMIN: httpx.Response(200, json=compte)})
+        async with client:
+            with pytest.raises(InvalidResponseError):
+                await _workable(client).search(SearchCriteria(title="X"))
+
+    async def test_sante(self) -> None:
+        client, _ = _client({self.CHEMIN: httpx.Response(200, json={"jobs": []})})
+        async with client:
+            assert (await _workable(client).health_check()).state is HealthState.OK

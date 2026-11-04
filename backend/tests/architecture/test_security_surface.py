@@ -21,6 +21,9 @@ _SORTANT: dict[str, str] = {
     "modules/job_discovery/infrastructure/ats/discovery.py": "hôtes ATS fixes (liste blanche)",
     "modules/job_discovery/infrastructure/ats/greenhouse.py": "hôte ATS fixe",
     "modules/job_discovery/infrastructure/ats/lever.py": "hôtes ATS fixes",
+    "modules/job_discovery/infrastructure/ats/ashby.py": "hôte ATS fixe ; jeton validé",
+    "modules/job_discovery/infrastructure/ats/workable.py": "hôte ATS fixe ; jeton validé ; "
+    "la redirection 302 de l'adresse documentée n'est jamais suivie",
     "modules/job_discovery/application/collection.py": "type de client uniquement",
     "modules/job_discovery/application/target_connectors.py": "type de client uniquement",
     "modules/job_discovery/application/company_resolution.py": "type de client uniquement ; "
