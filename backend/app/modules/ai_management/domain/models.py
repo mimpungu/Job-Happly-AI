@@ -68,6 +68,9 @@ class AIRequest:
     """Vrai si `content` contient des données personnelles (CV, profil, coordonnées). Un
     fournisseur qui réutilise les contenus pour s'entraîner ou les fait relire n'est alors
     jamais utilisé. À renseigner explicitement par l'appelant : faux ne vaut pas « inconnu »."""
+    allowed_kinds: frozenset[ProviderKind] | None = None
+    """Restreint cet appel à certains genres de fournisseur (ex. local seul), en plus du réglage
+    de l'utilisateur ; `None` = pas de restriction. Ne peut jamais élargir le réglage."""
 
     def __post_init__(self) -> None:
         if self.level not in (1, 2):

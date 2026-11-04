@@ -27,6 +27,7 @@ from app.modules.document_generation.domain.cover_letter_models import (
     CoverLetterContent,
     count_words,
 )
+from app.modules.document_generation.domain.spelling import SpellingChecker, find_spelling_issues
 from app.modules.job_intelligence.domain.matching.skills import canonique
 
 if TYPE_CHECKING:
@@ -107,6 +108,20 @@ def find_writing_issues(texte: str) -> list[str]:
     if texte.count("«") != texte.count("»"):
         problemes.append("Guillemets français non appariés.")
     return problemes
+
+
+def _termes_du_profil(
+    profile: ProfileDocument | None, context: CompanyOfferContext | None
+) -> list[str]:
+    """Noms propres et jargon que le dictionnaire ne connaît pas : jamais des fautes."""
+    termes: list[str] = []
+    if profile is not None:
+        termes += [s.name for s in profile.skills]
+        termes += [e.company or "" for e in profile.experiences]
+        termes += [e.institution or "" for e in profile.educations]
+    if context is not None:
+        termes += [context.company_name or "", context.job_title, *context.required_skills]
+    return termes
 
 
 def _corpus_de_nombres(
@@ -206,6 +221,7 @@ def audit_letter(
     *,
     today: date,
     page_count: int | None = None,
+    spelling: SpellingChecker | None = None,
 ) -> CoverLetterAudit:
     """Audit d'une lettre générée (structure connue)."""
     return _audit(
@@ -223,6 +239,7 @@ def audit_letter(
         profile,
         context,
         page_count,
+        spelling,
     )
 
 
@@ -234,6 +251,7 @@ def audit_letter_text(
     context: CompanyOfferContext | None,
     today: date,
     page_count: int | None,
+    spelling: SpellingChecker | None = None,
 ) -> CoverLetterAudit:
     """Audit d'une lettre éditée, à partir du texte extrait du PDF (structure inconnue).
 
@@ -267,6 +285,7 @@ def audit_letter_text(
         profile,
         context,
         page_count,
+        spelling,
     )
 
 
@@ -275,6 +294,7 @@ def _audit(
     profile: ProfileDocument | None,
     context: CompanyOfferContext | None,
     page_count: int | None,
+    spelling: SpellingChecker | None = None,
 ) -> CoverLetterAudit:
     issues: list[str] = list(data.fact_issues)
     texte = normalize(data.full)
@@ -282,7 +302,9 @@ def _audit(
 
     cliches = [c for c in _CLICHES if c in texte]
     issues += [f"Formulation artificielle à éviter : « {c} »" for c in cliches]
-    ecriture = find_writing_issues(data.body)
+    ecriture = find_writing_issues(data.body) + find_spelling_issues(
+        data.body, data.language, spelling, ignore=_termes_du_profil(profile, context)
+    )
     issues += ecriture
 
     mots = count_words(data.body)

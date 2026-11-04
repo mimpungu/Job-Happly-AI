@@ -1,5 +1,6 @@
 """Règles pures : coût, plafonds, routage, cache."""
 
+from dataclasses import replace
 from decimal import Decimal
 
 import pytest
@@ -226,3 +227,38 @@ class TestDonneesPersonnelles:
         )
 
         assert routes == []
+
+
+class TestRestrictionParAppel:
+    def test_une_requete_limitee_au_local_n_utilise_jamais_l_api(self) -> None:
+        api, local = FakeProvider("api"), FakeProvider("local", ProviderKind.LOCAL)
+        requete_locale = replace(requete(), allowed_kinds=frozenset({ProviderKind.LOCAL}))
+
+        routes = plan_routes(
+            [api, local], requete_locale, mode=AIMode.ECONOMY, preference=BackendPreference.HYBRID
+        )
+
+        assert [r.provider.name for r in routes] == ["local"]
+
+    def test_la_restriction_ne_peut_pas_elargir_le_reglage_de_l_utilisateur(self) -> None:
+        api, local = FakeProvider("api"), FakeProvider("local", ProviderKind.LOCAL)
+        permissive = replace(requete(), allowed_kinds=frozenset(ProviderKind))
+
+        routes = plan_routes(
+            [api, local], permissive, mode=AIMode.ECONOMY, preference=BackendPreference.LOCAL_ONLY
+        )
+
+        assert [r.provider.name for r in routes] == ["local"]
+
+    def test_local_demande_sans_modele_local_donne_aucune_route(self) -> None:
+        requete_locale = replace(requete(), allowed_kinds=frozenset({ProviderKind.LOCAL}))
+
+        assert (
+            plan_routes(
+                [FakeProvider("api")],
+                requete_locale,
+                mode=AIMode.ECONOMY,
+                preference=BackendPreference.HYBRID,
+            )
+            == []
+        )

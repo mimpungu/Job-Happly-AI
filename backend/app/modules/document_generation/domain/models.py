@@ -11,6 +11,7 @@ from app.modules.document_generation.domain.enums import (
     ATSCheckStatus,
     LengthTarget,
     ResumeTemplateStyle,
+    RewriteMode,
 )
 
 
@@ -139,3 +140,5 @@ class ResumeGenerationOptions(BaseModel):
     length_target: LengthTarget = LengthTarget.AUTO
     max_experiences: int | None = Field(default=None, ge=1, le=20)
     custom_summary: str | None = Field(default=None, max_length=2000)
+    rewrite_mode: RewriteMode = RewriteMode.NONE
+    """Reformulation des réalisations : aucune par défaut (TASK-012-08), jamais implicite."""

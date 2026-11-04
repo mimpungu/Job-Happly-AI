@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
-from app.modules.document_generation.domain.enums import DocumentKind
+from app.modules.document_generation.domain.enums import DocumentKind, RewriteMode
 
 if TYPE_CHECKING:
     from app.modules.candidate_profile.domain.profile import ProfileDocument
@@ -150,3 +150,31 @@ class DocumentRepositoryPort(Protocol):
     async def list_versions(
         self, *, owner_id: uuid.UUID, document_id: uuid.UUID
     ) -> Sequence[DocumentVersionModel]: ...
+
+
+class RewriterUnavailableError(Exception):
+    """Reformulation impossible (IA désactivée, plafond, consentement, panne) : repli au texte
+    d'origine. Le message est affichable à l'utilisateur."""
+
+
+@dataclass(frozen=True, slots=True)
+class RewriteOutcome:
+    """Reformulations proposées, indexées par la réalisation d'origine (non encore filtrées)."""
+
+    proposals: dict[str, str]
+    provider: str
+    model: str
+    cache_hit: bool
+
+
+class ResumeRewriterPort(Protocol):
+    """Reformule des réalisations sans en changer les faits (derrière la passerelle IA)."""
+
+    async def rewrite(
+        self,
+        *,
+        owner_id: uuid.UUID,
+        achievements: Sequence[str],
+        language: str,
+        mode: RewriteMode,
+    ) -> RewriteOutcome: ...

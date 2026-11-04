@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import uuid
 from typing import TYPE_CHECKING, Any
 
@@ -14,6 +15,8 @@ from app.modules.document_generation.application.ports import (
     LaTeXCompilerPort,
     OfferContext,
     OfferNotFoundError,
+    ResumeRewriterPort,
+    RewriterUnavailableError,
 )
 from app.modules.document_generation.domain.ats_analyzer import (
     DEFAULT_EXPECTED_SECTIONS,
@@ -24,7 +27,7 @@ from app.modules.document_generation.domain.content_selection import (
     adapt_resume_content,
     build_generation_context,
 )
-from app.modules.document_generation.domain.enums import DocumentKind, LengthTarget
+from app.modules.document_generation.domain.enums import DocumentKind, LengthTarget, RewriteMode
 from app.modules.document_generation.domain.fact_checker import assert_facts_verified
 from app.modules.document_generation.domain.latex_escape import sanitize_text
 from app.modules.document_generation.domain.models import (
@@ -32,6 +35,12 @@ from app.modules.document_generation.domain.models import (
     ResumeGenerationOptions,
 )
 from app.modules.document_generation.domain.prompts import CV_PROMPT_VERSION
+from app.modules.document_generation.domain.resume_rewrite import (
+    RewriteReport,
+    apply_rewrites,
+    is_acceptable_rewrite,
+    known_terms,
+)
 from app.modules.document_generation.domain.templates import fits_one_page, render_latex_resume
 
 if TYPE_CHECKING:
@@ -53,7 +62,9 @@ class ResumeService:
         storage: DocumentStoragePort,
         compiler: LaTeXCompilerPort,
         inputs: GenerationInputsPort,
+        rewriter: ResumeRewriterPort | None = None,
     ) -> None:
+        self._rewriter = rewriter
         self._repository = repository
         self._storage = storage
         self._compiler = compiler
@@ -76,6 +87,9 @@ class ResumeService:
         )
 
         adapted = self._adapt(master, options, offer)
+        adapted, rewrites, rewrite_report = await self._rewrite_achievements(
+            owner_id, master, adapted, options
+        )
         # Aucune invention : tout ce qui est rendu doit exister dans le profil maître.
         assert_facts_verified(
             master,
@@ -83,6 +97,7 @@ class ResumeService:
             generated_summary=adapted.adapted_summary
             if adapted.summary_is_generated and not options.custom_summary
             else None,
+            allowed_rewrites=rewrites,
         )
 
         target = options.length_target
@@ -125,12 +140,81 @@ class ResumeService:
                         "length_target": target.value,
                         "language": options.language,
                     },
+                    rewrite_report,
                 ),
             )
         except Exception:
             await self._storage.delete(storage_key)  # pas de PDF orphelin si la base échoue
             raise
         return document, version, report
+
+    async def _rewrite_achievements(
+        self,
+        owner_id: uuid.UUID,
+        master: ProfileDocument,
+        adapted: AdaptedContent,
+        options: ResumeGenerationOptions,
+    ) -> tuple[AdaptedContent, dict[str, str], RewriteReport]:
+        """Reformulation facultative : tout refus ou toute sortie douteuse garde le texte d'origine.
+
+        L'échec de l'IA n'empêche jamais la génération, mais il est consigné dans la version
+        (jamais silencieux).
+        """
+        mode = options.rewrite_mode
+        if mode is RewriteMode.NONE:
+            return adapted, {}, RewriteReport(requested=mode.value, status="not_requested")
+        originals = list(
+            dict.fromkeys(a for e in adapted.adapted_profile.experiences for a in e.achievements)
+        )
+        if not originals:
+            return adapted, {}, RewriteReport(requested=mode.value, status="unchanged")
+        if self._rewriter is None:
+            return (
+                adapted,
+                {},
+                RewriteReport(
+                    requested=mode.value,
+                    status="unavailable",
+                    reason="Reformulation non disponible sur ce serveur.",
+                ),
+            )
+        try:
+            outcome = await self._rewriter.rewrite(
+                owner_id=owner_id, achievements=originals, language=options.language, mode=mode
+            )
+        except RewriterUnavailableError as erreur:
+            return (
+                adapted,
+                {},
+                RewriteReport(requested=mode.value, status="unavailable", reason=str(erreur)),
+            )
+        autorises = known_terms(master)
+        retenues = {
+            original: texte.strip()
+            for original, texte in outcome.proposals.items()
+            if original in originals and is_acceptable_rewrite(original, texte, allowed=autorises)
+        }
+        rejetees = len(
+            [o for o, t in outcome.proposals.items() if o in originals and o not in retenues]
+        )
+        if retenues:
+            adapted = dataclasses.replace(
+                adapted, adapted_profile=apply_rewrites(adapted.adapted_profile, retenues)
+            )
+        statut = "unchanged" if not retenues else ("partial" if rejetees else "applied")
+        return (
+            adapted,
+            retenues,
+            RewriteReport(
+                requested=mode.value,
+                status=statut,
+                rewritten=len(retenues),
+                rejected=rejetees,
+                provider=outcome.provider,
+                model=outcome.model,
+                cache_hit=outcome.cache_hit,
+            ),
+        )
 
     @staticmethod
     def _default_title(target_title: str | None) -> str:
@@ -236,7 +320,11 @@ class ResumeService:
         )
 
     @staticmethod
-    def _report_payload(report: ATSReport, generation: dict[str, str]) -> dict[str, Any]:
+    def _report_payload(
+        report: ATSReport, generation: dict[str, Any], rewrite: RewriteReport | None = None
+    ) -> dict[str, Any]:
+        if rewrite is not None and rewrite.status != "not_requested":
+            generation = {**generation, "ai_rewrite": rewrite.to_dict()}
         return {**report.to_dict(), "generation": generation}
 
 

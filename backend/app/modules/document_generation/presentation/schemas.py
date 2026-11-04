@@ -7,7 +7,11 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.modules.document_generation.domain.enums import LengthTarget, ResumeTemplateStyle
+from app.modules.document_generation.domain.enums import (
+    LengthTarget,
+    ResumeTemplateStyle,
+    RewriteMode,
+)
 
 
 class GenerateResumeRequest(BaseModel):
@@ -21,6 +25,8 @@ class GenerateResumeRequest(BaseModel):
     length_target: LengthTarget = LengthTarget.AUTO
     max_experiences: int | None = Field(default=None, ge=1, le=20)
     custom_summary: str | None = Field(default=None, max_length=2000)
+    rewrite_mode: RewriteMode = RewriteMode.NONE
+    """`local` ou `ai` : reformule les réalisations (jamais sans demande explicite)."""
 
 
 class CompileVersionRequest(BaseModel):
@@ -55,6 +61,19 @@ class ATSReportResponse(BaseModel):
     single_column: bool
 
 
+class AIRewriteResponse(BaseModel):
+    """Bilan de la reformulation des réalisations (TASK-012-08)."""
+
+    requested: str
+    status: str
+    rewritten: int = 0
+    rejected: int = 0
+    provider: str | None = None
+    model: str | None = None
+    cache_hit: bool = False
+    reason: str | None = None
+
+
 class GenerationMetaResponse(BaseModel):
     """Règles appliquées à la génération : traçabilité du prompt et des options."""
 
@@ -63,6 +82,7 @@ class GenerationMetaResponse(BaseModel):
     style: str | None = None
     length_target: str | None = None
     language: str | None = None
+    ai_rewrite: AIRewriteResponse | None = None
 
 
 class DocumentVersionResponse(BaseModel):

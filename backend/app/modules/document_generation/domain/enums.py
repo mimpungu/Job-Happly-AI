@@ -22,3 +22,14 @@ class ResumeTemplateStyle(StrEnum):
     CLASSIC = "classic"
     COMPACT = "compact"
     MODERN = "modern"
+
+
+class RewriteMode(StrEnum):
+    """Qui reformule les réalisations du CV (TASK-012-08). Toujours un choix explicite."""
+
+    NONE = "none"
+    """Texte du profil tel quel : aucun appel IA (défaut)."""
+    LOCAL = "local"
+    """Modèle local : aucune donnée ne quitte la machine."""
+    AI = "ai"
+    """Passerelle IA complète (local d'abord, puis API payante si le réglage l'autorise)."""

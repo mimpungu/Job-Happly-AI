@@ -92,5 +92,13 @@ montré que l'EPIC 013 ne tenait pas ses promesses. Décisions correctives :
 
 Limites assumées : la lettre produite sans IA est factuelle mais sobre (≈ 130 mots) ; les 250 à
 350 mots visés s'obtiennent avec le champ `motivation` ou une future rédaction par IA (accord
-utilisateur et plafond de coût requis). Pas de correction orthographique par dictionnaire
-(dépendance à valider). Aucune recherche externe sur l'entreprise.
+utilisateur et plafond de coût requis). Aucune recherche externe sur l'entreprise.
+
+9. **Orthographe (013-18)** : port de domaine `SpellingChecker`, adaptateur `PySpellChecker`.
+   Dépendance ajoutée : `pyspellchecker` (pure Python, dictionnaires embarqués, aucun appel
+   réseau : le texte de la lettre ne quitte pas la machine ; alternative LanguageTool écartée,
+   elle impose Java et un serveur). Sont ignorés avant vérification : mots à majuscule (noms
+   propres, débuts de phrase, sigles), mots de moins de 3 lettres, noms du profil (compétences,
+   entreprises, établissements) et de l'offre. Les fautes sont des signalements (≤ 10, sans
+   doublon) intégrés à `spelling_issues` et au score éditorial, sans blocage. Une langue sans
+   dictionnaire n'est pas vérifiée. Limite : pas de contrôle grammatical ni des mots capitalisés.

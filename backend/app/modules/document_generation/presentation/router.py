@@ -6,9 +6,11 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Response, UploadFile
 
 from app.core.api.dependencies import SessionDep, get_owner_id
+from app.modules.ai_management.application.gateway import AIGateway
+from app.modules.ai_management.presentation.dependencies import Providers, get_gateway
 from app.modules.document_generation.application.resume_service import ResumeService
 from app.modules.document_generation.domain.models import ResumeGenerationOptions
 from app.modules.document_generation.infrastructure.composition import build_resume_service
@@ -29,6 +31,17 @@ from app.modules.document_generation.presentation.schemas import (
 
 router = APIRouter(prefix="/api/v1/resumes", tags=["resume-generator"])
 Owner = Annotated[uuid.UUID, Depends(get_owner_id)]
+
+
+def _optional_gateway(request: Request, providers: Providers) -> AIGateway | None:
+    """La passerelle IA ne sert qu'à la reformulation : sans elle, le CV se génère quand même."""
+    try:
+        return get_gateway(request, providers)
+    except HTTPException:
+        return None
+
+
+OptionalGateway = Annotated[AIGateway | None, Depends(_optional_gateway)]
 
 MAX_AUDIT_PDF_BYTES = 5 * 1024 * 1024
 _PDF_MAGIC = b"%PDF-"
@@ -64,10 +77,10 @@ def _document_response(
 
 @router.post("/generate", response_model=GeneratedDocumentResponse, status_code=201)
 async def generate_resume(
-    body: GenerateResumeRequest, session: SessionDep, owner_id: Owner
+    body: GenerateResumeRequest, session: SessionDep, owner_id: Owner, gateway: OptionalGateway
 ) -> GeneratedDocumentResponse:
     """Génère un CV depuis le profil validé, compilé en PDF et audité pour les ATS."""
-    document, version, _ = await build_resume_service(session).generate_tailored_resume(
+    document, version, _ = await build_resume_service(session, gateway).generate_tailored_resume(
         owner_id=owner_id,
         offer_id=body.offer_id,
         options=ResumeGenerationOptions(
@@ -78,6 +91,7 @@ async def generate_resume(
             length_target=body.length_target,
             max_experiences=body.max_experiences,
             custom_summary=body.custom_summary,
+            rewrite_mode=body.rewrite_mode,
         ),
     )
     return _document_response(document, [version])

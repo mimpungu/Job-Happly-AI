@@ -202,3 +202,23 @@ async def test_source_latex_invalide_renvoie_422_sans_trace(client: httpx.AsyncC
     )
     assert reponse.status_code == 422
     assert "Traceback" not in reponse.text
+
+
+async def test_reformulation_demandee_sans_ia_configuree_ne_bloque_pas_la_generation(
+    client: httpx.AsyncClient,
+) -> None:
+    await _initialiser_profil(client)
+
+    res = await client.post("/api/v1/resumes/generate", json={"rewrite_mode": "ai"})
+
+    assert res.status_code == 201
+    meta = res.json()["versions"][0]["generation"]["ai_rewrite"]
+    assert meta["requested"] == "ai"
+    assert meta["status"] == "unavailable"
+    assert meta["reason"]
+
+
+async def test_mode_de_reformulation_inconnu_refuse(client: httpx.AsyncClient) -> None:
+    res = await client.post("/api/v1/resumes/generate", json={"rewrite_mode": "magic"})
+
+    assert res.status_code == 422

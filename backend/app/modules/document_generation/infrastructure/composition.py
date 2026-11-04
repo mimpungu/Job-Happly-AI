@@ -7,12 +7,15 @@ from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
+from app.modules.ai_management.application.gateway import AIGateway
 from app.modules.document_generation.application.cover_letter_service import CoverLetterService
 from app.modules.document_generation.application.resume_service import ResumeService
+from app.modules.document_generation.infrastructure.ai_rewriter import GatewayResumeRewriter
 from app.modules.document_generation.infrastructure.document_repository import SqlDocumentRepository
 from app.modules.document_generation.infrastructure.document_storage import LocalDocumentStorage
 from app.modules.document_generation.infrastructure.generation_inputs import SqlGenerationInputs
 from app.modules.document_generation.infrastructure.latex_compiler import IsolatedLaTeXCompiler
+from app.modules.document_generation.infrastructure.spell_checker import PySpellChecker
 
 
 def _compiler() -> IsolatedLaTeXCompiler:
@@ -28,8 +31,10 @@ def _storage() -> LocalDocumentStorage:
     return LocalDocumentStorage(base_directory=Path(get_settings().storage_dir) / "documents")
 
 
-def build_resume_service(session: AsyncSession) -> ResumeService:
+def build_resume_service(session: AsyncSession, gateway: AIGateway | None = None) -> ResumeService:
+    """`gateway` n'est fourni que par la route de génération : lui seule reformule."""
     return ResumeService(
+        rewriter=GatewayResumeRewriter(gateway) if gateway is not None else None,
         repository=SqlDocumentRepository(session),
         storage=_storage(),
         compiler=_compiler(),
@@ -43,4 +48,5 @@ def build_cover_letter_service(session: AsyncSession) -> CoverLetterService:
         storage=_storage(),
         compiler=_compiler(),
         inputs=SqlGenerationInputs(session),
+        spelling=PySpellChecker(),
     )

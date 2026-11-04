@@ -1163,7 +1163,7 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 012 — LATEX RESUME GENERATOR
+# [✅] EPIC 012 — LATEX RESUME GENERATOR
 
 **Priorité : P1 — Génération documentaire**
 
@@ -1181,15 +1181,15 @@ Méthodes :
 
 [✅] **TASK-012-05 — Gérer les variations de longueur**
 
-### [➖] FEATURE 012.2 — Génération du contenu
+### [✅] FEATURE 012.2 — Génération du contenu
 
 [✅] **TASK-012-06 — Construire le contexte de génération**
 
 [✅] **TASK-012-07 — Sélectionner les expériences pertinentes**
 
-[➖] **TASK-012-08 — Adapter les formulations**
+[✅] **TASK-012-08 — Adapter les formulations**
 
-> Niveau 0 réalisé : réalisations les plus pertinentes en tête, accroche factuelle, compétences de l'offre mises en avant, **sans aucune reformulation**. La réécriture par IA reste à faire : elle envoie le profil à un fournisseur (accord de l'utilisateur requis, plafond de coût, contrôle des faits sur la sortie).
+> Niveau 0 : réalisations les plus pertinentes en tête, accroche factuelle, compétences de l'offre mises en avant. **Reformulation facultative** (`rewrite_mode` = `none` par défaut, `local` ou `ai`) via la passerelle IA : seul le texte des réalisations est transmis, la requête est marquée « données personnelles », consentement, plafond, cache et journal de la passerelle s'appliquent, `local` interdit tout fournisseur payant. Une reformulation n'est retenue que si elle n'ajoute ni chiffre, ni nom propre, ni sigle, ni technologie ; sinon le texte d'origine est conservé. L'échec de l'IA n'empêche pas la génération et est consigné dans la version (`generation.ai_rewrite`). ADR-0013.
 
 [✅] **TASK-012-09 — Intégrer les mots-clés vérifiés**
 
@@ -1249,7 +1249,7 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 013 — COVER LETTER GENERATOR
+# [✅] EPIC 013 — COVER LETTER GENERATOR
 
 **Priorité : P1 — Génération documentaire**
 
@@ -1283,7 +1283,7 @@ Méthodes :
 
 [✅] **TASK-013-11 — Contrôler la longueur et la qualité**
 
-### [➖] FEATURE 013.3 — Documents
+### [✅] FEATURE 013.3 — Documents
 
 [✅] **TASK-013-12 — Créer le template de lettre**
 
@@ -1297,9 +1297,9 @@ Méthodes :
 
 [✅] **TASK-013-17 — Intégrer `docs/HAPPLY_AI_COVER_LETTER_PROMPT.md` comme prompt versionné**
 
-[➖] **TASK-013-18 — Contrôler l'orthographe et adapter le ton au pays**
+[✅] **TASK-013-18 — Contrôler l'orthographe et adapter le ton au pays**
 
-> Fait : ton, salutation, formule de politesse et date selon la langue et le pays (FR ; EN britannique ou américain) ; erreurs d'écriture évidentes (mots répétés, majuscule oubliée, ponctuation, parenthèses). **Reste à faire : correction orthographique par dictionnaire**, qui impose une dépendance (ex. `pyspellchecker`) à valider avant ajout.
+> Fait : ton, salutation, formule de politesse et date selon la langue et le pays (FR ; EN britannique ou américain) ; erreurs d'écriture évidentes (mots répétés, majuscule oubliée, ponctuation, parenthèses). **Correction orthographique par dictionnaire** (`pyspellchecker`, dictionnaires embarqués, 100 % hors ligne) : signalements non bloquants, noms propres, sigles et termes du profil/de l'offre écartés, langue sans dictionnaire non vérifiée. ADR-0014.
 
 ### Critères d'acceptation
 
@@ -2043,8 +2043,8 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 24 | 0.3 |
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 14 | 0.3 |
-| [➖] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 26 | 0.4 |
-| [➖] | 013 — Cover Letter Generator | P1 | 3 | 18 | 17 | 0.4 |
+| [✅] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 27 | 0.4 |
+| [✅] | 013 — Cover Letter Generator | P1 | 3 | 18 | 18 | 0.4 |
 | [✅] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 22 | 0.4 |
 | [✅] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 19 | 0.5 |
 | [➖] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 0 | 0.5 |

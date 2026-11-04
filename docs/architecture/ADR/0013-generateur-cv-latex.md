@@ -81,5 +81,16 @@ l'étaient pas. Décisions correctives :
    traduites centralement, compilateur résolu à l'usage (consulter un CV n'exige pas TeX).
 7. **Déploiement** : TeX Live dans l'image Docker et la CI, volume pour les documents.
 
-Reste à faire : reformulation par IA (tâche 012-08, accord utilisateur et plafond requis),
-interface frontend de génération.
+8. **Reformulation facultative (012-08)** : `rewrite_mode` = `none` (défaut), `local` ou `ai`.
+   Elle passe par `AIGateway` (consentement, plafonds, cache, journal) via `ResumeRewriterPort` ;
+   la requête est marquée « données personnelles » (aucun palier gratuit qui réutilise les
+   contenus) et ne contient que le texte des réalisations. `local` s'appuie sur la nouvelle
+   restriction `AIRequest.allowed_kinds`, qui ne peut que *réduire* le réglage de l'utilisateur.
+   Garde-fou déterministe (`resume_rewrite`) : une reformulation est écartée si elle ajoute un
+   chiffre, un nom propre, un sigle ou une technologie absents de l'original et du profil, si
+   elle est trop longue ou multi-lignes. Le contrôle des faits accepte une réalisation
+   reformulée uniquement si elle est déclarée comme reformulation de son original. Refus de l'IA
+   (désactivée, plafond, consentement, panne) : génération poursuivie avec le texte d'origine et
+   statut consigné dans `generation.ai_rewrite`. Limite : l'accroche reste déterministe.
+
+Reste à faire : interface frontend de génération.

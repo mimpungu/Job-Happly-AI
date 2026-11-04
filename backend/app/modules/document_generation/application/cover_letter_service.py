@@ -42,6 +42,7 @@ from app.modules.document_generation.domain.cover_letter_templates import (
 )
 from app.modules.document_generation.domain.enums import DocumentKind
 from app.modules.document_generation.domain.fact_checker import UnverifiedFactError
+from app.modules.document_generation.domain.spelling import SpellingChecker
 
 if TYPE_CHECKING:
     from app.modules.document_generation.infrastructure.models import (
@@ -63,7 +64,9 @@ class CoverLetterService:
         inputs: GenerationInputsPort,
         *,
         today: Callable[[], date] = date.today,
+        spelling: SpellingChecker | None = None,
     ) -> None:
+        self._spelling = spelling
         self._repository = repository
         self._storage = storage
         self._compiler = compiler
@@ -95,7 +98,9 @@ class CoverLetterService:
         if pages > _MAX_PAGES:
             # Resserrer la mise en page plutôt que couper le texte de l'utilisateur.
             latex_source, pdf_bytes, pages = await self._compile(content, compact=True)
-        audit = audit_letter(content, profile, context, today=aujourdhui, page_count=pages)
+        audit = audit_letter(
+            content, profile, context, today=aujourdhui, page_count=pages, spelling=self._spelling
+        )
 
         storage_key, sha256, size_bytes = await self._storage.store(pdf_bytes, extension="pdf")
         try:
@@ -153,6 +158,7 @@ class CoverLetterService:
             context=context,
             today=self._today(),
             page_count=pages,
+            spelling=self._spelling,
         )
 
         storage_key, sha256, size_bytes = await self._storage.store(pdf_bytes, extension="pdf")

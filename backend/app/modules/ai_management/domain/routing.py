@@ -41,6 +41,8 @@ def plan_routes(
     }[preference]
     routes: list[Route] = []
     for genre in voulus:
+        if request.allowed_kinds is not None and genre not in request.allowed_kinds:
+            continue
         for fournisseur in providers:
             if fournisseur.kind is not genre or not fournisseur.supports(request):
                 continue

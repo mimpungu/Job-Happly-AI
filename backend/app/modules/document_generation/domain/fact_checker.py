@@ -9,6 +9,7 @@ réalisation du CV doit retrouver son original, champ par champ. Un texte libre 
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from app.modules.document_generation.domain.models import FactCheckResult
@@ -32,8 +33,12 @@ def verify_facts(
     generated_profile: ProfileDocument,
     *,
     generated_summary: str | None = None,
+    allowed_rewrites: Mapping[str, str] | None = None,
 ) -> FactCheckResult:
     """Compare le profil généré au profil maître.
+
+    `allowed_rewrites` : réalisations reformulées (original → reformulation) déjà filtrées par
+    le garde-fou de reformulation ; chacune reste rattachée à son original.
 
     `generated_summary` : accroche produite par le système (pas celle de l'utilisateur) ;
     ses nombres doivent exister dans le profil maître.
@@ -44,7 +49,9 @@ def verify_facts(
     competences: list[str] = []
 
     _verifier_identite(master_profile, generated_profile, issues)
-    _verifier_experiences(master_profile, generated_profile, issues, entreprises)
+    _verifier_experiences(
+        master_profile, generated_profile, issues, entreprises, allowed_rewrites or {}
+    )
     _verifier_formations(master_profile, generated_profile, issues, etablissements)
 
     maitre_competences = {_cle(s.name) for s in master_profile.skills}
@@ -87,8 +94,14 @@ def _verifier_identite(master: ProfileDocument, genere: ProfileDocument, issues:
 
 
 def _verifier_experiences(
-    master: ProfileDocument, genere: ProfileDocument, issues: list[str], entreprises: list[str]
+    master: ProfileDocument,
+    genere: ProfileDocument,
+    issues: list[str],
+    entreprises: list[str],
+    reformulations: Mapping[str, str],
 ) -> None:
+    # reformulation -> original ; une réalisation reformulée doit retrouver son original.
+    origine = {nouveau: ancien for ancien, nouveau in reformulations.items()}
     originaux = {(_cle(e.company), _cle(e.title)): e for e in master.experiences}
     for exp in genere.experiences:
         original = originaux.get((_cle(exp.company), _cle(exp.title)))
@@ -104,7 +117,11 @@ def _verifier_experiences(
                 issues.append(
                     f"Champ '{champ}' modifié pour l'expérience '{exp.title}' ('{exp.company}')."
                 )
-        inventees = [a for a in exp.achievements if a not in original.achievements]
+        inventees = [
+            a
+            for a in exp.achievements
+            if a not in original.achievements and origine.get(a) not in original.achievements
+        ]
         for realisation in inventees:
             issues.append(
                 f"Réalisation absente du profil maître pour '{exp.title}' : '{realisation}'"
@@ -139,9 +156,15 @@ def assert_facts_verified(
     generated_profile: ProfileDocument,
     *,
     generated_summary: str | None = None,
+    allowed_rewrites: Mapping[str, str] | None = None,
 ) -> None:
     """Valide les faits ou lève UnverifiedFactError."""
-    result = verify_facts(master_profile, generated_profile, generated_summary=generated_summary)
+    result = verify_facts(
+        master_profile,
+        generated_profile,
+        generated_summary=generated_summary,
+        allowed_rewrites=allowed_rewrites,
+    )
     if not result.is_valid:
         raise UnverifiedFactError(
             "Le CV généré contient des faits non prouvés : " + "; ".join(result.issues)
