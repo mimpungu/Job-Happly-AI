@@ -78,4 +78,3 @@ async def test_cycle_vie_complet_candidature(client: httpx.AsyncClient) -> None:
     dash_res = await client.get("/api/v1/dashboard")
     assert dash_res.status_code == 200
     assert dash_res.json()["applications_sent_count"] >= 1
-

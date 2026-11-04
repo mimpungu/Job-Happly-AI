@@ -313,4 +313,3 @@ async def test_action_lien_externe_securisee(service: ApplicationTrackingService
             application_id=app.id,
             offer_application_url=None,
         )
-

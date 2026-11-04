@@ -36,4 +36,3 @@ async def test_recuperation_dashboard_metrics() -> None:
     assert metrics.response_rate == 30.0
     assert metrics.ai_budget_consumed_cents == 450
     assert metrics.ai_budget_limit_cents == 1000
-

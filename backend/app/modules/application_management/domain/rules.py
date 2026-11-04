@@ -148,9 +148,7 @@ def compute_application_stats(
     offers_received_count = sum(
         1 for app in applications if app.status == ApplicationStatus.OFFER_RECEIVED
     )
-    rejections_count = sum(
-        1 for app in applications if app.status == ApplicationStatus.REJECTED
-    )
+    rejections_count = sum(1 for app in applications if app.status == ApplicationStatus.REJECTED)
 
     # Réponse reçue = toute candidature envoyée ayant reçu un retour (entretien, offre ou rejet)
     responses_count = sum(1 for app in sent_apps if app.has_response)
@@ -181,4 +179,3 @@ def compute_application_stats(
         active_applications=active_count,
         pending_follow_ups_count=pending_follow_ups,
     )
-

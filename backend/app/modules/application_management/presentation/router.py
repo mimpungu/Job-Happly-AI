@@ -261,7 +261,9 @@ async def change_application_status(
     except ApplicationNotFoundError as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err)) from err
     except InvalidStatusTransitionError as err:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(err)) from err
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(err)
+        ) from err
 
     return ApplicationResponse(
         id=app.id,
@@ -573,4 +575,3 @@ async def get_dashboard_metrics(
         ai_budget_consumed_cents=metrics.ai_budget_consumed_cents,
         ai_budget_limit_cents=metrics.ai_budget_limit_cents,
     )
-

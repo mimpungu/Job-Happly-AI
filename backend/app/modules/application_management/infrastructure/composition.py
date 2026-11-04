@@ -29,4 +29,3 @@ def build_dashboard_service(session: AsyncSession) -> DashboardService:
     """Construit une instance de DashboardService branchée sur la session SQLAlchemy."""
     repository = SQLAlchemyDashboardRepository(session)
     return DashboardService(repository=repository)
-

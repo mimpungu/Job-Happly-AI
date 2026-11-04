@@ -39,4 +39,3 @@ async def test_endpoint_candidature_inconnue_repond_404_ou_503(client: httpx.Asy
     app_id = str(uuid.uuid4())
     reponse = await client.get(f"/api/v1/applications/{app_id}")
     assert reponse.status_code in (404, 503)
-

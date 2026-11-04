@@ -180,4 +180,3 @@ class DashboardMetricsResponse(BaseModel):
     response_rate: float
     ai_budget_consumed_cents: int
     ai_budget_limit_cents: int
-

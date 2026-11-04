@@ -28,5 +28,6 @@ Un ADR documente une décision d'architecture importante : contexte, décision, 
 | [0013](0013-generateur-cv-latex.md) | Architecture du générateur de CV LaTeX et contrôle ATS | Accepté |
 | [0014](0014-generateur-lettres-de-motivation.md) | Architecture du générateur de lettres de motivation et audit qualité | Accepté |
 | [0015](0015-suivi-des-candidatures-et-crm.md) | Architecture du suivi des candidatures (CRM) et tableau de bord | Accepté |
+| [0016](0016-planification-automatisation-et-notifications.md) | Planification, automatisation des recherches et centre de notifications | Accepté |
 
 Modèle : [TEMPLATE.md](TEMPLATE.md)

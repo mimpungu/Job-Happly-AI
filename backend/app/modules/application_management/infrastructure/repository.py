@@ -458,4 +458,3 @@ class SQLAlchemyDashboardRepository(DashboardRepositoryPort):
             ai_budget_consumed_cents=consumed_cents,
             ai_budget_limit_cents=limit_cents,
         )
-

@@ -127,4 +127,3 @@ class DashboardRepositoryPort(ABC):
         owner_id: uuid.UUID,
     ) -> DashboardMetrics:
         """Agrège les métriques globales réelles (offres, candidatures, budget IA)."""
-

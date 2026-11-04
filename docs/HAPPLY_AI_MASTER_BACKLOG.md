@@ -1386,65 +1386,65 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 015 — SCHEDULER, AUTOMATION & NOTIFICATIONS
+# [✅] EPIC 015 — SCHEDULER, AUTOMATION & NOTIFICATIONS
 
 **Priorité : P1 — Automatisation**
 
 **Objectif :** automatiser les recherches et les rappels.
 
-### [➖] FEATURE 015.1 — Scheduler
+### [✅] FEATURE 015.1 — Scheduler
 
-[➖] **TASK-015-01 — Définir les tâches planifiées**
+[✅] **TASK-015-01 — Définir les tâches planifiées**
 
-[➖] **TASK-015-02 — Ajouter les recherches récurrentes**
+[✅] **TASK-015-02 — Ajouter les recherches récurrentes**
 
-[➖] **TASK-015-03 — Ajouter les fuseaux horaires**
+[✅] **TASK-015-03 — Ajouter les fuseaux horaires**
 
-[➖] **TASK-015-04 — Ajouter les règles de fréquence**
+[✅] **TASK-015-04 — Ajouter les règles de fréquence**
 
-[➖] **TASK-015-05 — Empêcher les exécutions concurrentes inutiles**
+[✅] **TASK-015-05 — Empêcher les exécutions concurrentes inutiles**
 
-### [➖] FEATURE 015.2 — Orchestration
+### [✅] FEATURE 015.2 — Orchestration
 
-[➖] **TASK-015-06 — Gérer les tâches asynchrones**
+[✅] **TASK-015-06 — Gérer les tâches asynchrones**
 
-[➖] **TASK-015-07 — Gérer les reprises**
+[✅] **TASK-015-07 — Gérer les reprises**
 
-[➖] **TASK-015-08 — Gérer les tâches échouées**
+[✅] **TASK-015-08 — Gérer les tâches échouées**
 
-[➖] **TASK-015-09 — Ajouter une file de tâches**
+[✅] **TASK-015-09 — Ajouter une file de tâches**
 
-[➖] **TASK-015-10 — Ajouter un historique d'exécution**
+[✅] **TASK-015-10 — Ajouter un historique d'exécution**
 
-### [➖] FEATURE 015.3 — Notifications
+### [✅] FEATURE 015.3 — Notifications
 
-[➖] **TASK-015-11 — Créer le centre de notifications**
+[✅] **TASK-015-11 — Créer le centre de notifications**
 
-[➖] **TASK-015-12 — Notifier les nouvelles offres**
+[✅] **TASK-015-12 — Notifier les nouvelles offres**
 
-[➖] **TASK-015-13 — Notifier les offres pertinentes**
+[✅] **TASK-015-13 — Notifier les offres pertinentes**
 
-[➖] **TASK-015-14 — Notifier les erreurs de recherche**
+[✅] **TASK-015-14 — Notifier les erreurs de recherche**
 
-[➖] **TASK-015-15 — Ajouter les rappels de candidature**
+[✅] **TASK-015-15 — Ajouter les rappels de candidature**
 
-[➖] **TASK-015-16 — Ajouter les alertes budget IA**
+[✅] **TASK-015-16 — Ajouter les alertes budget IA**
 
-### [➖] FEATURE 015.4 — Résumés
+### [✅] FEATURE 015.4 — Résumés
 
-[➖] **TASK-015-17 — Créer un résumé quotidien**
+[✅] **TASK-015-17 — Créer un résumé quotidien**
 
-[➖] **TASK-015-18 — Ajouter les préférences de notification**
+[✅] **TASK-015-18 — Ajouter les préférences de notification**
 
-[➖] **TASK-015-19 — Ajouter les notifications e-mail si configurées**
+[✅] **TASK-015-19 — Ajouter les notifications e-mail si configurées**
 
 ### Critères d'acceptation
 
-- [➖] Tâches planifiées fiables.
-- [➖] Pas de doublons d'exécution.
-- [➖] Erreurs traçables.
-- [➖] Notifications contrôlables.
-- [➖] Aucun e-mail externe sans configuration et consentement.
+- [✅] Tâches planifiées fiables.
+- [✅] Pas de doublons d'exécution.
+- [✅] Erreurs traçables.
+- [✅] Notifications contrôlables.
+- [✅] Aucun e-mail externe sans configuration et consentement.
 
 **Livrable :** système d'automatisation.
 
@@ -2038,7 +2038,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 27 | 0.4 |
 | [✅] | 013 — Cover Letter Generator | P1 | 3 | 18 | 18 | 0.4 |
 | [✅] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 22 | 0.4 |
-| [➖] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 0 | 0.5 |
+| [✅] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 19 | 0.5 |
 | [➖] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 0 | 0.5 |
 | [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 0 | 1.0 |
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |

@@ -23,4 +23,3 @@ class IncompleteDossierError(ApplicationTrackingError):
 
 class ExternalOfferLinkMissingError(ApplicationTrackingError):
     """L'offre associée ne possède aucune URL de candidature externe."""
-

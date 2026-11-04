@@ -23,4 +23,3 @@ class DashboardService:
     async def get_dashboard(self, *, owner_id: uuid.UUID) -> DashboardMetrics:
         """Calcule et retourne les métriques globales pour l'utilisateur."""
         return await self._repository.get_dashboard_metrics(owner_id)
-

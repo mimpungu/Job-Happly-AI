@@ -135,4 +135,3 @@ def test_consolidation_statistiques_reelles() -> None:
     assert stats.interviews_count == 1
     assert stats.response_rate == 50.0
     assert stats.active_applications == 3
-

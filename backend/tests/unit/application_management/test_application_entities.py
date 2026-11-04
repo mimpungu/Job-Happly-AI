@@ -78,4 +78,3 @@ def test_objets_valeurs_contacts_et_evenements() -> None:
     )
     assert event.kind == EventKind.STATUS_CHANGE
     assert event.to_status == ApplicationStatus.TO_APPLY
-

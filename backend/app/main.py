@@ -41,6 +41,10 @@ from app.modules.job_intelligence.presentation.router import (
     register_matching_errors,
 )
 from app.modules.job_intelligence.presentation.router import router as matching_router
+from app.modules.notifications.presentation.router import (
+    notifications_router,
+    scheduler_router,
+)
 
 
 @asynccontextmanager
@@ -92,6 +96,8 @@ def create_app() -> FastAPI:
     application.include_router(cover_letter_router)
     application.include_router(applications_router)
     application.include_router(dashboard_router)
+    application.include_router(notifications_router)
+    application.include_router(scheduler_router)
     return application
 
 
