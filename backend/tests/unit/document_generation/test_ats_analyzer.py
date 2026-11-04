@@ -74,4 +74,3 @@ def test_audit_sur_pdf_invalide_ou_vide() -> None:
     assert report.passed is False
     assert report.score == 0
     assert report.word_count == 0
-

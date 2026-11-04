@@ -88,4 +88,3 @@ class ComparisonResponse(BaseModel):
     score_a: int | None
     score_b: int | None
     size_diff_bytes: int
-

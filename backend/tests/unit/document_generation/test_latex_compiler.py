@@ -67,4 +67,3 @@ async def test_limite_de_temps_timeout() -> None:
 """
     with pytest.raises(CompilationTimeoutError):
         await compiler.compile(boucle_infinie)
-

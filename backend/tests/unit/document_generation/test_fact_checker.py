@@ -91,4 +91,3 @@ def test_competence_inventee_est_rejetee() -> None:
     assert "C++ (Inventé)" in rapport.unverified_skills
     with pytest.raises(UnverifiedFactError, match="C\\+\\+ \\(Inventé\\)"):
         assert_facts_verified(maitre, genere)
-

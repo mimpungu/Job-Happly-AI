@@ -32,4 +32,3 @@ def test_latex_escape_url() -> None:
     safe = latex_escape_url(url)
     assert safe == r"https://example.com/cv?page=1\#contact\%20me"
     assert latex_escape_url(None) == ""
-

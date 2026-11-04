@@ -1247,62 +1247,62 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 013 — COVER LETTER GENERATOR
+# [✅] EPIC 013 — COVER LETTER GENERATOR
 
 **Priorité : P1 — Génération documentaire**
 
 **Objectif :** créer une lettre de motivation adaptée à chaque entreprise.
 
-### [➖] FEATURE 013.1 — Analyse entreprise et offre
+### [✅] FEATURE 013.1 — Analyse entreprise et offre
 
-[➖] **TASK-013-01 — Extraire les informations de l'entreprise**
+[✅] **TASK-013-01 — Extraire les informations de l'entreprise**
 
-[➖] **TASK-013-02 — Analyser les responsabilités**
+[✅] **TASK-013-02 — Analyser les responsabilités**
 
-[➖] **TASK-013-03 — Identifier les attentes du recruteur**
+[✅] **TASK-013-03 — Identifier les attentes du recruteur**
 
-[➖] **TASK-013-04 — Sélectionner les expériences pertinentes**
+[✅] **TASK-013-04 — Sélectionner les expériences pertinentes**
 
-[➖] **TASK-013-05 — Vérifier les informations externes**
+[✅] **TASK-013-05 — Vérifier les informations externes**
 
-### [➖] FEATURE 013.2 — Génération
+### [✅] FEATURE 013.2 — Génération
 
-[➖] **TASK-013-06 — Créer le prompt versionné**
+[✅] **TASK-013-06 — Créer le prompt versionné**
 
-[➖] **TASK-013-07 — Construire le contexte minimal**
+[✅] **TASK-013-07 — Construire le contexte minimal**
 
-[➖] **TASK-013-08 — Générer la lettre**
+[✅] **TASK-013-08 — Générer la lettre**
 
-[➖] **TASK-013-09 — Contrôler la cohérence avec le CV**
+[✅] **TASK-013-09 — Contrôler la cohérence avec le CV**
 
-[➖] **TASK-013-10 — Contrôler les informations inventées**
+[✅] **TASK-013-10 — Contrôler les informations inventées**
 
-[➖] **TASK-013-11 — Contrôler la longueur et la qualité**
+[✅] **TASK-013-11 — Contrôler la longueur et la qualité**
 
-### [➖] FEATURE 013.3 — Documents
+### [✅] FEATURE 013.3 — Documents
 
-[➖] **TASK-013-12 — Créer le template de lettre**
+[✅] **TASK-013-12 — Créer le template de lettre**
 
-[➖] **TASK-013-13 — Générer le PDF**
+[✅] **TASK-013-13 — Générer le PDF**
 
-[➖] **TASK-013-14 — Ajouter l'édition manuelle**
+[✅] **TASK-013-14 — Ajouter l'édition manuelle**
 
-[➖] **TASK-013-15 — Gérer les versions**
+[✅] **TASK-013-15 — Gérer les versions**
 
-[➖] **TASK-013-16 — Ajouter les langues de candidature**
+[✅] **TASK-013-16 — Ajouter les langues de candidature**
 
-[➖] **TASK-013-17 — Intégrer `docs/HAPPLY_AI_COVER_LETTER_PROMPT.md` comme prompt versionné**
+[✅] **TASK-013-17 — Intégrer `docs/HAPPLY_AI_COVER_LETTER_PROMPT.md` comme prompt versionné**
 
-[➖] **TASK-013-18 — Contrôler l'orthographe et adapter le ton au pays**
+[✅] **TASK-013-18 — Contrôler l'orthographe et adapter le ton au pays**
 
 ### Critères d'acceptation
 
-- [➖] Lettre personnalisée.
-- [➖] Cohérence avec le CV.
-- [➖] Coordonnées exactes.
-- [➖] Informations vérifiées.
-- [➖] PDF téléchargeable.
-- [➖] Modification manuelle possible.
+- [✅] Lettre personnalisée.
+- [✅] Cohérence avec le CV.
+- [✅] Coordonnées exactes.
+- [✅] Informations vérifiées.
+- [✅] PDF téléchargeable.
+- [✅] Modification manuelle possible.
 
 **Livrable :** générateur de lettres de motivation.
 
@@ -2036,7 +2036,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 24 | 0.3 |
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 14 | 0.3 |
 | [✅] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 27 | 0.4 |
-| [➖] | 013 — Cover Letter Generator | P1 | 3 | 18 | 0 | 0.4 |
+| [✅] | 013 — Cover Letter Generator | P1 | 3 | 18 | 18 | 0.4 |
 | [➖] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 0 | 0.4 |
 | [➖] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 0 | 0.5 |
 | [➖] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 0 | 0.5 |

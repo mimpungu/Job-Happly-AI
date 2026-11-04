@@ -128,4 +128,3 @@ class SqlDocumentRepository(DocumentRepositoryPort):
         )
         result = await self._session.scalars(stmt)
         return result.all()
-

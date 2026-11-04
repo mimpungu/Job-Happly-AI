@@ -26,5 +26,6 @@ Un ADR documente une décision d'architecture importante : contexte, décision, 
 | [0011](0011-ia-hybride-local-et-api.md) | IA hybride local et API | Accepté |
 | [0012](0012-fournisseurs-ia-de-demarrage.md) | Fournisseurs IA de démarrage (Gemini + Ollama) | Accepté |
 | [0013](0013-generateur-cv-latex.md) | Architecture du générateur de CV LaTeX et contrôle ATS | Accepté |
+| [0014](0014-generateur-lettres-de-motivation.md) | Architecture du générateur de lettres de motivation et audit qualité | Accepté |
 
 Modèle : [TEMPLATE.md](TEMPLATE.md)
