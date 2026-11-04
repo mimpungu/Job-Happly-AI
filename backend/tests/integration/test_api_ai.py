@@ -4,8 +4,13 @@ from decimal import Decimal
 
 import httpx
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.ai_management.application.gateway import AIGateway
 from app.modules.ai_management.application.providers import get_providers
+from app.modules.ai_management.domain.models import ProviderKind
+from app.modules.ai_management.presentation.router import get_gateway
+from tests.integration.conftest import SessionPartagee
 from tests.unit.ai_management.fakes import FakeProvider
 
 
@@ -90,6 +95,7 @@ async def test_un_fournisseur_configure_est_liste_sans_rendre_les_appels_possibl
         "name": "api-test",
         "kind": "api",
         "models": ["grand", "petit"],
+        "uses_data_for_training": False,
     }
     assert avant["paid_calls_possible"] is False
     assert sans_consentement["paid_calls_possible"] is False
@@ -101,3 +107,76 @@ async def test_consommation_vide_au_depart(client: httpx.AsyncClient) -> None:
 
     assert corps["spent_today"] == "0" and corps["percent_today"] is None
     assert corps["recent"] == [] and corps["by_provider_month"] == {}
+
+
+REPONSE_IA = '{"summary": "s", "skills": ["Python"]}'
+
+
+def _brancher(
+    client: httpx.AsyncClient, session: AsyncSession, *fournisseurs: FakeProvider
+) -> None:
+    application = client._transport.app  # type: ignore[attr-defined]
+    application.dependency_overrides[get_providers] = lambda: list(fournisseurs)
+    application.dependency_overrides[get_gateway] = lambda: AIGateway(
+        SessionPartagee(session), list(fournisseurs)
+    )
+
+
+async def test_le_test_de_bout_en_bout_exige_plafond_et_consentement(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    _brancher(client, session, FakeProvider("api-test", reponses=[REPONSE_IA]))
+    await client.put("/api/v1/ai/settings", json={"backend_preference": "api_only"})
+
+    sans_accord = await client.post("/api/v1/ai/test", json={})
+    await client.put("/api/v1/ai/consent", json={"accepted": True})
+    sans_plafond = await client.post("/api/v1/ai/test", json={})
+    await client.put("/api/v1/ai/budget", json={"daily": "1", "monthly": "10", "currency": "EUR"})
+    ok = await client.post("/api/v1/ai/test", json={})
+
+    assert sans_accord.status_code == 409
+    assert sans_accord.json()["error"]["code"] == "ai_consent_required"
+    assert sans_plafond.json()["error"]["code"] == "ai_budget_not_defined"
+    assert ok.status_code == 200
+    corps = ok.json()
+    assert corps["provider"] == "api-test" and corps["skills"] == ["Python"]
+    assert corps["cache_hit"] is False and Decimal(corps["cost"]) > 0
+    deuxieme = (await client.post("/api/v1/ai/test", json={})).json()
+    assert deuxieme["cache_hit"] is True and Decimal(deuxieme["cost"]) == 0
+    usage = (await client.get("/api/v1/ai/usage")).json()
+    assert [r["outcome"] for r in usage["recent"]][:2] == ["cache_hit", "success"]
+
+
+async def test_le_test_en_local_ne_demande_ni_plafond_ni_consentement(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    local = FakeProvider("ollama-test", ProviderKind.LOCAL, reponses=[REPONSE_IA])
+    _brancher(client, session, local)
+    await client.put("/api/v1/ai/settings", json={"backend_preference": "local_only"})
+
+    reponse = await client.post("/api/v1/ai/test", json={})
+
+    assert reponse.status_code == 200 and reponse.json()["provider"] == "ollama-test"
+    assert Decimal(reponse.json()["cost"]) == 0
+
+
+async def test_sans_fournisseur_le_test_explique_quoi_configurer(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    _brancher(client, session)
+
+    reponse = await client.post("/api/v1/ai/test", json={})
+
+    assert reponse.status_code == 409 and reponse.json()["error"]["code"] == "ai_not_configured"
+
+
+async def test_une_sortie_invalide_du_fournisseur_est_une_erreur_502_claire(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    local = FakeProvider("ollama-test", ProviderKind.LOCAL, reponses=['{"pas": "bon"}'])
+    _brancher(client, session, local)
+    await client.put("/api/v1/ai/settings", json={"backend_preference": "local_only"})
+
+    reponse = await client.post("/api/v1/ai/test", json={})
+
+    assert reponse.status_code == 502 and reponse.json()["error"]["code"] == "ai_invalid_output"

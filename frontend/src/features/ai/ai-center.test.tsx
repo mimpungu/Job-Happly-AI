@@ -82,6 +82,68 @@ describe("montantValide", () => {
 });
 
 describe("AICenter", () => {
+  it("avertit sur le palier gratuit et lance le test de bout en bout", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (url.endsWith("/ai/test") && init?.method === "POST")
+          return json({
+            provider: "gemini",
+            model: "gemini-2.5-flash-lite",
+            cache_hit: true,
+            cost: "0",
+            input_tokens: 0,
+            output_tokens: 0,
+            summary: "Poste Python à Paris.",
+            skills: ["Python", "SQL"],
+            crossed_thresholds: [],
+          });
+        if (url.endsWith("/usage")) return json(consommation());
+        return json(
+          reglages({
+            providers: [
+              {
+                name: "gemini",
+                kind: "api",
+                models: ["gemini-2.5-flash-lite"],
+                uses_data_for_training: true,
+              },
+            ],
+          }),
+        );
+      }),
+    );
+    afficher();
+    const user = userEvent.setup();
+
+    expect(await screen.findByText("Palier gratuit détecté.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /niveau 1/ }));
+
+    const resultat = await screen.findByText(/servi par le cache/);
+    expect(resultat).toHaveTextContent("gemini · gemini-2.5-flash-lite");
+    expect(screen.getByText("Poste Python à Paris.")).toBeInTheDocument();
+  });
+
+  it("affiche l'erreur claire du serveur quand le test est refusé", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (init?.method === "POST")
+          return json(
+            { error: { code: "ai_budget_not_defined", message: "Aucun plafond défini." } },
+            409,
+          );
+        return json(url.endsWith("/usage") ? consommation() : reglages());
+      }),
+    );
+    afficher();
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole("button", { name: /niveau 2/ }));
+
+    expect(await screen.findByText("Aucun plafond défini.")).toBeInTheDocument();
+  });
+
   it("dit clairement qu'aucun appel payant n'est possible et que l'app marche sans IA", async () => {
     simuler(reglages(), consommation());
 

@@ -7,13 +7,28 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from app.core.api.dependencies import SessionDep as Session
 from app.core.api.dependencies import get_owner_id
+from app.core.api.errors import error_response
+from app.core.database.session import UnitOfWork
+from app.modules.ai_management.application.gateway import AIGateway
 from app.modules.ai_management.application.providers import get_providers
-from app.modules.ai_management.domain.models import AIMode, BackendPreference
+from app.modules.ai_management.domain.errors import (
+    AIDisabledError,
+    AIError,
+    AINotConfiguredError,
+    BudgetExceededError,
+    BudgetNotDefinedError,
+    ConsentRequiredError,
+    IncompleteOutputError,
+    InvalidOutputError,
+    ProviderFailureError,
+)
+from app.modules.ai_management.domain.models import AIMode, AIRequest, BackendPreference
 from app.modules.ai_management.domain.provider import AIProvider
 from app.modules.ai_management.infrastructure.repositories import (
     SqlAIConfigRepository,
@@ -26,6 +41,21 @@ router = APIRouter(prefix="/api/v1/ai", tags=["ai"])
 Owner = Annotated[uuid.UUID, Depends(get_owner_id)]
 Providers = Annotated[list[AIProvider], Depends(get_providers)]
 
+
+def get_gateway(request: Request, providers: Providers) -> AIGateway:
+    """Une passerelle par application : ses verrous doivent survivre aux requêtes."""
+    passerelle: AIGateway | None = getattr(request.app.state, "ai_gateway", None)
+    if passerelle is None:
+        fabrique = getattr(request.app.state, "session_factory", None)
+        if fabrique is None:
+            raise HTTPException(status_code=503, detail="Base de données non configurée.")
+        passerelle = AIGateway(UnitOfWork(fabrique), providers)
+        request.app.state.ai_gateway = passerelle
+    return passerelle
+
+
+GatewayDep = Annotated[AIGateway, Depends(get_gateway)]
+
 _MONTANT_MAX = Decimal(1000)
 
 
@@ -33,6 +63,8 @@ class ProviderView(BaseModel):
     name: str
     kind: str
     models: list[str]
+    uses_data_for_training: bool
+    """Palier gratuit : le fournisseur peut réutiliser et faire relire les contenus."""
 
 
 class SettingsResponse(BaseModel):
@@ -132,7 +164,12 @@ async def _reglages(
         api_consent=config.api_consent_at is not None,
         api_consent_at=config.api_consent_at,
         providers=[
-            ProviderView(name=p.name, kind=p.kind.value, models=sorted(p.pricing))
+            ProviderView(
+                name=p.name,
+                kind=p.kind.value,
+                models=sorted(p.pricing),
+                uses_data_for_training=p.uses_data_for_training,
+            )
             for p in providers
         ],
         paid_calls_possible=(
@@ -229,3 +266,108 @@ async def get_usage(session: Session, owner_id: Owner, limit: int = 25) -> Usage
             for ligne in lignes
         ],
     )
+
+
+# ------------------------------------------------------------------ test de bout en bout
+
+_SCHEMA_TEST = {
+    "type": "object",
+    "properties": {
+        "summary": {"type": "string"},
+        "skills": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["summary", "skills"],
+}
+# Texte public et fictif : le test n'envoie jamais de donnée personnelle.
+_OFFRE_TEST = (
+    "Développeur Python (H/F) - Paris. Au sein de l'équipe données, vous concevez des API "
+    "FastAPI, écrivez des requêtes SQL sur PostgreSQL et déployez avec Docker. Une première "
+    "expérience de 2 ans est attendue. CDI, télétravail partiel."
+)
+
+
+class _SortieTest(BaseModel):
+    summary: str = Field(min_length=1)
+    skills: list[str]
+
+
+class TestRequest(BaseModel):
+    __test__ = False  # Pydantic, pas une classe de test pytest
+    model_config = ConfigDict(extra="forbid")
+
+    level: int = Field(default=1, ge=1, le=2)
+
+
+class TestResponse(BaseModel):
+    __test__ = False
+    provider: str
+    model: str
+    cache_hit: bool
+    cost: Decimal
+    input_tokens: int
+    output_tokens: int
+    summary: str
+    skills: list[str]
+    crossed_thresholds: list[int]
+
+
+def _valider_test(brut: object) -> _SortieTest:
+    try:
+        return _SortieTest.model_validate(brut)
+    except ValidationError as erreur:
+        raise ValueError(str(erreur)) from erreur
+
+
+@router.post("/test", response_model=TestResponse)
+async def run_test(gateway: GatewayDep, owner_id: Owner, body: TestRequest) -> TestResponse:
+    """Passe un petit texte d'offre fictif par la passerelle : valide la chaîne complète
+    (routage, consentement, plafonds, appel, validation, journal, cache)."""
+    requete = AIRequest(
+        task_type="platform_test",
+        level=body.level,
+        prompt_version="test-v1",
+        instructions=(
+            "Résume l'offre en une phrase et liste ses compétences techniques. "
+            "Réponds en JSON avec les clés summary et skills."
+        ),
+        content=_OFFRE_TEST,
+        max_output_tokens=400,
+        json_schema=_SCHEMA_TEST,
+        contains_personal_data=False,
+    )
+    resultat = await gateway.run(owner_id=owner_id, request=requete, validate=_valider_test)
+    return TestResponse(
+        provider=resultat.provider,
+        model=resultat.model,
+        cache_hit=resultat.cache_hit,
+        cost=resultat.cost,
+        input_tokens=resultat.input_tokens,
+        output_tokens=resultat.output_tokens,
+        summary=resultat.value.summary,
+        skills=resultat.value.skills,
+        crossed_thresholds=list(resultat.crossed_thresholds),
+    )
+
+
+_ERREURS_HTTP: dict[type[AIError], int] = {
+    AIDisabledError: 409,
+    AINotConfiguredError: 409,
+    ConsentRequiredError: 409,
+    BudgetNotDefinedError: 409,
+    BudgetExceededError: 409,
+    ProviderFailureError: 502,
+    InvalidOutputError: 502,
+    IncompleteOutputError: 502,
+}
+
+
+def register_ai_errors(application: FastAPI) -> None:
+    """Chaque erreur IA devient une réponse normalisée avec un code stable (message fixe)."""
+
+    async def _repondre(_: Request, erreur: Exception) -> JSONResponse:
+        assert isinstance(erreur, AIError)  # noqa: S101 - garanti par l'enregistrement ci-dessous
+        statut = next((s for t, s in _ERREURS_HTTP.items() if isinstance(erreur, t)), 500)
+        return error_response(statut, erreur.code, str(erreur))
+
+    for type_erreur in _ERREURS_HTTP:
+        application.add_exception_handler(type_erreur, _repondre)

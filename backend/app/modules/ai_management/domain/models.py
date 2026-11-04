@@ -64,6 +64,10 @@ class AIRequest:
     content: str
     max_output_tokens: int
     json_schema: dict[str, Any] | None = None
+    contains_personal_data: bool = False
+    """Vrai si `content` contient des données personnelles (CV, profil, coordonnées). Un
+    fournisseur qui réutilise les contenus pour s'entraîner ou les fait relire n'est alors
+    jamais utilisé. À renseigner explicitement par l'appelant : faux ne vaut pas « inconnu »."""
 
     def __post_init__(self) -> None:
         if self.level not in (1, 2):

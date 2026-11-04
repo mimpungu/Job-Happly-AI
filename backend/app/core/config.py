@@ -2,8 +2,9 @@
 
 from functools import lru_cache
 from typing import Literal, Self
+from urllib.parse import urlsplit
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Valeur d'exemple publiée dans .env.example : interdite en production.
@@ -31,9 +32,44 @@ class Settings(BaseSettings):
     # API France Travail (OAuth2). Identifiants absents = source « non configurée ».
     france_travail_client_id: SecretStr | None = None
     france_travail_client_secret: SecretStr | None = None
+    # Gemini (Google AI Studio). Clé absente = fournisseur non configuré. Le palier est « free »
+    # par défaut : on suppose le pire (contenus réutilisables) tant que l'utilisateur n'a pas
+    # déclaré un compte de facturation.
+    gemini_api_key: SecretStr | None = None
+    gemini_tier: Literal["free", "paid"] = "free"
+    gemini_model_level1: str = "gemini-3.1-flash-lite"
+    gemini_model_level2: str = "gemini-3-flash-preview"
+    # Niveau de réflexion demandé. « minimal » : sans cela, ces modèles dépensent le budget de
+    # tokens en réflexion et renvoient une réponse vide ou coupée (constaté le 2026-11-04).
+    gemini_thinking_level: str = "minimal"
+    # Modèle local (Ollama). Désactivé par défaut ; l'adresse doit rester sur la boucle locale.
+    ollama_enabled: bool = False
+    ollama_url: str = "http://127.0.0.1:11434"
+    ollama_model_level1: str = "gemma4:e4b"
+    ollama_model_level2: str = "gemma4:12b"
+
+    @field_validator(
+        "gemini_api_key",
+        "france_travail_client_id",
+        "france_travail_client_secret",
+        mode="before",
+    )
+    @classmethod
+    def _vide_vaut_absent(cls, valeur: object) -> object:
+        """Une variable présente mais vide (docker compose) signifie « non configuré »."""
+        if isinstance(valeur, str) and not valeur.strip():
+            return None
+        return valeur
 
     @model_validator(mode="after")
     def _verifier_coherence(self) -> Self:
+        hote = urlsplit(self.ollama_url).hostname
+        # `host.docker.internal` : la machine hôte, vue depuis le conteneur de l'API.
+        if hote not in {"127.0.0.1", "localhost", "::1", "host.docker.internal"}:
+            raise ValueError(
+                "HAPPLY_OLLAMA_URL doit pointer vers la boucle locale : un modèle « local » "
+                "ne doit jamais être distant."
+            )
         if "*" in self.cors_allowed_origins:
             raise ValueError("CORS : l'origine générique '*' est interdite (ADR-0008).")
         if self.environment == "production":

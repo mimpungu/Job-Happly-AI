@@ -93,6 +93,7 @@ Aucun appel de modèle n'est exposé : ces routes règlent et observent la plate
 | `PUT /ai/settings` | Modifie mode, préférence, limites par opération. |
 | `PUT /ai/budget` | `{daily, monthly, currency, alert_thresholds}` : plafonds (> 0, 2 décimales, seuils 1–100 %). Seul l'utilisateur les change. |
 | `PUT /ai/consent` | `{accepted}` : accord (ou retrait) d'envoi de données à une API payante. |
+| `POST /ai/test` | `{level: 1\|2}` : passe un petit texte d'offre fictif et public par toute la chaîne (routage, accord, plafonds, appel, validation, journal, cache). Erreurs : 409 (`ai_disabled`, `ai_not_configured`, `ai_consent_required`, `ai_budget_not_defined`, `ai_budget_exceeded`), 502 (`ai_provider_failure`, `ai_invalid_output`, `ai_incomplete_output`). |
 | `GET /ai/usage` | Dépense du jour et du mois (avec pourcentage du plafond), par fournisseur, derniers appels (refus et cache compris). |
 
 ## Recherches sauvegardées

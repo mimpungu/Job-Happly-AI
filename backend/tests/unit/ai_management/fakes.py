@@ -34,6 +34,7 @@ class FakeProvider:
         panne: bool = False,
         delai: float = 0.0,
         niveaux: tuple[int, ...] = (1, 2),
+        entraine: bool = False,
     ) -> None:
         self._name = name
         self._kind = kind
@@ -56,6 +57,11 @@ class FakeProvider:
         self.delai = delai
         self.niveaux = niveaux
         self.appels = 0
+        self._entraine = entraine
+
+    @property
+    def uses_data_for_training(self) -> bool:
+        return self._entraine
 
     @property
     def name(self) -> str:

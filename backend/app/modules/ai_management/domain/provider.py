@@ -21,6 +21,11 @@ class AIProvider(Protocol):
     def kind(self) -> ProviderKind: ...
 
     @property
+    def uses_data_for_training(self) -> bool:
+        """Vrai si le fournisseur peut réutiliser ou faire relire les contenus (palier gratuit)."""
+        ...
+
+    @property
     def pricing(self) -> Mapping[str, ModelPricing]:
         """Modèles proposés et leur tarif (un modèle local a un tarif nul)."""
         ...

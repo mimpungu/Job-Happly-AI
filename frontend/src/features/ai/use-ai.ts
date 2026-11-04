@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAISettings,
   getAIUsage,
+  runAITest,
   saveAIBudget,
   saveAIConsent,
   saveAISettings,
@@ -31,3 +32,12 @@ function useSettingsWrite<V>(ecrire: (valeur: V) => ReturnType<typeof getAISetti
 export const useSaveAISettings = () => useSettingsWrite(saveAISettings);
 export const useSaveAIBudget = () => useSettingsWrite(saveAIBudget);
 export const useSaveAIConsent = () => useSettingsWrite(saveAIConsent);
+
+/** Un test passe par le journal : la consommation affichée doit être relue ensuite. */
+export function useAITest() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: runAITest,
+    onSettled: () => void client.invalidateQueries({ queryKey: AI_USAGE_KEY }),
+  });
+}

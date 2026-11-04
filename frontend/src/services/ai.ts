@@ -1,4 +1,4 @@
-import type { AIMode, AISettings, AIUsage, BackendPreference } from "@/types/ai";
+import type { AIMode, AISettings, AITestResult, AIUsage, BackendPreference } from "@/types/ai";
 
 import { apiFetch } from "./api-client";
 
@@ -17,3 +17,6 @@ export const saveAIConsent = (accepted: boolean) =>
   });
 
 export const getAIUsage = () => apiFetch<AIUsage>("/api/v1/ai/usage");
+
+export const runAITest = (level: 1 | 2) =>
+  apiFetch<AITestResult>("/api/v1/ai/test", { method: "POST", body: JSON.stringify({ level }) });

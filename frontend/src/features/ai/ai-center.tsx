@@ -13,6 +13,7 @@ import type { AIMode, AISettings, AIUsage, BackendPreference } from "@/types/ai"
 
 import {
   useAISettings,
+  useAITest,
   useAIUsage,
   useSaveAIBudget,
   useSaveAIConsent,
@@ -56,6 +57,14 @@ function Etat({ reglages }: { reglages: AISettings }) {
           {reglages.paid_calls_possible ? "API payante autorisée" : "Aucun appel payant possible"}
         </Badge>
       </div>
+      {reglages.providers.some((p) => p.uses_data_for_training) ? (
+        <p role="note" className="rounded-md border border-warning p-3 text-foreground">
+          <strong>Palier gratuit détecté.</strong> Le fournisseur peut réutiliser et faire relire
+          les contenus envoyés. Ne l&apos;utilisez que pour des textes publics (offres
+          d&apos;emploi), jamais pour votre CV ni votre profil : l&apos;application les exclut
+          automatiquement de ce fournisseur.
+        </p>
+      ) : null}
       {reglages.providers.length === 0 ? (
         <p className="text-foreground-muted">
           Aucun fournisseur d&apos;IA n&apos;est branché pour l&apos;instant : l&apos;application
@@ -354,6 +363,58 @@ function Chargement<T>({
   return <>{children(requete.data)}</>;
 }
 
+function Test() {
+  const test = useAITest();
+  return (
+    <div className="flex flex-col gap-3 text-sm">
+      <p className="text-foreground-muted">
+        Envoie un court texte d&apos;offre fictif et public (aucune donnée personnelle) à travers
+        toute la chaîne : routage, accord, plafonds, appel, validation, journal et cache. Relancer
+        le test doit afficher « cache » et un coût nul.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        {([1, 2] as const).map((niveau) => (
+          <Button
+            key={niveau}
+            variant="secondary"
+            loading={test.isPending && test.variables === niveau}
+            disabled={test.isPending}
+            onClick={() => test.mutate(niveau)}
+          >
+            {niveau === 1 ? "Tester l'IA (niveau 1, économique)" : "Tester l'IA (niveau 2)"}
+          </Button>
+        ))}
+      </div>
+      {test.isError ? (
+        <p role="alert" className="text-danger">
+          {test.error.message}
+        </p>
+      ) : null}
+      {test.isSuccess ? (
+        <div role="status" className="flex flex-col gap-1 rounded-md border border-border p-3">
+          <p className="font-medium text-foreground">
+            {test.data.provider} · {test.data.model}
+            {test.data.cache_hit ? " · servi par le cache" : ""}
+          </p>
+          <p className="text-foreground-muted">
+            {test.data.input_tokens} tokens en entrée, {test.data.output_tokens} en sortie · coût{" "}
+            {Number(test.data.cost).toLocaleString("fr-FR", { maximumFractionDigits: 6 })}
+          </p>
+          <p className="text-foreground">{test.data.summary}</p>
+          <p className="text-foreground-muted">
+            Compétences : {test.data.skills.join(", ") || "—"}
+          </p>
+          {test.data.crossed_thresholds.length > 0 ? (
+            <p className="text-warning">
+              Seuil d&apos;alerte franchi : {test.data.crossed_thresholds.join(" %, ")} %.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function AICenter() {
   const reglages = useAISettings();
   const usage = useAIUsage();
@@ -373,6 +434,9 @@ export function AICenter() {
       </Panel>
       <Panel title="Données transmises à une API payante">
         <Chargement requete={reglages}>{(r) => <Consentement reglages={r} />}</Chargement>
+      </Panel>
+      <Panel title="Tester la plateforme">
+        <Test />
       </Panel>
       <Panel title="Consommation">
         <Chargement requete={usage}>{(u) => <Consommation usage={u} />}</Chargement>

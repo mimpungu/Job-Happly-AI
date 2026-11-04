@@ -7,6 +7,8 @@ export interface AIProviderView {
   name: string;
   kind: "api" | "local";
   models: string[];
+  /** Palier gratuit : le fournisseur peut réutiliser et faire relire les contenus. */
+  uses_data_for_training: boolean;
 }
 
 export interface AISettings {
@@ -49,4 +51,16 @@ export interface AIUsage {
   percent_month: string | null;
   by_provider_month: Record<string, string>;
   recent: AIUsageRow[];
+}
+
+export interface AITestResult {
+  provider: string;
+  model: string;
+  cache_hit: boolean;
+  cost: string;
+  input_tokens: number;
+  output_tokens: number;
+  summary: string;
+  skills: string[];
+  crossed_thresholds: number[];
 }

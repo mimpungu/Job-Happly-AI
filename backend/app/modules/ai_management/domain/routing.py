@@ -44,6 +44,8 @@ def plan_routes(
         for fournisseur in providers:
             if fournisseur.kind is not genre or not fournisseur.supports(request):
                 continue
+            if request.contains_personal_data and fournisseur.uses_data_for_training:
+                continue  # jamais de données personnelles vers un palier qui les réutilise
             modele = fournisseur.model_for(request.level, mode.value)
             if modele is not None and modele in fournisseur.pricing:
                 routes.append(Route(fournisseur, modele))

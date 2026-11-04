@@ -189,3 +189,40 @@ class TestRoutage:
     def test_niveau_zero_refuse(self) -> None:
         with pytest.raises(ValueError):
             AIRequest("t", 0, "v1", "i", "c", 10)
+
+
+class TestDonneesPersonnelles:
+    def _req(self, personnel: bool) -> AIRequest:
+        return AIRequest("cv", 2, "v1", "i", "c", 100, contains_personal_data=personnel)
+
+    def test_un_palier_qui_reutilise_les_contenus_est_exclu_pour_des_donnees_personnelles(
+        self,
+    ) -> None:
+        gratuit = FakeProvider("gemini-gratuit", entraine=True)
+        payant = FakeProvider("gemini-payant")
+
+        avec = plan_routes(
+            [gratuit, payant],
+            self._req(True),
+            mode=AIMode.QUALITY,
+            preference=BackendPreference.API_ONLY,
+        )
+        sans = plan_routes(
+            [gratuit, payant],
+            self._req(False),
+            mode=AIMode.QUALITY,
+            preference=BackendPreference.API_ONLY,
+        )
+
+        assert [r.provider.name for r in avec] == ["gemini-payant"]
+        assert [r.provider.name for r in sans] == ["gemini-gratuit", "gemini-payant"]
+
+    def test_seul_un_palier_gratuit_donne_aucune_route_pour_des_donnees_personnelles(self) -> None:
+        routes = plan_routes(
+            [FakeProvider(entraine=True)],
+            self._req(True),
+            mode=AIMode.ECONOMY,
+            preference=BackendPreference.API_ONLY,
+        )
+
+        assert routes == []

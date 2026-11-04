@@ -24,6 +24,14 @@ Fournisseur, modèle, tâche, niveau, tokens d'entrée et de sortie, coût estim
 ## Cache
 Clé = empreinte (tâche, version du prompt, modèle, instructions, contenu, schéma). Une réponse invalide n'est jamais mise en cache. Une réponse expirée est remplacée.
 
+## Fournisseurs de démarrage (ADR-0012)
+| Fournisseur | Rôle | Remarques |
+|---|---|---|
+| Ollama `gemma4:e4b` / `gemma4:12b` | Local, gratuit | M1 16 Go ; rien ne quitte la machine ; modèle à installer (`ollama pull`) |
+| Gemini `gemini-2.5-flash-lite` (niv. 1), `gemini-3-flash-preview` (niv. 2) | API | Tarifs USD relevés le 2026-11-04 ; **palier gratuit : contenus réutilisables et relus par des humains -> textes publics seulement** |
+
+Ordre de grandeur (tarifs payants, USD) : résumer une offre ≈ 0,0003 $ avec `gemini-2.5-flash-lite` ; une lettre ou un CV ≈ 0,01 $ avec `gemini-3-flash-preview`. Les tarifs augmentent pour plusieurs modèles au 1er décembre 2026 et au 1er janvier 2027.
+
 ## Limites connues
 - Aucun fournisseur concret n'est branché : tous les tests utilisent de faux fournisseurs.
 - Plafond par fournisseur et alertes envoyées en notification : non faits.
