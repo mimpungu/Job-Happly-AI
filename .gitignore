@@ -1,0 +1,49 @@
+# Systèmes
+.DS_Store
+
+# Secrets et environnement local (ne jamais versionner)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Données runtime (CV, documents générés, sauvegardes)
+storage/
+documents/generated/
+backups/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+playwright-report/
+test-results/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# LaTeX (artefacts de compilation)
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
