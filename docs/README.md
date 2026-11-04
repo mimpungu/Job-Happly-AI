@@ -9,6 +9,8 @@
 | `product/` | Vision, exigences, registre `PROJECT_BACKLOG.md` |
 | `architecture/` | Architecture, bounded contexts, contrats, contraintes, audit, `ADR/` |
 | `engineering/` | Conventions, stratégie de tests, Definition of Done, plan de releases |
-| `security/` | Notices de sécurité ; `THREAT_MODEL.md` et `SECURITY_CHECKLIST.md` à créer avec l'EPIC 018 |
+| `security/` | Sécurité, modèle de menaces, secrets, confidentialité (RGPD), mode local sans authentification |
+| `operations/` | Démarrage, sauvegarde et restauration, déploiement, observabilité, récupération |
+| `INSTALL.md`, `USER_GUIDE.md` | Guide d'installation et guide utilisateur |
 
-Documents prévus, créés par l'EPIC qui les produit : `architecture/DOMAIN_MODEL.md` et `DATA_MODEL.md` (EPIC 004), `security/THREAT_MODEL.md` et `SECURITY_CHECKLIST.md` (EPIC 018), `operations/DEPLOYMENT.md`, `BACKUP_RESTORE.md` et `AI_COST_MANAGEMENT.md` (EPIC 002, 004, 010).
+Documents transverses à la racine : `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`. Rapport de qualité et checklist de livraison : `engineering/QUALITY_REPORT.md`, `engineering/RELEASE_CHECKLIST.md`.

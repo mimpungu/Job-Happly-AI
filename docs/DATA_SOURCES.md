@@ -2,7 +2,7 @@
 
 Principe (ADR-0006) : sources **gratuites et publiques** uniquement, accès autorisé, aucun contournement de CAPTCHA, d'authentification, de restriction ou d'anti-bot.
 
-**Statut :** aucune source réelle n'est encore intégrée. Aucune n'est présentée comme opérationnelle.
+**Statut :** deux sources publiques d'ATS (Greenhouse, Lever) sont intégrées et ont été appelées en réel ; la saisie manuelle fonctionne sans réseau ; l'API France Travail est bloquée par le fournisseur. Aucune autre source n'est présentée comme opérationnelle.
 
 ## Intégrées, configurées et testées
 

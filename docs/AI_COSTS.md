@@ -36,6 +36,7 @@ Ordre de grandeur (tarifs payants, USD) : résumer une offre ≈ 0,0008 $ avec `
 `PYTHONPATH=backend uv run --project backend python backend/tools/ai_benchmark.py --n 20` compare les modèles sur de vraies offres publiques collectées (passage par la passerelle : journal, plafonds, cache). Mesures automatiques : JSON conforme, **ancrage** (part des compétences réellement présentes dans le texte, un ancrage bas révèle des inventions), vitesse, tokens, coût au tarif payant. La qualité d'écriture se juge en relisant la comparaison côte à côte. `--gemini` envoie les textes d'offres (publics) à Google et exige l'accord de l'utilisateur.
 
 ## Limites connues
-- Aucun fournisseur concret n'est branché : tous les tests utilisent de faux fournisseurs.
-- Plafond par fournisseur et alertes envoyées en notification : non faits.
+- Les tests automatiques utilisent de faux fournisseurs (aucun appel réseau réel) ; les adaptateurs Gemini et Ollama sont testés sur transport simulé, et Gemini a été exercé en réel par le banc d'essai.
+- Plafond par fournisseur : non fait. Les franchissements de seuil sont signalés par la passerelle ; l'envoi en notification dépend du réglage `notify_ai_budget_alerts` (EPIC 015).
+- Politique de confidentialité (`allowed`, `local_only`, `never`) : voir `docs/security/PRIVACY.md` ; catalogue des données envoyées : `GET /api/v1/privacy/ai-transfers`.
 - Un délai dépassé n'est pas compté comme dépensé.

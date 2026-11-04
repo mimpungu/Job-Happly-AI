@@ -272,7 +272,7 @@ ADR obligatoires :
 
 **Objectif :** mettre en place un environnement de développement propre, reproductible et maintenable.
 
-### [➖] FEATURE 002.1 — Initialisation du projet
+### [✅] FEATURE 002.1 — Initialisation du projet
 
 [✅] **TASK-002-01 — Initialiser le repository**
 
@@ -297,7 +297,9 @@ ADR obligatoires :
 - Configuration des dépendances.
 - Structure Clean Architecture.
 
-[➖] **TASK-002-04 — Configurer les outils qualité**
+[✅] **TASK-002-04 — Configurer les outils qualité**
+
+> Vérifié : Ruff, mypy, ESLint, Prettier, `tsc` et hooks pre-commit (`.pre-commit-config.yaml`) sont en place et passent.
 
 - Ruff.
 - Mypy ou Pyright.
@@ -323,7 +325,9 @@ Prévoir les services nécessaires au démarrage :
 - PostgreSQL.
 - Services complémentaires uniquement si justifiés.
 
-[➖] **TASK-002-07 — Scripts de développement**
+[✅] **TASK-002-07 — Scripts de développement**
+
+> Vérifié : `infrastructure/scripts/` (start, stop, reset-test, migrate, test, lint, build, backup, restore) ; syntaxe contrôlée.
 
 - Start.
 - Stop.
@@ -346,7 +350,9 @@ Prévoir les services nécessaires au démarrage :
 
 ### [➖] FEATURE 002.3 — CI/CD
 
-[➖] **TASK-002-08 — Pipeline CI**
+[✅] **TASK-002-08 — Pipeline CI**
+
+> Vérifié : `.github/workflows/ci.yml` (installation, types, lint, tests, build, secrets) ; dernier push de `dev` vert sur GitHub (run 15).
 
 - Installation.
 - Vérification des types.
@@ -990,11 +996,13 @@ Méthodes :
 
 **Objectif :** centraliser les fournisseurs IA et contrôler rigoureusement les coûts.
 
-### [➖] FEATURE 010.1 — Abstraction IA
+### [✅] FEATURE 010.1 — Abstraction IA
 
 [✅] **TASK-010-01 — Définir AIProvider**
 
-[➖] **TASK-010-02 — Implémenter le premier fournisseur IA**
+[✅] **TASK-010-02 — Implémenter le premier fournisseur IA**
+
+> Vérifié : Gemini et Ollama implémentés derrière `AIProvider` (ADR-0012), testés sur transport simulé ; Gemini exercé en réel par le banc d'essai.
 
 [✅] **TASK-010-03 — Ajouter le système de configuration**
 
@@ -1026,11 +1034,15 @@ Méthodes :
 
 [✅] **TASK-010-15 — Gérer l'expiration**
 
-[➖] **TASK-010-16 — Versionner les prompts**
+[✅] **TASK-010-16 — Versionner les prompts**
+
+> Vérifié : chaque requête porte `prompt_version`, incluse dans l'empreinte du cache ; versions des prompts CV, lettre, reformulation, entretien.
 
 [➖] **TASK-010-17 — Regrouper les tâches compatibles**
 
-[➖] **TASK-010-18 — Limiter les contextes envoyés**
+[✅] **TASK-010-18 — Limiter les contextes envoyés**
+
+> Vérifié : textes tronqués (offre : 6000 caractères), jamais le CV complet par défaut ; catalogue des transferts testé (ADR-0019).
 
 ### [✅] FEATURE 010.4 — Interface de gestion IA
 
@@ -1718,90 +1730,94 @@ Cet EPIC doit être traité dès la phase initiale et non uniquement en fin de d
 
 **Objectif :** garantir que le produit est réellement utilisable, maintenable et livrable.
 
-### [➖] FEATURE 019.1 — Tests backend
+### [✅] FEATURE 019.1 — Tests backend
 
-[➖] **TASK-019-01 — Tests unitaires du domaine**
+[✅] **TASK-019-01 — Tests unitaires du domaine**
 
-[➖] **TASK-019-02 — Tests des use cases**
+[✅] **TASK-019-02 — Tests des use cases**
 
-[➖] **TASK-019-03 — Tests des repositories**
+[✅] **TASK-019-03 — Tests des repositories**
 
-[➖] **TASK-019-04 — Tests des connecteurs**
+[✅] **TASK-019-04 — Tests des connecteurs**
 
-[➖] **TASK-019-05 — Tests des tâches asynchrones**
+[✅] **TASK-019-05 — Tests des tâches asynchrones**
 
-[➖] **TASK-019-06 — Tests de sécurité**
+[✅] **TASK-019-06 — Tests de sécurité**
 
-### [➖] FEATURE 019.2 — Tests frontend
+### [✅] FEATURE 019.2 — Tests frontend
 
-[➖] **TASK-019-07 — Tests des composants**
+[✅] **TASK-019-07 — Tests des composants**
 
-[➖] **TASK-019-08 — Tests des formulaires**
+[✅] **TASK-019-08 — Tests des formulaires**
 
-[➖] **TASK-019-09 — Tests de navigation**
+[✅] **TASK-019-09 — Tests de navigation**
 
-[➖] **TASK-019-10 — Tests responsive**
+[✅] **TASK-019-10 — Tests responsive**
 
-[➖] **TASK-019-11 — Tests des états d'erreur**
+[✅] **TASK-019-11 — Tests des états d'erreur**
 
-### [➖] FEATURE 019.3 — Tests E2E
+### [✅] FEATURE 019.3 — Tests E2E
 
-[➖] **TASK-019-12 — Parcours de recherche**
+[✅] **TASK-019-12 — Parcours de recherche**
 
-[➖] **TASK-019-13 — Parcours d'import du CV**
+[✅] **TASK-019-13 — Parcours d'import du CV**
 
-[➖] **TASK-019-14 — Parcours de génération du CV**
+[✅] **TASK-019-14 — Parcours de génération du CV**
 
-[➖] **TASK-019-15 — Parcours de génération de lettre**
+[✅] **TASK-019-15 — Parcours de génération de lettre**
 
-[➖] **TASK-019-16 — Parcours de candidature**
+[✅] **TASK-019-16 — Parcours de candidature**
 
-[➖] **TASK-019-17 — Parcours de gestion du budget IA**
+[✅] **TASK-019-17 — Parcours de gestion du budget IA**
 
-### [➖] FEATURE 019.4 — Performance
+### [✅] FEATURE 019.4 — Performance
 
-[➖] **TASK-019-18 — Mesurer les temps de réponse**
+[✅] **TASK-019-18 — Mesurer les temps de réponse**
 
-[➖] **TASK-019-19 — Analyser les requêtes SQL**
+[✅] **TASK-019-19 — Analyser les requêtes SQL**
 
-[➖] **TASK-019-20 — Tester la pagination**
+[✅] **TASK-019-20 — Tester la pagination**
 
-[➖] **TASK-019-21 — Tester les volumes d'offres**
+[✅] **TASK-019-21 — Tester les volumes d'offres**
 
-[➖] **TASK-019-22 — Tester les tâches concurrentes**
+[✅] **TASK-019-22 — Tester les tâches concurrentes**
 
 ### [➖] FEATURE 019.5 — Documentation et livraison
 
-[➖] **TASK-019-23 — Finaliser README**
+[✅] **TASK-019-23 — Finaliser README**
 
-[➖] **TASK-019-24 — Finaliser le guide utilisateur**
+[✅] **TASK-019-24 — Finaliser le guide utilisateur**
 
-[➖] **TASK-019-25 — Finaliser le guide d'installation**
+[✅] **TASK-019-25 — Finaliser le guide d'installation**
 
-[➖] **TASK-019-26 — Finaliser le guide de sauvegarde**
+[✅] **TASK-019-26 — Finaliser le guide de sauvegarde**
 
-[➖] **TASK-019-27 — Finaliser les ADR**
+[✅] **TASK-019-27 — Finaliser les ADR**
 
-[➖] **TASK-019-28 — Créer le rapport de qualité**
+[✅] **TASK-019-28 — Créer le rapport de qualité**
 
 [➖] **TASK-019-29 — Préparer la version stable**
 
-[➖] **TASK-019-30 — Produire les documents obligatoires de la spécification (§22)**
+[✅] **TASK-019-30 — Produire les documents obligatoires de la spécification (§22)**
 
 - `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, `API.md`.
 - `AI_COSTS.md`, `DATA_SOURCES.md`, `DEPLOYMENT.md`.
 
 ### Critères d'acceptation
 
-- [➖] Tests critiques exécutés.
-- [➖] Aucun défaut bloquant connu.
+- [✅] Tests critiques exécutés.
+- [✅] Aucun défaut bloquant connu.
 - [➖] Installation reproductible.
-- [➖] Documentation à jour.
-- [➖] Sauvegarde et restauration testées.
-- [➖] Parcours métier principaux opérationnels.
-- [➖] Limites restantes clairement documentées.
+- [✅] Documentation à jour.
+- [✅] Sauvegarde et restauration testées.
+- [✅] Parcours métier principaux opérationnels.
+- [✅] Limites restantes clairement documentées.
 
 **Livrable :** version stable de HAPPLY AI.
+
+> **Réalisé (ADR-0020)** : parcours E2E à pile réelle (8 parcours), pages Espace CV (CV générés) et Lettres, tests de volume (20 000 offres), pagination, EXPLAIN réel et concurrence, tests de routes des notifications et du planificateur, couverture mesurée avec seuil en CI, README, guides, CONTRIBUTING, SECURITY, CHANGELOG, DEPLOYMENT, rapport de qualité chiffré, checklist de release. Version **0.5.0-rc.1** préparée, **non publiée**.
+>
+> **Reste à faire** : TASK-019-29 (version stable) : elle ne peut pas être déclarée tant que les EPIC 017, 006, 008, 010 et l'authentification (018-35/36) ne sont pas terminés ; critère « Installation reproductible » non validé : la voie Docker n'a pas pu être rejouée de zéro dans l'environnement de travail (sans Docker). Détails : `docs/engineering/QUALITY_REPORT.md`.
 
 ---
 
@@ -2041,7 +2057,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Release |
 |---|---|---|---|---|---|---|
 | [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 11 | 0.1 |
-| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 6 | 0.1 |
+| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 9 | 0.1 |
 | [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
 | [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
 | [✅] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 18 | 0.3 |
@@ -2049,7 +2065,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |
 | [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
-| [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 24 | 0.3 |
+| [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 27 | 0.3 |
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 14 | 0.3 |
 | [✅] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 27 | 0.4 |
 | [✅] | 013 — Cover Letter Generator | P1 | 3 | 18 | 18 | 0.4 |
@@ -2058,7 +2074,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 14 | 0.5 |
 | [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 0 | 1.0 |
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 35 | 0.1 → 1.0 |
-| [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
+| [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 29 | 0.1 → 1.0 |
 
 État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 007 : réalisé et testé sur connecteurs de test (aucune source réelle encore intégrée) ; la planification des nettoyages (007-19) et le branchement des gestionnaires de tâches sont faits avec l'EPIC 015 ; EPIC 006 : FEATURES 006.1 à 006.3 réalisées (framework, registre, résilience) ; 006.6 en cours : détection par URL, JSON-LD, filtrage, SSRF et tests faits (006-22, 24, 26, 27, 28), connecteurs Greenhouse et Lever implémentés sur fixtures sans appel réel (006-23 partielle : Ashby, SmartRecruiters, Workable restants), 006-25 partielle (robots.txt et refus respectés ; limitation de débit et cache de pages à brancher), 006-21 sans interface ; 006-14/15 en attente de vérification des sources officielles (voir docs/DATA_SOURCES.md), 006-16 BLOCKED (identifiants à fournir par le propriétaire) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
 
