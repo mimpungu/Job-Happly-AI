@@ -3,12 +3,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  estimateAICost,
   getAISettings,
   getAIUsage,
   runAITest,
   saveAIBudget,
   saveAIConsent,
   saveAISettings,
+  saveProviderCap,
 } from "@/services/ai";
 
 export const AI_SETTINGS_KEY = ["ai", "settings"] as const;
@@ -32,6 +34,12 @@ function useSettingsWrite<V>(ecrire: (valeur: V) => ReturnType<typeof getAISetti
 export const useSaveAISettings = () => useSettingsWrite(saveAISettings);
 export const useSaveAIBudget = () => useSettingsWrite(saveAIBudget);
 export const useSaveAIConsent = () => useSettingsWrite(saveAIConsent);
+export const useSaveProviderCap = () =>
+  useSettingsWrite(({ provider, daily }: { provider: string; daily: string | null }) =>
+    saveProviderCap(provider, daily),
+  );
+
+export const useEstimateAICost = () => useMutation({ mutationFn: estimateAICost });
 
 /** Un test passe par le journal : la consommation affichée doit être relue ensuite. */
 export function useAITest() {

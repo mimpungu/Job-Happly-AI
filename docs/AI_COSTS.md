@@ -6,7 +6,7 @@ L'application fonctionne **sans IA** (règles, SQL, scores déterministes). L'IA
 - **Niveau 0** : aucune IA. **Niveau 1** : modèle économique (extraction, classification, résumé). **Niveau 2** : modèle plus performant (CV, lettres, analyse approfondie).
 - **Hybride** (ADR-0011) : le modèle local d'abord (gratuit, données sur la machine), l'API payante en renfort.
 - **Aucun appel payant** sans : un fournisseur API configuré, un plafond **journalier et mensuel** défini par l'utilisateur, et son **consentement** à l'envoi de données.
-- Le **coût maximal** est estimé avant chaque appel (entrée estimée prudemment + sortie à la limite de tokens). L'appel est refusé s'il ferait dépasser le plafond journalier, mensuel ou la limite par opération. Jamais d'augmentation automatique d'un plafond.
+- Le **coût maximal** est estimé avant chaque appel (entrée estimée prudemment + sortie à la limite de tokens). L'appel est refusé s'il ferait dépasser le plafond journalier, mensuel ou la limite par opération. Un **plafond journalier par fournisseur** peut s'ajouter aux plafonds globaux. Les **alertes** (seuils 50/80/100 % par défaut) sont calculées à partir de la dépense réelle et affichées dans le Centre IA tant qu'elles sont franchies ; à 100 %, les appels payants sont bloqués avec une explication. Jamais d'augmentation automatique d'un plafond.
 - Deux devises différentes ne sont jamais converties : l'appel est refusé.
 
 ## Valeurs par défaut (ADR-0005, à recalibrer avec les tarifs réels)

@@ -205,3 +205,25 @@ async def test_la_cle_d_api_n_est_jamais_exposee_seul_un_indice_masque_l_est(
 
     assert reponse.json()["providers"][0]["key_hint"] == "…ghij"
     assert cle not in reponse.text and "AIzaSy" not in reponse.text
+
+
+async def test_plafond_par_fournisseur_alertes_et_estimation_via_l_api(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    _brancher(client, session, FakeProvider("api-test", reponses=[REPONSE_IA]))
+    await client.put("/api/v1/ai/settings", json={"backend_preference": "api_only"})
+    await client.put("/api/v1/ai/consent", json={"accepted": True})
+    await client.put("/api/v1/ai/budget", json={"daily": "1", "monthly": "10", "currency": "EUR"})
+
+    inconnu = await client.put("/api/v1/ai/provider-caps/inconnu", json={"daily": "0.5"})
+    pose = await client.put("/api/v1/ai/provider-caps/api-test", json={"daily": "0.5"})
+    retire = await client.put("/api/v1/ai/provider-caps/api-test", json={"daily": None})
+    estimation = await client.post("/api/v1/ai/estimate", json={"characters": 1000})
+    usage = (await client.get("/api/v1/ai/usage")).json()
+
+    assert inconnu.status_code == 409
+    assert pose.json()["provider_daily_caps"] == {"api-test": "0.50"}
+    assert retire.json()["provider_daily_caps"] == {}
+    corps = estimation.json()
+    assert corps["paid"] is True and Decimal(corps["cost"]) > 0 and corps["allowed"] is True
+    assert usage["alerts"] == []  # rien dépensé : aucune alerte

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
@@ -75,6 +76,8 @@ class AIConfig:
     limits: BudgetLimits
     api_consent_at: datetime | None
     personal_data_policy: PersonalDataPolicy = PersonalDataPolicy.ALLOWED
+    provider_daily_caps: Mapping[str, Decimal] = field(default_factory=dict)
+    """Plafond journalier propre à un fournisseur (en plus des plafonds globaux)."""
 
 
 class SqlAIConfigRepository:
@@ -115,7 +118,49 @@ class SqlAIConfigRepository:
             personal_data_policy=PersonalDataPolicy(reglages.personal_data_policy)
             if reglages
             else PersonalDataPolicy.ALLOWED,
+            provider_daily_caps=await self._plafonds_fournisseurs(owner_id),
         )
+
+    async def _plafonds_fournisseurs(self, owner_id: uuid.UUID) -> dict[str, Decimal]:
+        lignes = await self._session.execute(
+            select(AIBudgetModel.provider, AIBudgetModel.amount).where(
+                AIBudgetModel.owner_id == owner_id,
+                AIBudgetModel.provider.is_not(None),
+                AIBudgetModel.period == BudgetPeriod.DAILY.value,
+            )
+        )
+        return {fournisseur: montant for fournisseur, montant in lignes if fournisseur}
+
+    async def set_provider_cap(
+        self, owner_id: uuid.UUID, provider: str, *, daily: Decimal | None, currency: str
+    ) -> None:
+        """Pose (ou retire, avec `None`) le plafond journalier d'un fournisseur."""
+        existant = (
+            await self._session.execute(
+                select(AIBudgetModel).where(
+                    AIBudgetModel.owner_id == owner_id,
+                    AIBudgetModel.period == BudgetPeriod.DAILY.value,
+                    AIBudgetModel.provider == provider,
+                )
+            )
+        ).scalar_one_or_none()
+        if daily is None:
+            if existant is not None:
+                await self._session.delete(existant)
+        elif existant is None:
+            self._session.add(
+                AIBudgetModel(
+                    owner_id=owner_id,
+                    period=BudgetPeriod.DAILY.value,
+                    provider=provider,
+                    amount=daily,
+                    currency=currency,
+                )
+            )
+        else:
+            existant.amount = daily
+            existant.currency = currency
+        await self._session.flush()
 
     async def update_settings(
         self,

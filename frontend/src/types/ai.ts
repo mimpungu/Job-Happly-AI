@@ -22,6 +22,8 @@ export interface AISettings {
   daily_budget: string | null;
   monthly_budget: string | null;
   alert_thresholds: number[];
+  /** Plafond journalier par fournisseur payant (vide = seulement les plafonds globaux). */
+  provider_daily_caps: Record<string, string>;
   budget_defined: boolean;
   api_consent: boolean;
   api_consent_at: string | null;
@@ -43,7 +45,27 @@ export interface AIUsageRow {
   currency: string;
 }
 
+export interface AIAlert {
+  period: "daily" | "monthly";
+  threshold: number;
+  percent: string;
+  spent: string;
+  limit: string;
+}
+
+export interface AICostEstimate {
+  provider: string;
+  model: string;
+  paid: boolean;
+  cost: string;
+  currency: string;
+  allowed: boolean;
+  reason: string | null;
+}
+
 export interface AIUsage {
+  /** Plus haut seuil atteint par période, tant qu'il est franchi. */
+  alerts: AIAlert[];
   currency: string;
   spent_today: string;
   spent_month: string;

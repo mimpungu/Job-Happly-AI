@@ -81,6 +81,20 @@ class AIResult[T]:
     """Seuils d'alerte (en %) franchis par cet appel : à signaler à l'utilisateur."""
 
 
+@dataclass(frozen=True, slots=True)
+class CostEstimate:
+    """Coût maximal plausible d'une opération, avant tout appel (TASK-010-28)."""
+
+    provider: str
+    model: str
+    paid: bool
+    cost: Decimal
+    currency: str
+    allowed: bool
+    reason: str | None = None
+    """Pourquoi l'appel serait refusé (consentement, plafond…), `None` s'il est possible."""
+
+
 def _debut_du_jour(maintenant: datetime) -> datetime:
     return maintenant.astimezone(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -147,6 +161,81 @@ class AIGateway:
             except ProviderFailureError:
                 continue  # hybride : la route suivante (l'API) prend le relais du local
         return await self._essayer(owner_id, operation, config, routes[-1], request, validate)
+
+    async def estimate(self, *, owner_id: uuid.UUID, request: AIRequest) -> CostEstimate:
+        """Coût maximal et faisabilité d'une opération, sans l'exécuter ni rien journaliser."""
+        async with self._uow.begin() as session:
+            config = await SqlAIConfigRepository(session).get(owner_id)
+        if config.mode is AIMode.DISABLED:
+            raise AIDisabledError("L'IA est désactivée dans vos réglages.")
+        request = self._appliquer_confidentialite(request, config)
+        routes = plan_routes(
+            self._providers, request, mode=config.mode, preference=config.preference
+        )
+        if not routes:
+            raise AINotConfiguredError(
+                "Aucun fournisseur IA utilisable pour cette tâche "
+                "(configurez un modèle local ou une API payante)."
+            )
+        route = routes[0]
+        tarif = route.provider.pricing[route.model]
+        devise = config.limits.currency
+        if route.provider.kind is not ProviderKind.API:
+            return CostEstimate(route.provider.name, route.model, False, Decimal(0), devise, True)
+        estimation = estimate_worst_case(request, tarif)
+        raison = await self._raison_de_refus(owner_id, config, route, request, tarif, estimation)
+        return CostEstimate(
+            route.provider.name,
+            route.model,
+            True,
+            estimation,
+            tarif.currency,
+            raison is None,
+            raison,
+        )
+
+    async def _raison_de_refus(
+        self,
+        owner_id: uuid.UUID,
+        config: AIConfig,
+        route: Route,
+        request: AIRequest,
+        tarif: ModelPricing,
+        estimation: Decimal,
+    ) -> str | None:
+        limites = config.limits
+        if config.api_consent_at is None:
+            return "Acceptez d'abord l'envoi de données à l'API payante (réglages IA)."
+        if not limites.is_defined:
+            return "Aucun plafond défini : définissez un plafond journalier et mensuel."
+        if tarif.currency != limites.currency:
+            return "Le tarif du modèle n'est pas dans la devise de vos plafonds."
+        maintenant = self._clock()
+        jusque = maintenant + timedelta(seconds=1)
+        async with self._uow.begin() as session:
+            usage = SqlAIUsageRepository(session)
+            aujourdhui = await usage.total_cost(
+                owner_id=owner_id, since=_debut_du_jour(maintenant), until=jusque
+            )
+            ce_mois = await usage.total_cost(
+                owner_id=owner_id, since=_debut_du_mois(maintenant), until=jusque
+            )
+            fournisseur = await usage.total_cost(
+                owner_id=owner_id,
+                since=_debut_du_jour(maintenant),
+                until=jusque,
+                provider=route.provider.name,
+            )
+        decision = decide(
+            limites,
+            level=request.level,
+            estimated=estimation,
+            spent_today=aujourdhui,
+            spent_month=ce_mois,
+            spent_provider_today=fournisseur,
+            provider_daily_cap=config.provider_daily_caps.get(route.provider.name),
+        )
+        return None if decision.allowed else decision.reason
 
     @staticmethod
     def _appliquer_confidentialite(request: AIRequest, config: AIConfig) -> AIRequest:
@@ -262,12 +351,20 @@ class AIGateway:
                 since=_debut_du_mois(maintenant),
                 until=maintenant + timedelta(seconds=1),
             )
+            depense_fournisseur = await usage.total_cost(
+                owner_id=owner_id,
+                since=_debut_du_jour(maintenant),
+                until=maintenant + timedelta(seconds=1),
+                provider=route.provider.name,
+            )
         decision = decide(
             limites,
             level=request.level,
             estimated=estimation,
             spent_today=aujourdhui,
             spent_month=ce_mois,
+            spent_provider_today=depense_fournisseur,
+            provider_daily_cap=config.provider_daily_caps.get(route.provider.name),
         )
         if not decision.allowed:
             await self._bloquer(owner_id, operation, route, request, tarif, estimation)

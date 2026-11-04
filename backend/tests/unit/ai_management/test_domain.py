@@ -5,7 +5,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.modules.ai_management.domain.budget import decide
+from app.modules.ai_management.domain.budget import active_alerts, decide
 from app.modules.ai_management.domain.cost import (
     cache_key,
     cost_of,
@@ -262,3 +262,36 @@ class TestRestrictionParAppel:
             )
             == []
         )
+
+
+class TestAlertesActives:
+    def _limites(self) -> BudgetLimits:
+        return BudgetLimits(
+            daily=Decimal("1"),
+            monthly=Decimal("10"),
+            per_operation_level1=Decimal("0.02"),
+            per_operation_level2=Decimal("0.30"),
+            currency="EUR",
+        )
+
+    def test_aucune_alerte_sous_le_premier_seuil(self) -> None:
+        assert (
+            active_alerts(self._limites(), spent_today=Decimal("0.4"), spent_month=Decimal("1"))
+            == ()
+        )
+
+    def test_garde_le_plus_haut_seuil_atteint_par_periode(self) -> None:
+        alertes = active_alerts(
+            self._limites(), spent_today=Decimal("0.85"), spent_month=Decimal("5")
+        )
+
+        par_periode = {a.period: a for a in alertes}
+        assert par_periode["daily"].threshold == 80 and par_periode["daily"].percent == Decimal(
+            "85.0"
+        )
+        assert par_periode["monthly"].threshold == 50
+
+    def test_sans_plafond_defini_aucune_alerte(self) -> None:
+        sans = replace(self._limites(), daily=None, monthly=None)
+
+        assert active_alerts(sans, spent_today=Decimal("5"), spent_month=Decimal("5")) == ()

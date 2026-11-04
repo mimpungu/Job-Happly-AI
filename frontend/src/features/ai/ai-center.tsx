@@ -20,6 +20,7 @@ import {
   useSaveAIConsent,
   useSaveAISettings,
 } from "./use-ai";
+import { AlertesBudget, EstimationCout, PlafondsFournisseurs } from "./budget-extras";
 
 export const MODES = [
   { value: "disabled", label: "IA désactivée" },
@@ -327,6 +328,7 @@ const ISSUES: Record<string, string> = {
 function Consommation({ usage }: { usage: AIUsage }) {
   return (
     <div className="flex flex-col gap-4">
+      <AlertesBudget alertes={usage.alerts} devise={usage.currency} />
       <Jauge
         libelle="Aujourd'hui"
         pourcent={usage.percent_today}
@@ -483,6 +485,12 @@ export function AICenter() {
         <Chargement requete={reglages}>
           {(r) => <Plafonds key={`${r.daily_budget}-${r.monthly_budget}`} reglages={r} />}
         </Chargement>
+      </Panel>
+      <Panel title="Plafonds par fournisseur">
+        <Chargement requete={reglages}>{(r) => <PlafondsFournisseurs reglages={r} />}</Chargement>
+      </Panel>
+      <Panel title="Estimer le coût d'une opération">
+        <EstimationCout />
       </Panel>
       <Panel title="Données transmises à une API payante">
         <Chargement requete={reglages}>{(r) => <Consentement reglages={r} />}</Chargement>

@@ -21,11 +21,11 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [✅] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
 | [✅] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 13 | EPIC 002 |
 | [✅] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 18 | EPIC 003, EPIC 004 |
-| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 19 | EPIC 002 |
+| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 20 | EPIC 002 |
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
-| [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 24 | EPIC 003, EPIC 007 |
+| [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 26 | EPIC 003, EPIC 007 |
 | [✅] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 17 | EPIC 005, EPIC 007, EPIC 008 |
-| [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 27 | EPIC 002, EPIC 004 |
+| [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 29 | EPIC 002, EPIC 004 |
 | [✅] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 15 | EPIC 009, EPIC 010 |
 | [✅] | 012 — LATEX RESUME GENERATOR | P1 | 5 | 27 | 27 | EPIC 005, EPIC 010, EPIC 011 |
 | [✅] | 013 — COVER LETTER GENERATOR | P1 | 3 | 18 | 18 | EPIC 005, EPIC 010, EPIC 011, EPIC 012 |
@@ -329,7 +329,7 @@ Total : 404 tâches.
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-006-21 | Gérer la liste des entreprises ciblées | P0 | BACKLOG | à estimer |
+| [✅] | TASK-006-21 | Gérer la liste des entreprises ciblées | P0 | DONE | à estimer |
 | [✅] | TASK-006-22 | Détecter la source publique d'une entreprise | P0 | DONE | à estimer |
 | [➖] | TASK-006-23 | Connecteurs d'API publiques d'ATS | P0 | BACKLOG | à estimer |
 | [✅] | TASK-006-24 | Extraction des données structurées `JobPosting` (schema.org) | P0 | DONE | à estimer |
@@ -418,9 +418,9 @@ Total : 404 tâches.
 | [✅] | TASK-008-05 | Recherche par contrat | P0 | DONE | à estimer |
 | [✅] | TASK-008-06 | Recherche par salaire | P0 | DONE | à estimer |
 | [✅] | TASK-008-07 | Recherche par télétravail | P0 | DONE | à estimer |
-| [➖] | TASK-008-08 | Recherche par expérience | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-08 | Recherche par expérience | P0 | DONE | à estimer |
 | [✅] | TASK-008-09 | Recherche par date de publication | P0 | DONE | à estimer |
-| [➖] | TASK-008-10 | Recherche multilingue | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-10 | Recherche multilingue | P0 | DONE | à estimer |
 
 ### [✅] FEATURE 008.2 — Orchestration multi-sources
 
@@ -540,7 +540,7 @@ Total : 404 tâches.
 | [✅] | TASK-010-08 | Calculer les coûts | P0 | DONE | à estimer |
 | [✅] | TASK-010-09 | Ajouter les budgets journaliers | P0 | DONE | à estimer |
 | [✅] | TASK-010-10 | Ajouter les budgets mensuels | P0 | DONE | à estimer |
-| [➖] | TASK-010-11 | Ajouter les alertes | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-11 | Ajouter les alertes | P0 | DONE | à estimer |
 | [➖] | TASK-010-12 | Ajouter les plafonds par tâche | P0 | BACKLOG | à estimer |
 
 ### [➖] FEATURE 010.3 — Cache et optimisation
@@ -580,7 +580,7 @@ Total : 404 tâches.
 |---|---|---|---|---|---|
 | [➖] | TASK-010-29 | Fournisseur API payante principal | P0 | BACKLOG | à estimer |
 | [✅] | TASK-010-30 | Plafond obligatoire avant toute utilisation | P0 | DONE | à estimer |
-| [➖] | TASK-010-31 | Plafonds budgétaires stricts | P0 | BACKLOG | à estimer |
+| [✅] | TASK-010-31 | Plafonds budgétaires stricts | P0 | DONE | à estimer |
 | [➖] | TASK-010-32 | Réduction de la consommation | P0 | BACKLOG | à estimer |
 | [✅] | TASK-010-33 | Consentement sur les données transmises | P0 | DONE | à estimer |
 | [✅] | TASK-010-34 | Tests des plafonds | P0 | DONE | à estimer |

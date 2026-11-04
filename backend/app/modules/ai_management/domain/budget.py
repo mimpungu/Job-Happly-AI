@@ -77,3 +77,40 @@ def decide(
         limits, spent_month, spent_month + estimated, limits.monthly
     )
     return BudgetDecision(True, None, tuple(sorted(franchis)))
+
+
+@dataclass(frozen=True, slots=True)
+class BudgetAlert:
+    period: str
+    """`daily` ou `monthly`."""
+    threshold: int
+    """Plus haut seuil configuré atteint (en %)."""
+    percent: Decimal
+    spent: Decimal
+    limit: Decimal
+
+
+def active_alerts(
+    limits: BudgetLimits, *, spent_today: Decimal, spent_month: Decimal
+) -> tuple[BudgetAlert, ...]:
+    """Alertes en cours : pour chaque période, le plus haut seuil déjà atteint.
+
+    Dérivées de la dépense réelle plutôt que stockées : elles ne peuvent ni se perdre ni rester
+    affichées après un changement de plafond ou de période.
+    """
+    alertes: list[BudgetAlert] = []
+    for periode, depense, plafond in (
+        ("daily", spent_today, limits.daily),
+        ("monthly", spent_month, limits.monthly),
+    ):
+        if plafond is None or plafond <= 0:
+            continue
+        pourcentage = _pourcentage(depense, plafond)
+        atteints = [s for s in limits.alert_thresholds if pourcentage >= s]
+        if atteints:
+            alertes.append(
+                BudgetAlert(
+                    periode, max(atteints), pourcentage.quantize(Decimal("0.1")), depense, plafond
+                )
+            )
+    return tuple(alertes)

@@ -733,7 +733,7 @@ Méthodes :
 
 **Périmètre strict :** seules les informations publiquement accessibles sont consultées. Aucun contournement de CAPTCHA, d'authentification, de restriction d'accès, de limite technique ou de mesure anti-bot, ni des conditions d'utilisation. Une entreprise dont les pages ne peuvent pas être consultées légitimement est marquée « non supportée » et jamais simulée.
 
-[➖] **TASK-006-21 — Gérer la liste des entreprises ciblées**
+[✅] **TASK-006-21 — Gérer la liste des entreprises ciblées**
 
 - L'utilisateur fournit les entreprises à surveiller et le(s) intitulé(s) de poste recherché(s).
 
@@ -869,11 +869,11 @@ Méthodes :
 
 [✅] **TASK-008-07 — Recherche par télétravail**
 
-[➖] **TASK-008-08 — Recherche par expérience**
+[✅] **TASK-008-08 — Recherche par expérience**
 
 [✅] **TASK-008-09 — Recherche par date de publication**
 
-[➖] **TASK-008-10 — Recherche multilingue**
+[✅] **TASK-008-10 — Recherche multilingue**
 
 ### [✅] FEATURE 008.2 — Orchestration multi-sources
 
@@ -918,6 +918,8 @@ Méthodes :
 [✅] **TASK-008-27 — Ignorer une offre**
 
 [➖] **TASK-008-28 — Recherche par entreprise, secteur et langue de l'annonce**
+
+> Partiel : filtres entreprise et langue de l'annonce réalisés (API et interface). Le **secteur** n'est fourni par aucune source collectée : il n'est pas filtrable sans le deviner (décision requise : référentiel de secteurs ou enrichissement).
 
 ### Critères d'acceptation
 
@@ -1022,7 +1024,7 @@ Méthodes :
 
 [✅] **TASK-010-10 — Ajouter les budgets mensuels**
 
-[➖] **TASK-010-11 — Ajouter les alertes**
+[✅] **TASK-010-11 — Ajouter les alertes**
 
 [➖] **TASK-010-12 — Ajouter les plafonds par tâche**
 
@@ -1068,6 +1070,8 @@ Méthodes :
 
 [➖] **TASK-010-28 — Afficher le coût estimé avant les opérations IA importantes**
 
+> Partiel : route `POST /ai/estimate` et panneau « Estimer le coût d'une opération » du Centre IA. Reste à afficher l'estimation dans chaque fonction qui appelle l'IA (reformulation, lettres, entretiens).
+
 ### [➖] FEATURE 010.6 — API IA payante avec plafonds budgétaires stricts
 
 **Décision :** le fournisseur IA principal est une **API payante, toujours encadrée par un plafond**. Un modèle local reste une option ultérieure, non prioritaire.
@@ -1082,7 +1086,7 @@ Méthodes :
 - Aucun appel payant n'est possible tant qu'un plafond n'est pas défini par l'utilisateur.
 - Valeur par défaut basse, modifiable uniquement par l'utilisateur.
 
-[➖] **TASK-010-31 — Plafonds budgétaires stricts**
+[✅] **TASK-010-31 — Plafonds budgétaires stricts**
 
 - Plafond mensuel, journalier, par opération et par fournisseur (valeurs initiales proposées dans ADR-0005 : 10 €/mois, 1 €/jour, à calibrer une fois le fournisseur choisi).
 - Contrôle du coût estimé **avant** chaque appel : l'appel est refusé s'il ferait dépasser le plafond.

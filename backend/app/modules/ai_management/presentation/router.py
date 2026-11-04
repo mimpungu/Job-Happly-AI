@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from app.core.api.dependencies import SessionDep as Session
 from app.core.api.dependencies import get_owner_id
 from app.core.api.errors import error_response
+from app.modules.ai_management.domain.budget import active_alerts
 from app.modules.ai_management.domain.errors import (
     AIDisabledError,
     AIError,
@@ -62,6 +63,8 @@ class SettingsResponse(BaseModel):
     daily_budget: Decimal | None
     monthly_budget: Decimal | None
     alert_thresholds: list[int]
+    provider_daily_caps: dict[str, Decimal]
+    """Plafond journalier propre à un fournisseur (vide = seulement les plafonds globaux)."""
     budget_defined: bool
     api_consent: bool
     api_consent_at: datetime | None
@@ -115,7 +118,17 @@ class UsageRow(BaseModel):
     currency: str
 
 
+class AlertView(BaseModel):
+    period: str
+    threshold: int
+    percent: Decimal
+    spent: Decimal
+    limit: Decimal
+
+
 class UsageResponse(BaseModel):
+    alerts: list[AlertView]
+    """Plus haut seuil atteint par période (jour, mois) : à afficher tant qu'il est franchi."""
     currency: str
     spent_today: Decimal
     spent_month: Decimal
@@ -146,6 +159,7 @@ async def _reglages(
         daily_budget=limites.daily,
         monthly_budget=limites.monthly,
         alert_thresholds=list(limites.alert_thresholds),
+        provider_daily_caps=dict(config.provider_daily_caps),
         budget_defined=limites.is_defined,
         api_consent=config.api_consent_at is not None,
         api_consent_at=config.api_consent_at,
@@ -199,6 +213,28 @@ async def put_budget(
     return await _reglages(session, owner_id, providers)
 
 
+class ProviderCapBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    daily: Decimal | None = Field(default=None, gt=0, le=_MONTANT_MAX, decimal_places=2)
+    """Plafond journalier du fournisseur ; `null` le retire."""
+
+
+@router.put("/provider-caps/{provider}", response_model=SettingsResponse)
+async def put_provider_cap(
+    session: Session, owner_id: Owner, providers: Providers, provider: str, body: ProviderCapBody
+) -> SettingsResponse:
+    """Plafonne la dépense journalière d'un fournisseur payant, en plus des plafonds globaux."""
+    payants = {p.name for p in providers if p.kind.value == "api"}
+    if provider not in payants:
+        raise AINotConfiguredError(f"Fournisseur payant inconnu : {provider!r}.")
+    config = await SqlAIConfigRepository(session).get(owner_id)
+    await SqlAIConfigRepository(session).set_provider_cap(
+        owner_id, provider, daily=body.daily, currency=config.limits.currency
+    )
+    return await _reglages(session, owner_id, providers)
+
+
 @router.put("/consent", response_model=SettingsResponse)
 async def put_consent(
     session: Session, owner_id: Owner, providers: Providers, body: ConsentBody
@@ -227,7 +263,18 @@ async def get_usage(session: Session, owner_id: Owner, limit: int = 25) -> Usage
     def pourcent(depense: Decimal, plafond: Decimal | None) -> Decimal | None:
         return None if plafond is None else (depense / plafond * 100).quantize(Decimal("0.1"))
 
+    alertes = active_alerts(limites, spent_today=aujourdhui, spent_month=ce_mois)
     return UsageResponse(
+        alerts=[
+            AlertView(
+                period=a.period,
+                threshold=a.threshold,
+                percent=a.percent,
+                spent=a.spent,
+                limit=a.limit,
+            )
+            for a in alertes
+        ],
         currency=limites.currency,
         spent_today=aujourdhui,
         spent_month=ce_mois,
@@ -252,6 +299,55 @@ async def get_usage(session: Session, owner_id: Owner, limit: int = 25) -> Usage
             )
             for ligne in lignes
         ],
+    )
+
+
+# ------------------------------------------------------------------ estimation avant appel
+
+
+class EstimateBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    level: int = Field(default=1, ge=1, le=2)
+    characters: int = Field(ge=0, le=200_000)
+    """Taille du contenu à traiter : seule la taille compte, jamais le contenu lui-même."""
+    max_output_tokens: int = Field(default=800, ge=1, le=8_000)
+
+
+class EstimateResponse(BaseModel):
+    provider: str
+    model: str
+    paid: bool
+    cost: Decimal
+    currency: str
+    allowed: bool
+    reason: str | None
+
+
+@router.post("/estimate", response_model=EstimateResponse)
+async def estimate_cost(
+    gateway: GatewayDep, owner_id: Owner, body: EstimateBody
+) -> EstimateResponse:
+    """Coût maximal d'une opération IA avant de la lancer. N'appelle aucun modèle."""
+    requete = AIRequest(
+        task_type="estimate",
+        level=body.level,
+        prompt_version="estimate-v1",
+        instructions="",
+        content="x" * body.characters,
+        max_output_tokens=body.max_output_tokens,
+        json_schema=None,
+        contains_personal_data=False,
+    )
+    estimation = await gateway.estimate(owner_id=owner_id, request=requete)
+    return EstimateResponse(
+        provider=estimation.provider,
+        model=estimation.model,
+        paid=estimation.paid,
+        cost=estimation.cost,
+        currency=estimation.currency,
+        allowed=estimation.allowed,
+        reason=estimation.reason,
     )
 
 

@@ -20,6 +20,7 @@ const reglages = (extra: Partial<AISettings> = {}): AISettings => ({
   daily_budget: null,
   monthly_budget: null,
   alert_thresholds: [50, 80, 100],
+  provider_daily_caps: {},
   budget_defined: false,
   api_consent: false,
   api_consent_at: null,
@@ -29,6 +30,7 @@ const reglages = (extra: Partial<AISettings> = {}): AISettings => ({
 });
 
 const consommation = (extra: Partial<AIUsage> = {}): AIUsage => ({
+  alerts: [],
   currency: "EUR",
   spent_today: "0",
   spent_month: "0",

@@ -57,4 +57,11 @@ AI_TRANSFERS: tuple[AITransfer, ...] = (
         never_sent="Toute donnée de l'utilisateur",
         personal_data=False,
     ),
+    AITransfer(
+        task_type="estimate",
+        purpose="Estimer le coût d'une opération (aucun modèle n'est appelé)",
+        data_sent="Rien : seule la taille du texte est utilisée pour le calcul, en local",
+        never_sent="Tout contenu, profil, CV",
+        personal_data=False,
+    ),
 )

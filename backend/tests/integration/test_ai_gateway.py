@@ -196,6 +196,49 @@ async def test_le_plafond_n_est_jamais_depasse_sur_une_serie_d_appels(
     assert estimation > 0
 
 
+async def test_le_plafond_d_un_fournisseur_bloque_ses_appels_sans_toucher_aux_autres(
+    session: AsyncSession, user_id: uuid.UUID
+) -> None:
+    await _config(session, user_id)
+    cher = FakeProvider("api-cher")
+    autre = FakeProvider("api-autre")
+    # Plafond au centime près (la base stocke 2 décimales) : un seul appel de ~0,008 € tient,
+    # un second le ferait dépasser, alors que les plafonds globaux (1 €/jour) sont loin.
+    await SqlAIConfigRepository(session).set_provider_cap(
+        user_id, "api-cher", daily=Decimal("0.01"), currency="EUR"
+    )
+    gros = "a" * 3000
+
+    await _gateway(session, cher).run(owner_id=user_id, request=requete(gros), validate=valider)
+    with pytest.raises(BudgetExceededError, match="fournisseur"):
+        await _gateway(session, cher).run(
+            owner_id=user_id, request=requete(gros + "b"), validate=valider
+        )
+    await _gateway(session, autre).run(
+        owner_id=user_id, request=requete(gros + "c"), validate=valider
+    )
+
+    assert cher.appels == 1 and autre.appels == 1
+
+
+async def test_l_estimation_n_appelle_aucun_modele_et_signale_un_refus(
+    session: AsyncSession, user_id: uuid.UUID
+) -> None:
+    await _config(session, user_id, consentement=False)
+    api = FakeProvider()
+    gateway = _gateway(session, api)
+
+    sans_accord = await gateway.estimate(owner_id=user_id, request=requete("x"))
+    await SqlAIConfigRepository(session).set_consent(user_id, MAINTENANT)
+    avec_accord = await gateway.estimate(owner_id=user_id, request=requete("x"))
+
+    assert sans_accord.paid and sans_accord.cost > 0 and not sans_accord.allowed
+    assert "envoi de données" in (sans_accord.reason or "")
+    assert avec_accord.allowed and avec_accord.reason is None
+    assert api.appels == 0
+    assert await _journal(session) == []
+
+
 async def test_une_estimation_au_dessus_de_la_limite_par_operation_est_refusee(
     session: AsyncSession, user_id: uuid.UUID
 ) -> None:
