@@ -5,17 +5,16 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 from decimal import Decimal
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 
-from app.modules.notifications.application.orchestrator import (
-    AutomationJobHandlers,
-    list_job_history,
-)
-from app.modules.notifications.domain.enums import NotificationKind
+from app.modules.job_discovery.domain.saved_search import SavedSearchNotFoundError
+from app.modules.notifications.application.orchestrator import AutomationJobHandlers
+from app.modules.notifications.application.ports import DueFollowUp, SavedSearchInfo
+from app.modules.notifications.domain.enums import NotificationKind, ScheduledTaskType
 from app.modules.platform.infrastructure.job_queue import ReservedJob
-from app.modules.platform.infrastructure.models import JobModel
+from tests.unit.notifications.fakes import FakeFacts
 
 T0 = datetime(2026, 11, 4, 14, 0, 0, tzinfo=UTC)
 
@@ -26,8 +25,8 @@ class TestAutomationJobHandlers:
         return uuid.uuid4()
 
     @pytest.fixture
-    def mock_session(self) -> AsyncMock:
-        return AsyncMock()
+    def facts(self) -> FakeFacts:
+        return FakeFacts()
 
     @pytest.fixture
     def mock_notifications(self) -> AsyncMock:
@@ -44,12 +43,12 @@ class TestAutomationJobHandlers:
     @pytest.fixture
     def handlers(
         self,
-        mock_session: AsyncMock,
+        facts: FakeFacts,
         mock_notifications: AsyncMock,
         mock_queue: AsyncMock,
     ) -> AutomationJobHandlers:
         return AutomationJobHandlers(
-            session=mock_session,
+            facts=facts,
             notification_service=mock_notifications,
             job_queue=mock_queue,
             clock=lambda: T0,
@@ -58,19 +57,13 @@ class TestAutomationJobHandlers:
     async def test_handle_recurring_search_emet_notification(
         self,
         handlers: AutomationJobHandlers,
-        mock_session: AsyncMock,
+        facts: FakeFacts,
         mock_notifications: AsyncMock,
         owner_id: uuid.UUID,
     ) -> None:
         saved_search_id = uuid.uuid4()
-        saved_search_mock = MagicMock()
-        saved_search_mock.active = True
-        saved_search_mock.name = "Offres Python Paris"
-
-        mock_session.scalar.side_effect = [
-            saved_search_mock,  # select SavedSearchModel
-            4,  # count offres récentes
-        ]
+        facts.searches[saved_search_id] = SavedSearchInfo("Offres Python Paris", True)
+        facts.recent_offers = 4
 
         job = ReservedJob(
             id=uuid.uuid4(),
@@ -92,22 +85,13 @@ class TestAutomationJobHandlers:
     async def test_handle_follow_up_check_emet_rappels(
         self,
         handlers: AutomationJobHandlers,
-        mock_session: AsyncMock,
+        facts: FakeFacts,
         mock_notifications: AsyncMock,
         owner_id: uuid.UUID,
     ) -> None:
-        app_mock = MagicMock()
-        app_mock.id = uuid.uuid4()
-        app_mock.offer_id = uuid.uuid4()
-
-        scalars_mock = MagicMock()
-        scalars_mock.all.return_value = [app_mock]
-        mock_session.scalars.return_value = scalars_mock
-
-        offre_mock = MagicMock()
-        offre_mock.title = "Software Engineer"
-        offre_mock.company_name = "Acme Corp"
-        mock_session.scalar.return_value = offre_mock
+        facts.follow_ups = [
+            DueFollowUp(uuid.uuid4(), uuid.uuid4(), "Software Engineer", "Acme Corp")
+        ]
 
         job = ReservedJob(
             id=uuid.uuid4(),
@@ -129,18 +113,11 @@ class TestAutomationJobHandlers:
     async def test_handle_ai_budget_check_emet_alerte(
         self,
         handlers: AutomationJobHandlers,
-        mock_session: AsyncMock,
+        facts: FakeFacts,
         mock_notifications: AsyncMock,
         owner_id: uuid.UUID,
     ) -> None:
-        settings_mock = MagicMock()
-        settings_mock.currency = "EUR"
-
-        # scalar renvoie settings puis somme dépense (ex: 2.5000 EUR > 1.0000)
-        mock_session.scalar.side_effect = [
-            settings_mock,
-            Decimal("2.5000"),
-        ]
+        facts.ai_spent = Decimal("2.5000")  # au-delà du seuil d'alerte de 1.0000
 
         job = ReservedJob(
             id=uuid.uuid4(),
@@ -175,29 +152,104 @@ class TestAutomationJobHandlers:
         mock_queue.recover_stale.assert_awaited_once()
 
 
-class TestListJobHistory:
-    async def test_list_job_history_formate_correctement(self) -> None:
-        session = AsyncMock()
-        session.scalar.return_value = 1
+def _job(kind: str, owner: uuid.UUID | None, payload: dict[str, str] | None = None) -> ReservedJob:
+    return ReservedJob(
+        id=uuid.uuid4(),
+        kind=kind,
+        payload=payload or {},
+        owner_id=owner,
+        attempts=1,
+        max_attempts=3,
+    )
 
-        job = JobModel(
-            kind="recurring_search",
-            idempotency_key="cle-test",
-            status="succeeded",
-            attempts=1,
-            max_attempts=3,
-            run_at=T0,
-            created_at=T0,
+
+class TestCasLimites:
+    @pytest.fixture
+    def parts(self) -> tuple[AutomationJobHandlers, FakeFacts, AsyncMock]:
+        facts, notifications = FakeFacts(), AsyncMock()
+        handlers = AutomationJobHandlers(
+            facts=facts, notification_service=notifications, job_queue=AsyncMock(), clock=lambda: T0
         )
-        job.id = uuid.uuid4()
-        job.owner_id = uuid.uuid4()
+        return handlers, facts, notifications
 
-        scalars_mock = MagicMock()
-        scalars_mock.all.return_value = [job]
-        session.scalars.return_value = scalars_mock
+    async def test_recherche_inactive_n_emet_rien(
+        self, parts: tuple[AutomationJobHandlers, FakeFacts, AsyncMock]
+    ) -> None:
+        handlers, facts, notifications = parts
+        identifiant = uuid.uuid4()
+        facts.searches[identifiant] = SavedSearchInfo("Ancienne", False)
+        facts.recent_offers = 9
 
-        items, total = await list_job_history(session, limit=10, offset=0)
-        assert total == 1
-        assert len(items) == 1
-        assert items[0]["kind"] == "recurring_search"
-        assert items[0]["status"] == "succeeded"
+        await handlers.handle_recurring_search(
+            _job("recurring_search", uuid.uuid4(), {"saved_search_id": str(identifiant)})
+        )
+
+        notifications.notify.assert_not_awaited()
+
+    async def test_recherche_sans_nouvelle_offre_n_emet_rien(
+        self, parts: tuple[AutomationJobHandlers, FakeFacts, AsyncMock]
+    ) -> None:
+        handlers, facts, notifications = parts
+        identifiant = uuid.uuid4()
+        facts.searches[identifiant] = SavedSearchInfo("Active", True)
+
+        await handlers.handle_recurring_search(
+            _job("recurring_search", uuid.uuid4(), {"saved_search_id": str(identifiant)})
+        )
+
+        notifications.notify.assert_not_awaited()
+
+    async def test_recherche_inconnue_leve_une_erreur_explicite(
+        self, parts: tuple[AutomationJobHandlers, FakeFacts, AsyncMock]
+    ) -> None:
+        handlers, _, _ = parts
+
+        with pytest.raises(SavedSearchNotFoundError):
+            await handlers.handle_recurring_search(
+                _job("recurring_search", uuid.uuid4(), {"saved_search_id": str(uuid.uuid4())})
+            )
+
+    async def test_tache_sans_proprietaire_est_ignoree(
+        self, parts: tuple[AutomationJobHandlers, FakeFacts, AsyncMock]
+    ) -> None:
+        handlers, facts, notifications = parts
+        facts.ai_spent = Decimal("50")
+        facts.recent_offers = 3
+
+        for traiter, genre in (
+            (handlers.handle_recurring_search, "recurring_search"),
+            (handlers.handle_follow_up_check, "follow_up_check"),
+            (handlers.handle_ai_budget_check, "ai_budget_check"),
+            (handlers.handle_daily_digest, "daily_digest"),
+        ):
+            await traiter(_job(genre, None))
+
+        notifications.notify.assert_not_awaited()
+
+    async def test_depense_sous_le_seuil_n_alerte_pas(
+        self, parts: tuple[AutomationJobHandlers, FakeFacts, AsyncMock]
+    ) -> None:
+        handlers, facts, notifications = parts
+        facts.ai_spent = Decimal("0.9000")
+
+        await handlers.handle_ai_budget_check(_job("ai_budget_check", uuid.uuid4()))
+
+        notifications.notify.assert_not_awaited()
+
+    async def test_alerte_budget_porte_la_devise_de_l_utilisateur(
+        self, parts: tuple[AutomationJobHandlers, FakeFacts, AsyncMock]
+    ) -> None:
+        handlers, facts, notifications = parts
+        facts.ai_spent = Decimal("3")
+        facts.currency = "USD"
+
+        await handlers.handle_ai_budget_check(_job("ai_budget_check", uuid.uuid4()))
+
+        assert notifications.notify.await_args.kwargs["payload"]["currency"] == "USD"
+
+    async def test_table_des_gestionnaires_couvre_tous_les_types_planifiables(
+        self, parts: tuple[AutomationJobHandlers, FakeFacts, AsyncMock]
+    ) -> None:
+        handlers, _, _ = parts
+
+        assert set(handlers.as_handler_mapping()) == {t.value for t in ScheduledTaskType}

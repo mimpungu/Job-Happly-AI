@@ -13,6 +13,7 @@ from app.core.api.dependencies import SessionDep as Session
 from app.core.api.dependencies import get_owner_id
 from app.core.api.errors import error_response
 from app.core.domain.value_objects import EmploymentType, RemoteType
+from app.modules.demo.infrastructure.composition import build_demo_service
 from app.modules.job_discovery.application.manual_offers import (
     InvalidManualOfferError,
     ManualOfferInput,
@@ -51,6 +52,7 @@ class ManualOfferResponse(BaseModel):
 async def add_manual_offer(
     session: Session, owner_id: Owner, body: ManualOfferBody
 ) -> ManualOfferResponse:
+    await build_demo_service(session).ensure_inactive(owner_id)
     resultat = await ManualOfferService().add(
         session,
         owner_id,

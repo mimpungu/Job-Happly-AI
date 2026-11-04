@@ -17,16 +17,16 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Dépendances |
 |---|---|---|---|---|---|---|
 | [➖] | 001 — PRODUCT DISCOVERY & SOFTWARE ARCHITECTURE | P0 | 4 | 11 | 11 | — |
-| [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 9 | EPIC 001 |
-| [➖] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
-| [➖] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 12 | EPIC 002 |
+| [➖] | 002 — PROJECT FOUNDATION & DEVELOPER EXPERIENCE | P0 | 3 | 11 | 10 | EPIC 001 |
+| [✅] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
+| [✅] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 13 | EPIC 002 |
 | [✅] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 18 | EPIC 003, EPIC 004 |
-| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 18 | EPIC 002 |
+| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 19 | EPIC 002 |
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
-| [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 19 | EPIC 003, EPIC 007 |
+| [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 24 | EPIC 003, EPIC 007 |
 | [✅] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 17 | EPIC 005, EPIC 007, EPIC 008 |
 | [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 27 | EPIC 002, EPIC 004 |
-| [➖] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 14 | EPIC 009, EPIC 010 |
+| [✅] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 15 | EPIC 009, EPIC 010 |
 | [✅] | 012 — LATEX RESUME GENERATOR | P1 | 5 | 27 | 27 | EPIC 005, EPIC 010, EPIC 011 |
 | [✅] | 013 — COVER LETTER GENERATOR | P1 | 3 | 18 | 18 | EPIC 005, EPIC 010, EPIC 011, EPIC 012 |
 | [✅] | 014 — APPLICATION TRACKING & CANDIDATE CRM | P1 | 5 | 22 | 22 | EPIC 004, EPIC 008, EPIC 012, EPIC 013 |
@@ -108,7 +108,7 @@ Total : 404 tâches.
 | [✅] | TASK-002-05 | Gestion des variables d'environnement | P0 | DONE | à estimer |
 | [✅] | TASK-002-06 | Docker Compose | P0 | DONE | à estimer |
 | [✅] | TASK-002-07 | Scripts de développement | P0 | DONE | à estimer |
-| [➖] | TASK-002-10 | Mode démonstration | P0 | BACKLOG | à estimer |
+| [✅] | TASK-002-10 | Mode démonstration | P0 | DONE | à estimer |
 | [✅] | TASK-002-11 | Outillage de tests de base | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 002.3 — CI/CD
@@ -127,7 +127,7 @@ Total : 404 tâches.
 - [➖] La CI détecte les régressions.
 - [➖] Aucun secret réel n'est versionné.
 
-## [➖] EPIC 003 — DESIGN SYSTEM & APPLICATION SHELL
+## [✅] EPIC 003 — DESIGN SYSTEM & APPLICATION SHELL
 
 - **Priorité :** P0
 - **Objectif :** créer une interface premium cohérente, inspirée de la philosophie de design Apple.
@@ -177,7 +177,7 @@ Total : 404 tâches.
 - [✅] Accessibilité clavier.
 - [✅] Contrastes lisibles.
 
-## [➖] EPIC 004 — DATABASE & DOMAIN FOUNDATION
+## [✅] EPIC 004 — DATABASE & DOMAIN FOUNDATION
 
 - **Priorité :** P0
 - **Objectif :** construire une base de données fiable et un modèle métier extensible.
@@ -192,13 +192,13 @@ Total : 404 tâches.
 | [✅] | TASK-004-03 | Définir les relations | P0 | DONE | à estimer |
 | [✅] | TASK-004-04 | Définir les contraintes métier | P0 | DONE | à estimer |
 
-### [➖] FEATURE 004.2 — Persistence Layer
+### [✅] FEATURE 004.2 — Persistence Layer
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
 | [✅] | TASK-004-05 | Configurer SQLAlchemy | P0 | DONE | à estimer |
 | [✅] | TASK-004-06 | Créer les migrations Alembic | P0 | DONE | à estimer |
-| [➖] | TASK-004-07 | Créer les repositories | P0 | BACKLOG | à estimer |
+| [✅] | TASK-004-07 | Créer les repositories | P0 | DONE | à estimer |
 | [✅] | TASK-004-08 | Ajouter les index | P0 | DONE | à estimer |
 | [✅] | TASK-004-09 | Définir les transactions | P0 | DONE | à estimer |
 
@@ -319,11 +319,11 @@ Total : 404 tâches.
 | [➖] | TASK-006-18 | Implémenter la récupération des détails | P0 | BACKLOG | à estimer |
 | [➖] | TASK-006-19 | Écrire les tests avec fixtures et réponses anonymisées | P0 | BACKLOG | à estimer |
 
-### [➖] FEATURE 006.5 — Page Sources de données
+### [✅] FEATURE 006.5 — Page Sources de données
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-006-20 | Créer la page Sources de données | P0 | BACKLOG | à estimer |
+| [✅] | TASK-006-20 | Créer la page Sources de données | P0 | DONE | à estimer |
 
 ### [➖] FEATURE 006.6 — Sites carrières des entreprises (sources publiques uniquement)
 
@@ -422,15 +422,15 @@ Total : 404 tâches.
 | [✅] | TASK-008-09 | Recherche par date de publication | P0 | DONE | à estimer |
 | [➖] | TASK-008-10 | Recherche multilingue | P0 | BACKLOG | à estimer |
 
-### [➖] FEATURE 008.2 — Orchestration multi-sources
+### [✅] FEATURE 008.2 — Orchestration multi-sources
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-008-11 | Sélectionner les connecteurs compatibles | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-12 | Lancer les recherches en parallèle | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-13 | Agréger les résultats | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-14 | Gérer les erreurs partielles | P0 | BACKLOG | à estimer |
-| [➖] | TASK-008-15 | Afficher les sources interrogées | P0 | BACKLOG | à estimer |
+| [✅] | TASK-008-11 | Sélectionner les connecteurs compatibles | P0 | DONE | à estimer |
+| [✅] | TASK-008-12 | Lancer les recherches en parallèle | P0 | DONE | à estimer |
+| [✅] | TASK-008-13 | Agréger les résultats | P0 | DONE | à estimer |
+| [✅] | TASK-008-14 | Gérer les erreurs partielles | P0 | DONE | à estimer |
+| [✅] | TASK-008-15 | Afficher les sources interrogées | P0 | DONE | à estimer |
 
 ### [✅] FEATURE 008.3 — Résultats
 
@@ -596,7 +596,7 @@ Total : 404 tâches.
 - [➖] Sorties validées.
 - [➖] Aucune clé exposée.
 
-## [➖] EPIC 011 — JOB INTELLIGENCE & OFFER ANALYSIS
+## [✅] EPIC 011 — JOB INTELLIGENCE & OFFER ANALYSIS
 
 - **Priorité :** P1
 - **Objectif :** enrichir les offres pertinentes avec une analyse sémantique.
@@ -614,12 +614,12 @@ Total : 404 tâches.
 | [✅] | TASK-011-06 | Extraire les exigences linguistiques | P1 | DONE | à estimer |
 | [✅] | TASK-011-07 | Extraire les contraintes de mobilité et de visa si mentionnées | P1 | DONE | à estimer |
 
-### [➖] FEATURE 011.2 — Analyse de pertinence
+### [✅] FEATURE 011.2 — Analyse de pertinence
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
 | [✅] | TASK-011-08 | Comparer l'annonce au CV maître | P1 | DONE | à estimer |
-| [➖] | TASK-011-09 | Identifier les compétences transférables | P1 | BACKLOG | à estimer |
+| [✅] | TASK-011-09 | Identifier les compétences transférables | P1 | DONE | à estimer |
 | [✅] | TASK-011-10 | Identifier les informations manquantes | P1 | DONE | à estimer |
 | [✅] | TASK-011-11 | Générer un résumé de l'annonce | P1 | DONE | à estimer |
 | [✅] | TASK-011-12 | Expliquer les raisons de compatibilité | P1 | DONE | à estimer |

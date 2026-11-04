@@ -135,6 +135,8 @@ class JobOfferModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
     application_url: Mapped[str] = mapped_column(Text)
     canonical_url: Mapped[str | None] = mapped_column(Text)
     language: Mapped[str | None] = mapped_column(String(10))
+    # Offre fictive du mode démonstration (TASK-002-10) : jamais mêlée aux données réelles.
+    is_demo: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     content_hash: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(20), server_default=OfferStatus.ACTIVE.value)
     first_seen_at: Mapped[datetime] = mapped_column(

@@ -337,7 +337,7 @@ Prévoir les services nécessaires au démarrage :
 - Lint.
 - Build.
 
-[➖] **TASK-002-10 — Mode démonstration**
+[✅] **TASK-002-10 — Mode démonstration**
 
 - Données fictives clairement identifiées comme telles dans l'interface.
 - Activable et désactivable explicitement ; jamais mélangées aux données réelles.
@@ -368,18 +368,18 @@ Prévoir les services nécessaires au démarrage :
 
 ### Critères d'acceptation
 
-- [➖] Le projet démarre depuis une installation propre.
-- [➖] Frontend et backend communiquent.
-- [➖] Les migrations fonctionnent.
-- [➖] Les contrôles qualité passent.
-- [➖] La CI détecte les régressions.
-- [➖] Aucun secret réel n'est versionné.
+- [✅] Le projet démarre depuis une installation propre.
+- [✅] Frontend et backend communiquent.
+- [✅] Les migrations fonctionnent.
+- [✅] Les contrôles qualité passent.
+- [✅] La CI détecte les régressions.
+- [✅] Aucun secret réel n'est versionné.
 
 **Livrable :** socle technique exécutable.
 
 ---
 
-# [➖] EPIC 003 — DESIGN SYSTEM & APPLICATION SHELL
+# [✅] EPIC 003 — DESIGN SYSTEM & APPLICATION SHELL
 
 **Priorité : P0 — Fondamental**
 
@@ -470,7 +470,7 @@ Navigation :
 
 ### Critères d'acceptation
 
-- [➖] Design sombre cohérent.
+- [✅] Design sombre cohérent.
 - [✅] Aucun dégradé sur les textes ou boutons.
 - [✅] Couleurs centralisées.
 - [✅] Composants réutilisables.
@@ -483,7 +483,7 @@ Navigation :
 
 ---
 
-# [➖] EPIC 004 — DATABASE & DOMAIN FOUNDATION
+# [✅] EPIC 004 — DATABASE & DOMAIN FOUNDATION
 
 **Priorité : P0 — Fondamental**
 
@@ -537,13 +537,13 @@ Navigation :
 - Champs obligatoires.
 - Historisation.
 
-### [➖] FEATURE 004.2 — Persistence Layer
+### [✅] FEATURE 004.2 — Persistence Layer
 
 [✅] **TASK-004-05 — Configurer SQLAlchemy**
 
 [✅] **TASK-004-06 — Créer les migrations Alembic**
 
-[➖] **TASK-004-07 — Créer les repositories**
+[✅] **TASK-004-07 — Créer les repositories**
 
 [✅] **TASK-004-08 — Ajouter les index**
 
@@ -575,10 +575,10 @@ Optimiser notamment :
 
 - [✅] Modèle cohérent.
 - [✅] Migrations reproductibles.
-- [➖] Repositories testés.
+- [✅] Repositories testés.
 - [✅] Contraintes SQL fonctionnelles.
 - [✅] Sauvegarde et restauration documentées.
-- [➖] Aucun accès direct à la base depuis la logique métier.
+- [✅] Aucun accès direct à la base depuis la logique métier.
 
 **Livrable :** fondations de persistance.
 
@@ -721,9 +721,9 @@ Méthodes :
 
 [➖] **TASK-006-19 — Écrire les tests avec fixtures et réponses anonymisées**
 
-### [➖] FEATURE 006.5 — Page Sources de données
+### [✅] FEATURE 006.5 — Page Sources de données
 
-[➖] **TASK-006-20 — Créer la page Sources de données**
+[✅] **TASK-006-20 — Créer la page Sources de données**
 
 - Nom du fournisseur, pays couverts, statut, dernier accès, dernière erreur.
 - Nombre d'annonces récupérées et configuration requise.
@@ -875,17 +875,17 @@ Méthodes :
 
 [➖] **TASK-008-10 — Recherche multilingue**
 
-### [➖] FEATURE 008.2 — Orchestration multi-sources
+### [✅] FEATURE 008.2 — Orchestration multi-sources
 
-[➖] **TASK-008-11 — Sélectionner les connecteurs compatibles**
+[✅] **TASK-008-11 — Sélectionner les connecteurs compatibles**
 
-[➖] **TASK-008-12 — Lancer les recherches en parallèle**
+[✅] **TASK-008-12 — Lancer les recherches en parallèle**
 
-[➖] **TASK-008-13 — Agréger les résultats**
+[✅] **TASK-008-13 — Agréger les résultats**
 
-[➖] **TASK-008-14 — Gérer les erreurs partielles**
+[✅] **TASK-008-14 — Gérer les erreurs partielles**
 
-[➖] **TASK-008-15 — Afficher les sources interrogées**
+[✅] **TASK-008-15 — Afficher les sources interrogées**
 
 ### [✅] FEATURE 008.3 — Résultats
 
@@ -1121,7 +1121,7 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 011 — JOB INTELLIGENCE & OFFER ANALYSIS
+# [✅] EPIC 011 — JOB INTELLIGENCE & OFFER ANALYSIS
 
 **Priorité : P1 — Intelligence métier**
 
@@ -1143,11 +1143,11 @@ Méthodes :
 
 [✅] **TASK-011-07 — Extraire les contraintes de mobilité et de visa si mentionnées**
 
-### [➖] FEATURE 011.2 — Analyse de pertinence
+### [✅] FEATURE 011.2 — Analyse de pertinence
 
 [✅] **TASK-011-08 — Comparer l'annonce au CV maître**
 
-[➖] **TASK-011-09 — Identifier les compétences transférables**
+[✅] **TASK-011-09 — Identifier les compétences transférables**
 
 [✅] **TASK-011-10 — Identifier les informations manquantes**
 
@@ -1165,11 +1165,11 @@ Méthodes :
 
 ### Critères d'acceptation
 
-- [➖] Analyse basée sur des informations réelles.
-- [➖] Résultats structurés.
-- [➖] Coût IA maîtrisé.
-- [➖] Analyse réutilisable.
-- [➖] Aucun fait inventé.
+- [✅] Analyse basée sur des informations réelles.
+- [✅] Résultats structurés.
+- [✅] Coût IA maîtrisé.
+- [✅] Analyse réutilisable.
+- [✅] Aucun fait inventé.
 
 **Livrable :** moteur d'analyse des offres.
 
@@ -2057,16 +2057,16 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Release |
 |---|---|---|---|---|---|---|
 | [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 11 | 0.1 |
-| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 9 | 0.1 |
-| [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
-| [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
+| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 10 | 0.1 |
+| [✅] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
+| [✅] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 13 | 0.1 |
 | [✅] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 18 | 0.3 |
-| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
+| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 19 | 0.2 |
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
-| [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |
+| [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 24 | 0.2 |
 | [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 27 | 0.3 |
-| [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 14 | 0.3 |
+| [✅] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 15 | 0.3 |
 | [✅] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 27 | 0.4 |
 | [✅] | 013 — Cover Letter Generator | P1 | 3 | 18 | 18 | 0.4 |
 | [✅] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 22 | 0.4 |

@@ -10,13 +10,13 @@ from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
-from sqlalchemy import delete
+from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from app.core.api.dependencies import get_session, get_unit_of_work
 from app.core.database.session import create_session_factory, to_driver_url
 from app.main import create_app
-from app.modules.notifications.infrastructure.models import NotificationModel
+from app.modules.notifications.infrastructure.models import NotificationModel, ScheduledTaskModel
 from app.modules.platform.infrastructure.models import JobModel, UserModel
 from tests.integration.conftest import SessionPartagee
 
@@ -251,3 +251,89 @@ class TestPlanificateur:
         assert resume.status_code == 200
         corps = resume.json()
         assert {"new_offers_count", "follow_ups_due_count", "ai_spent_today"} <= set(corps)
+
+
+class TestMoteurDAutomatisation:
+    """Le moteur exécute réellement les tâches : sans lui, elles resteraient en file à jamais."""
+
+    async def test_une_tache_planifiee_echue_est_mise_en_file_puis_executee(
+        self, api_reel: httpx.AsyncClient, schema_migre: str
+    ) -> None:
+        from app.modules.notifications.application.runtime import AutomationRuntime
+
+        creation = await api_reel.post(
+            f"{PLANIF}/tasks",
+            json={
+                "task_type": "daily_digest",
+                "frequency": "daily",
+                "target_hour": 8,
+                "target_minute": 0,
+            },
+        )
+        assert creation.status_code == 201
+        # La tâche est rendue échue : on avance son échéance dans le passé.
+        moteur = create_async_engine(to_driver_url(schema_migre))
+        try:
+            async with moteur.begin() as connexion:
+                await connexion.execute(
+                    update(ScheduledTaskModel).values(
+                        next_run_at=datetime.now(UTC) - timedelta(minutes=5)
+                    )
+                )
+            runtime = AutomationRuntime(create_session_factory(moteur))
+
+            mises_en_file = await runtime.enqueue_due()
+            executees = await runtime.run_pending_once()
+        finally:
+            await moteur.dispose()
+
+        assert (mises_en_file, executees) == (1, 1)
+        notifications = (await api_reel.get(NOTIFS)).json()
+        assert [n["kind"] for n in notifications["items"]] == ["daily_digest"]
+        historique = (
+            await api_reel.get(f"{PLANIF}/jobs/history", params={"status": "succeeded"})
+        ).json()
+        assert historique["total"] == 1
+
+    async def test_une_tache_declenchee_a_la_main_est_executee_et_ne_l_est_qu_une_fois(
+        self, api_reel: httpx.AsyncClient, schema_migre: str
+    ) -> None:
+        from app.modules.notifications.application.runtime import AutomationRuntime
+
+        tache = (
+            await api_reel.post(
+                f"{PLANIF}/tasks",
+                json={
+                    "task_type": "daily_digest",
+                    "frequency": "daily",
+                    "target_hour": 8,
+                    "target_minute": 0,
+                },
+            )
+        ).json()
+        await api_reel.post(f"{PLANIF}/tasks/{tache['id']}/trigger")
+        moteur = create_async_engine(to_driver_url(schema_migre))
+        try:
+            runtime = AutomationRuntime(create_session_factory(moteur))
+            premiere = await runtime.run_pending_once()
+            seconde = await runtime.run_pending_once()
+        finally:
+            await moteur.dispose()
+
+        assert (premiere, seconde) == (1, 0)
+        assert (await api_reel.get(NOTIFS)).json()["total"] == 1
+
+    async def test_demarrage_et_arret_propres_du_moteur(self, schema_migre: str) -> None:
+        from app.modules.notifications.application.runtime import AutomationRuntime
+
+        moteur = create_async_engine(to_driver_url(schema_migre))
+        try:
+            runtime = AutomationRuntime(
+                create_session_factory(moteur), tick_seconds=1, poll_seconds=0.1
+            )
+            await runtime.start()
+            await runtime.start()  # idempotent
+            await runtime.stop()
+            await runtime.stop()  # sans effet
+        finally:
+            await moteur.dispose()

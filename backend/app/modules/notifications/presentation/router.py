@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.api.dependencies import SessionDep, get_owner_id
 from app.modules.notifications.application.daily_digest_service import DailyDigestService
-from app.modules.notifications.application.orchestrator import list_job_history
 from app.modules.notifications.domain.enums import NotificationKind
 from app.modules.notifications.domain.exceptions import (
     InvalidFrequencyError,
@@ -23,6 +22,7 @@ from app.modules.notifications.infrastructure.composition import (
     build_notification_service,
     build_scheduler_service,
 )
+from app.modules.notifications.infrastructure.job_history import list_job_history
 from app.modules.notifications.presentation.schemas import (
     DailyDigestResponse,
     JobAuditItem,

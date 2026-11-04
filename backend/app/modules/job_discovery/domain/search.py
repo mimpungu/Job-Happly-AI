@@ -161,6 +161,8 @@ class OfferSummary:
     # Dernier score calculé pour le profil validé courant ; `None` = pas encore évalué.
     match_score: Decimal | None = None
     match_reliability: str | None = None
+    is_demo: bool = False
+    """Offre fictive du mode démonstration, à signaler comme telle dans l'interface."""
 
 
 @dataclass(frozen=True, slots=True)

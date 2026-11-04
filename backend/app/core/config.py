@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # folle d'interface ou un script ; plus basses pour les routes coûteuses (IA, génération).
     rate_limit_per_minute: int = Field(default=600, ge=1)
     rate_limit_expensive_per_minute: int = Field(default=30, ge=1)
+    # Moteur d'automatisation embarqué : exécute les tâches que l'utilisateur a planifiées ou
+    # déclenchées (EPIC 015). Sans tâche planifiée, il ne fait rien.
+    worker_enabled: bool = True
+    worker_tick_seconds: float = Field(default=30.0, ge=1.0)
     # Taille maximale annoncée d'une requête (l'import de CV est borné plus finement par sa route).
     max_request_body_mb: int = Field(default=12, ge=1, le=100)
     # URL de connexion PostgreSQL (ADR-0004), ex. postgresql://user:motdepasse@127.0.0.1:5432/happly

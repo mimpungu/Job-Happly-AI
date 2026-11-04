@@ -6,12 +6,14 @@ import uuid
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 
 from app.modules.notifications.application.daily_digest_service import DailyDigestService
+from app.modules.notifications.application.ports import DigestFacts
 from app.modules.notifications.domain.enums import NotificationKind
+from tests.unit.notifications.fakes import FakeFacts
 
 T0 = datetime(2026, 11, 4, 8, 0, 0, tzinfo=UTC)
 
@@ -22,31 +24,18 @@ class TestDailyDigestService:
         return uuid.uuid4()
 
     @pytest.fixture
-    def mock_session(self) -> AsyncMock:
-        session = AsyncMock()
-        # scalar renverra successivement :
-        # 1. count nouvelles offres (ex: 5)
-        # 2. count relances dues (ex: 2)
-        # 3. count candidatures actives (ex: 7)
-        # 4. sum ai cost (ex: Decimal("0.0450"))
-        session.scalar.side_effect = [
-            5,
-            2,
-            7,
-            Decimal("0.0450"),
-        ]
-
-        # execute renverra pour les 3 offres récentes :
-        row1 = MagicMock()
-        row1.title = "Lead Développeur Python"
-        row1.company_name = "TechCorp"
-        row1.id = uuid.uuid4()
-
-        result_mock = MagicMock()
-        result_mock.all.return_value = [row1]
-        session.execute.return_value = result_mock
-
-        return session
+    def facts(self) -> FakeFacts:
+        return FakeFacts(
+            digest=DigestFacts(
+                new_offers_count=5,
+                sample_offers=(
+                    {"title": "Lead Développeur Python", "company": "TechCorp", "id": "x"},
+                ),
+                follow_ups_due=2,
+                active_applications=7,
+                ai_spent_today=Decimal("0.0450"),
+            )
+        )
 
     @pytest.fixture
     def mock_notifications(self) -> AsyncMock:
@@ -56,12 +45,12 @@ class TestDailyDigestService:
 
     async def test_generate_digest_consolide_et_notifie(
         self,
-        mock_session: AsyncMock,
+        facts: FakeFacts,
         mock_notifications: AsyncMock,
         owner_id: uuid.UUID,
     ) -> None:
         digest_service = DailyDigestService(
-            session=mock_session,
+            facts=facts,
             notification_service=mock_notifications,
             clock=lambda: T0,
         )

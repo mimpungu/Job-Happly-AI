@@ -5,18 +5,11 @@ from __future__ import annotations
 import logging
 import uuid
 from collections.abc import Callable
-from datetime import UTC, datetime, timedelta
-from decimal import Decimal
+from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.modules.ai_management.infrastructure.models import AIUsageModel
-from app.modules.application_management.domain.enums import ApplicationStatus
-from app.modules.application_management.infrastructure.models import ApplicationModel
-from app.modules.job_discovery.infrastructure.models import JobOfferModel
 from app.modules.notifications.application.notification_service import NotificationService
+from app.modules.notifications.application.ports import AutomationFactsPort
 from app.modules.notifications.domain.entities import DailyDigestSummary
 from app.modules.notifications.domain.enums import NotificationKind
 
@@ -32,90 +25,23 @@ class DailyDigestService:
 
     def __init__(
         self,
-        session: AsyncSession,
+        facts: AutomationFactsPort,
         notification_service: NotificationService,
         *,
         clock: Callable[[], datetime] = _now,
     ) -> None:
-        self._session = session
+        self._facts = facts
         self._notification_service = notification_service
         self._clock = clock
 
     async def generate_digest(self, *, owner_id: uuid.UUID) -> DailyDigestSummary:
         maintenant = self._clock()
-        hier = maintenant - timedelta(days=1)
-        aujourdhui_date = maintenant.date()
-
-        # 1. Nouvelles offres découvertes dans les dernières 24h
-        nouvelles_offres_stmt = select(func.count(JobOfferModel.id)).where(
-            JobOfferModel.owner_id == owner_id,
-            JobOfferModel.first_seen_at >= hier,
-        )
-        nb_nouvelles_offres = (await self._session.scalar(nouvelles_offres_stmt)) or 0
-
-        # Échantillon des 3 dernières offres
-        offres_stmt = (
-            select(JobOfferModel.title, JobOfferModel.company_name, JobOfferModel.id)
-            .where(
-                JobOfferModel.owner_id == owner_id,
-                JobOfferModel.first_seen_at >= hier,
-            )
-            .limit(3)
-        )
-        lignes_offres = (await self._session.execute(offres_stmt)).all()
-        sample_offers: list[dict[str, Any]] = [
-            {
-                "title": ligne.title,
-                "company": ligne.company_name or "Entreprise",
-                "id": str(ligne.id),
-            }
-            for ligne in lignes_offres
-        ]
-
-        # 2. Relances dues (candidatures avec follow_up_at <= maintenant et statuts actifs)
-        relances_stmt = select(func.count(ApplicationModel.id)).where(
-            ApplicationModel.owner_id == owner_id,
-            ApplicationModel.follow_up_at.is_not(None),
-            ApplicationModel.follow_up_at <= maintenant,
-            ApplicationModel.status.in_(
-                [
-                    ApplicationStatus.SENT.value,
-                    ApplicationStatus.PENDING.value,
-                    ApplicationStatus.INTERVIEW.value,
-                    ApplicationStatus.SECOND_INTERVIEW.value,
-                ]
-            ),
-        )
-        nb_relances = (await self._session.scalar(relances_stmt)) or 0
-
-        # 3. Candidatures actives totales (non rejetées ni abandonnées)
-        actives_stmt = select(func.count(ApplicationModel.id)).where(
-            ApplicationModel.owner_id == owner_id,
-            ApplicationModel.status.not_in(
-                [
-                    ApplicationStatus.REJECTED.value,
-                    ApplicationStatus.ABANDONED.value,
-                ]
-            ),
-        )
-        nb_actives = (await self._session.scalar(actives_stmt)) or 0
-
-        # 4. Dépenses IA du jour
-        debut_journee = datetime(
-            aujourdhui_date.year, aujourdhui_date.month, aujourdhui_date.day, tzinfo=UTC
-        )
-        ia_stmt = select(
-            func.coalesce(
-                func.sum(AIUsageModel.actual_cost),
-                func.sum(AIUsageModel.estimated_cost),
-                0,
-            )
-        ).where(
-            AIUsageModel.owner_id == owner_id,
-            AIUsageModel.created_at >= debut_journee,
-        )
-        somme_ia = await self._session.scalar(ia_stmt)
-        depenses_ia = Decimal(str(somme_ia)) if somme_ia is not None else Decimal("0.0000")
+        faits = await self._facts.digest_facts(owner_id, now=maintenant)
+        nb_nouvelles_offres = faits.new_offers_count
+        nb_relances = faits.follow_ups_due
+        nb_actives = faits.active_applications
+        depenses_ia = faits.ai_spent_today
+        sample_offers = list(faits.sample_offers)
 
         summary = DailyDigestSummary(
             date=maintenant.strftime("%Y-%m-%d"),

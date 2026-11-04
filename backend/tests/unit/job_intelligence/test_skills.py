@@ -142,6 +142,23 @@ class TestCritereCompetences:
         assert resultat.score == Decimal("0.5")
         assert resultat.items[0].kind is MatchKind.PARTIAL
 
+    def test_competence_transferable_est_nommee_et_jamais_presentee_comme_maitrisee(self) -> None:
+        req = extract_requirements("Profil recherché\n- MySQL\n")
+
+        resultat = evaluate_skills(profil(skills=("PostgreSQL",)), req, Decimal(1)).result
+
+        detail = resultat.items[0].detail or ""
+        assert "transférable" in detail and "PostgreSQL" in detail
+        assert "sans prétendre maîtriser" in detail
+        assert "transférable(s) à valoriser : MySQL (via PostgreSQL)" in resultat.explanation
+
+    def test_aucune_mention_transferable_sans_competence_proche(self) -> None:
+        req = extract_requirements("Profil recherché\n- Python\n")
+
+        resultat = evaluate_skills(profil(skills=("Python",)), req, Decimal(1)).result
+
+        assert "transférable" not in resultat.explanation
+
     def test_profil_sans_competence_donnees_manquantes_pas_zero(self) -> None:
         resultat = evaluate_skills(
             profil(skills=()), extract_requirements(OFFRE_FR), Decimal(25)

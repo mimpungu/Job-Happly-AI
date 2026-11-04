@@ -154,6 +154,7 @@ def _resume(
         source_keys=sources,
         match_score=score,
         match_reliability=fiabilite,
+        is_demo=offre.is_demo,
     )
 
 

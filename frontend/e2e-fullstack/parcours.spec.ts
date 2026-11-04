@@ -219,3 +219,19 @@ test("8. confidentialité : l'export contient les données, l'effacement exige l
   await dialogue.getByRole("button", { name: "Annuler" }).click();
   await expect(dialogue).toBeHidden();
 });
+
+test("9. mode démonstration : refusé tant que des données réelles existent, jamais mêlé au réel", async ({
+  page,
+}) => {
+  await page.goto("/settings");
+  await expect(page.getByRole("heading", { name: "Mode démonstration" })).toBeVisible();
+  await expect(page.getByText("Inactif")).toBeVisible();
+
+  await page.getByRole("button", { name: "Activer le mode démonstration" }).click();
+
+  await expect(
+    page.getByText(/n'est disponible que sans offre ni candidature réelle/),
+  ).toBeVisible();
+  await expect(page.getByText("Inactif")).toBeVisible();
+  await expect(page.getByText("Mode démonstration actif")).toHaveCount(0);
+});

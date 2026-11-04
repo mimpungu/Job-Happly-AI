@@ -21,7 +21,7 @@ export const RELIABILITY_LABELS: Record<Reliability, string> = {
 
 export const KIND_LABELS: Record<MatchKind, string> = {
   present: "Présente",
-  partial: "Partielle",
+  partial: "Transférable",
   absent: "Absente de votre profil",
   unverifiable: "À évaluer vous-même",
 };

@@ -9,21 +9,12 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.modules.ai_management.infrastructure.models import AISettingsModel, AIUsageModel
-from app.modules.application_management.domain.enums import ApplicationStatus
-from app.modules.application_management.infrastructure.models import (
-    ApplicationModel,
-)
 from app.modules.job_discovery.domain.saved_search import SavedSearchNotFoundError
-from app.modules.job_discovery.infrastructure.models import JobOfferModel, SavedSearchModel
 from app.modules.notifications.application.daily_digest_service import DailyDigestService
 from app.modules.notifications.application.notification_service import NotificationService
+from app.modules.notifications.application.ports import AutomationFactsPort
 from app.modules.notifications.domain.enums import NotificationKind, ScheduledTaskType
 from app.modules.platform.infrastructure.job_queue import PostgresJobQueue, ReservedJob
-from app.modules.platform.infrastructure.models import JobModel
 
 logger = logging.getLogger("happly.orchestrator")
 
@@ -37,13 +28,13 @@ class AutomationJobHandlers:
 
     def __init__(
         self,
-        session: AsyncSession,
+        facts: AutomationFactsPort,
         notification_service: NotificationService,
         job_queue: PostgresJobQueue,
         *,
         clock: Callable[[], datetime] = _now,
     ) -> None:
-        self._session = session
+        self._facts = facts
         self._notifications = notification_service
         self._job_queue = job_queue
         self._clock = clock
@@ -60,11 +51,7 @@ class AutomationJobHandlers:
             return
 
         saved_search_id = uuid.UUID(saved_search_id_str)
-        stmt = select(SavedSearchModel).where(
-            SavedSearchModel.id == saved_search_id,
-            SavedSearchModel.owner_id == owner_id,
-        )
-        saved_search = await self._session.scalar(stmt)
+        saved_search = await self._facts.saved_search(owner_id, saved_search_id)
         if saved_search is None:
             raise SavedSearchNotFoundError(f"Recherche sauvegardée {saved_search_id} introuvable.")
 
@@ -76,12 +63,9 @@ class AutomationJobHandlers:
 
         # Compte les offres récentes créées depuis 24h
         maintenant = self._clock()
-        hier = maintenant - timedelta(days=1)
-        count_stmt = select(func.count(JobOfferModel.id)).where(
-            JobOfferModel.owner_id == owner_id,
-            JobOfferModel.created_at >= hier,
+        count_recent = await self._facts.offers_created_since(
+            owner_id, maintenant - timedelta(days=1)
         )
-        count_recent = (await self._session.scalar(count_stmt)) or 0
 
         # Si des offres sont trouvées, notifier l'utilisateur
         if count_recent > 0:
@@ -107,28 +91,8 @@ class AutomationJobHandlers:
             return
 
         maintenant = self._clock()
-        stmt = select(ApplicationModel).where(
-            ApplicationModel.owner_id == owner_id,
-            ApplicationModel.follow_up_at.is_not(None),
-            ApplicationModel.follow_up_at <= maintenant,
-            ApplicationModel.status.in_(
-                [
-                    ApplicationStatus.SENT.value,
-                    ApplicationStatus.PENDING.value,
-                    ApplicationStatus.INTERVIEW.value,
-                    ApplicationStatus.SECOND_INTERVIEW.value,
-                ]
-            ),
-        )
-        applications = (await self._session.scalars(stmt)).all()
-
-        for app in applications:
-            # Récupération de l'intitulé et de l'entreprise via l'offre associée
-            offre_stmt = select(JobOfferModel).where(JobOfferModel.id == app.offer_id)
-            offre = await self._session.scalar(offre_stmt)
-            titre = offre.title if offre else "Poste candidaté"
-            entreprise = offre.company_name if offre and offre.company_name else "Entreprise"
-
+        for relance in await self._facts.due_follow_ups(owner_id, maintenant):
+            titre, entreprise = relance.title, relance.company
             corps = (
                 f"Votre candidature pour '{titre}' chez {entreprise} est à relancer aujourd'hui."
             )
@@ -138,8 +102,8 @@ class AutomationJobHandlers:
                 title=f"Rappel de relance : {entreprise}",
                 body=corps,
                 payload={
-                    "application_id": str(app.id),
-                    "offer_id": str(app.offer_id),
+                    "application_id": str(relance.application_id),
+                    "offer_id": str(relance.offer_id),
                     "company": entreprise,
                     "title": titre,
                 },
@@ -151,25 +115,9 @@ class AutomationJobHandlers:
         if owner_id is None:
             return
 
-        # Récupération des plafonds configurés
-        settings_stmt = select(AISettingsModel).where(AISettingsModel.owner_id == owner_id)
-        settings = await self._session.scalar(settings_stmt)
-
         maintenant = self._clock()
         debut_jour = datetime(maintenant.year, maintenant.month, maintenant.day, tzinfo=UTC)
-
-        usage_stmt = select(
-            func.coalesce(
-                func.sum(AIUsageModel.actual_cost),
-                func.sum(AIUsageModel.estimated_cost),
-                0,
-            )
-        ).where(
-            AIUsageModel.owner_id == owner_id,
-            AIUsageModel.created_at >= debut_jour,
-        )
-        somme = await self._session.scalar(usage_stmt)
-        depense = Decimal(str(somme)) if somme is not None else Decimal("0.0000")
+        depense = await self._facts.ai_spent_since(owner_id, debut_jour)
 
         # Seuil d'avertissement si la dépense quotidienne dépasse un montant significatif
         if depense > Decimal("1.0000"):
@@ -180,7 +128,7 @@ class AutomationJobHandlers:
                 body=f"Votre consommation IA aujourd'hui s'élève à {depense:.4f} EUR.",
                 payload={
                     "spent_today": float(depense),
-                    "currency": settings.currency if settings else "EUR",
+                    "currency": await self._facts.ai_currency(owner_id),
                 },
             )
 
@@ -191,7 +139,7 @@ class AutomationJobHandlers:
             return
 
         digest_service = DailyDigestService(
-            session=self._session,
+            facts=self._facts,
             notification_service=self._notifications,
             clock=self._clock,
         )
@@ -210,54 +158,3 @@ class AutomationJobHandlers:
             ScheduledTaskType.DAILY_DIGEST.value: self.handle_daily_digest,
             ScheduledTaskType.STALE_JOBS_CLEANUP.value: self.handle_stale_jobs_cleanup,
         }
-
-
-async def list_job_history(
-    session: AsyncSession,
-    *,
-    owner_id: uuid.UUID | None = None,
-    status: str | None = None,
-    kind: str | None = None,
-    limit: int = 50,
-    offset: int = 0,
-) -> tuple[list[dict[str, Any]], int]:
-    """Interroge la table jobs pour fournir un audit et historique d'exécution (TASK-015-10)."""
-    critères = []
-    if owner_id is not None:
-        critères.append(JobModel.owner_id == owner_id)
-    if status is not None:
-        critères.append(JobModel.status == status)
-    if kind is not None:
-        critères.append(JobModel.kind == kind)
-
-    count_stmt = select(func.count(JobModel.id)).where(*critères)
-    total = (await session.scalar(count_stmt)) or 0
-
-    stmt = (
-        select(JobModel)
-        .where(*critères)
-        .order_by(JobModel.created_at.desc(), JobModel.id.desc())
-        .limit(limit)
-        .offset(offset)
-    )
-    jobs = (await session.scalars(stmt)).all()
-
-    items = [
-        {
-            "id": str(j.id),
-            "owner_id": str(j.owner_id) if j.owner_id else None,
-            "kind": j.kind,
-            "idempotency_key": j.idempotency_key,
-            "status": j.status,
-            "attempts": j.attempts,
-            "max_attempts": j.max_attempts,
-            "run_at": j.run_at.isoformat() if j.run_at else None,
-            "locked_at": j.locked_at.isoformat() if j.locked_at else None,
-            "locked_by": j.locked_by,
-            "finished_at": j.finished_at.isoformat() if j.finished_at else None,
-            "last_error": j.last_error,
-            "created_at": j.created_at.isoformat() if j.created_at else None,
-        }
-        for j in jobs
-    ]
-    return items, total

@@ -13,6 +13,7 @@ from starlette.types import ExceptionHandler
 from app.core.api.dependencies import UnitOfWorkDep, get_owner_id
 from app.core.api.errors import error_response
 from app.core.config import Settings, get_settings
+from app.modules.demo.infrastructure.composition import ensure_demo_inactive
 from app.modules.job_discovery.application.external_search import ExternalSearchService
 from app.modules.job_discovery.domain.connector import NotConfiguredError
 from app.modules.job_discovery.domain.criteria import SearchCriteria
@@ -78,6 +79,7 @@ async def search(
     uow: UnitOfWorkDep, owner_id: Owner, settings: Config, body: SearchBody
 ) -> SearchResponse:
     """Interroge France Travail et enregistre les offres trouvées (jamais de candidature)."""
+    await ensure_demo_inactive(uow, owner_id)
     if not _configured(settings):
         raise NotConfiguredError("Identifiants France Travail absents.")
     criteres = SearchCriteria(

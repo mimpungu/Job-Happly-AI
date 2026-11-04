@@ -341,7 +341,10 @@ def evaluate_skills(
             a.label,
             {
                 MatchKind.PRESENT: f"Dans votre profil : {a.profile_skill}",
-                MatchKind.PARTIAL: f"Proche de « {a.profile_skill} » dans votre profil",
+                MatchKind.PARTIAL: (
+                    f"Compétence transférable : vous maîtrisez « {a.profile_skill} » (même famille). "
+                    "À valoriser sans prétendre maîtriser celle de l'offre."
+                ),
                 MatchKind.ABSENT: f"Compétence {_LIBELLE_IMPORTANCE[a.importance]}, non trouvée dans votre profil",
             }[a.kind],
         )
@@ -359,6 +362,11 @@ def evaluate_skills(
         f"{comptes[MatchKind.PRESENT]} compétence(s) présente(s), {comptes[MatchKind.PARTIAL]} partielle(s), "
         f"{comptes[MatchKind.ABSENT]} absente(s) de votre profil sur {len(analyses)} repérée(s) dans l'offre."
     )
+    if comptes[MatchKind.PARTIAL]:
+        transferables = ", ".join(
+            f"{a.label} (via {a.profile_skill})" for a in analyses if a.kind is MatchKind.PARTIAL
+        )
+        explication += f" Compétence(s) transférable(s) à valoriser : {transferables}."
     if comptes[MatchKind.ABSENT]:
         explication += " Une compétence « absente » n'est pas forcément absente chez vous : complétez votre profil si besoin."
     return SkillAnalysis(

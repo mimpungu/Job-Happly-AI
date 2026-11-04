@@ -18,6 +18,7 @@ Couvre les jalons 0.1 à 0.5 du plan de releases. La version **1.0** (stable) n'
 - **Automatisation** : planificateur, notifications, résumé quotidien.
 - **Entretiens** : préparation sans IA (questions, présentation, trames de réponse), simulation avec retours, fiches d'entretien et brouillon de relance, IA facultative à la demande.
 - **Sécurité, confidentialité, exploitation** : corrélation, logs JSON masqués, en-têtes de sécurité, limites de taille et de débit, santé et mesures, modèle de menaces, export ZIP, effacement confirmé, conservation, politique d'envoi des données personnelles à l'IA, frontière de confiance des prompts, contrôle des PDF générés.
+- **Recherche multi-sources** : `POST /api/v1/search` interroge en parallèle les sources compatibles (entreprises suivies, sources officielles configurées), agrège sans doublon, rapporte chaque source et ses erreurs ; `GET /api/v1/sources` et panneau « Sources de données » ; filtre de collecte par intitulés visés et mots-clés ; bouton « Interroger les sources » et liste des sources interrogées.
 - **Qualité** : suite de tests backend et frontend, parcours E2E complets (vraie API, vraie base, vrai pdfLaTeX), accessibilité vérifiée (deux thèmes, trois tailles), tests de volume, de pagination et de concurrence, mesure de couverture.
 
 ### Corrigé

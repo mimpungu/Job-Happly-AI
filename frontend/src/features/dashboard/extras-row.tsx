@@ -10,7 +10,7 @@ import { formatMoney } from "./format";
 const STATUTS_RECHERCHE: Record<string, string> = {
   running: "En cours",
   succeeded: "Réussie",
-  partial: "Partielle",
+  partial: "Transférable",
   failed: "Échec",
 };
 

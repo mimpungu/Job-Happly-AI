@@ -27,6 +27,8 @@ export interface OfferSummary {
   status: string;
   state: OfferState | null;
   source_keys: string[];
+  /** Offre fictive du mode démonstration. */
+  is_demo?: boolean;
   /** Score de compatibilité (0-100, indicatif) ; `null` = pas encore évalué. */
   match_score: string | null;
   match_reliability: "high" | "medium" | "low" | null;

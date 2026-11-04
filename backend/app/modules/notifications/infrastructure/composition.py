@@ -10,6 +10,7 @@ from app.core.database.session import UnitOfWork
 from app.modules.notifications.application.daily_digest_service import DailyDigestService
 from app.modules.notifications.application.notification_service import NotificationService
 from app.modules.notifications.application.scheduler_service import SchedulerService
+from app.modules.notifications.infrastructure.automation_facts import SqlAutomationFacts
 from app.modules.notifications.infrastructure.email_sender import SafeEmailSender
 from app.modules.notifications.infrastructure.notification_repository import (
     SQLAlchemyNotificationRepository,
@@ -66,4 +67,4 @@ def build_daily_digest_service(
 ) -> DailyDigestService:
     """Instancie le service du résumé quotidien."""
     notifs = notification_service or build_notification_service(session)
-    return DailyDigestService(session=session, notification_service=notifs)
+    return DailyDigestService(facts=SqlAutomationFacts(session), notification_service=notifs)
