@@ -149,7 +149,7 @@ describe("AICenter", () => {
         if (url.endsWith("/ai/test") && init?.method === "POST")
           return json({
             provider: "gemini",
-            model: "gemini-2.5-flash-lite",
+            model: "gemini-3.1-flash-lite",
             cache_hit: true,
             cost: "0",
             input_tokens: 0,
@@ -165,7 +165,7 @@ describe("AICenter", () => {
               {
                 name: "gemini",
                 kind: "api",
-                models: ["gemini-2.5-flash-lite"],
+                models: ["gemini-3.1-flash-lite"],
                 uses_data_for_training: true,
               },
             ],
@@ -180,7 +180,7 @@ describe("AICenter", () => {
     await user.click(screen.getByRole("button", { name: /niveau 1/ }));
 
     const resultat = await screen.findByText(/servi par le cache/);
-    expect(resultat).toHaveTextContent("gemini · gemini-2.5-flash-lite");
+    expect(resultat).toHaveTextContent("gemini · gemini-3.1-flash-lite");
     expect(screen.getByText("Poste Python à Paris.")).toBeInTheDocument();
   });
 

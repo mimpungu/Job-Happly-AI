@@ -28,6 +28,7 @@ from app.modules.job_discovery.presentation.france_travail_router import (
 from app.modules.job_discovery.presentation.manual_router import register_manual_errors
 from app.modules.job_discovery.presentation.manual_router import router as manual_router
 from app.modules.job_discovery.presentation.router import register_domain_errors, router
+from app.modules.job_intelligence.presentation.analysis_router import router as analysis_router
 from app.modules.job_intelligence.presentation.router import (
     register_matching_errors,
 )
@@ -77,6 +78,7 @@ def create_app() -> FastAPI:
     application.include_router(france_travail_router)
     application.include_router(profile_router)
     application.include_router(matching_router)
+    application.include_router(analysis_router)
     application.include_router(ai_router)
     return application
 

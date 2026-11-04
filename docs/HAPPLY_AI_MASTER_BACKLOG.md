@@ -1115,41 +1115,41 @@ Méthodes :
 
 **Objectif :** enrichir les offres pertinentes avec une analyse sémantique.
 
-### [➖] FEATURE 011.1 — Extraction des exigences
+### [✅] FEATURE 011.1 — Extraction des exigences
 
-[➖] **TASK-011-01 — Extraire les missions**
+[✅] **TASK-011-01 — Extraire les missions**
 
-[➖] **TASK-011-02 — Extraire les compétences obligatoires**
+[✅] **TASK-011-02 — Extraire les compétences obligatoires**
 
-[➖] **TASK-011-03 — Extraire les compétences souhaitées**
+[✅] **TASK-011-03 — Extraire les compétences souhaitées**
 
-[➖] **TASK-011-04 — Extraire les outils et technologies**
+[✅] **TASK-011-04 — Extraire les outils et technologies**
 
-[➖] **TASK-011-05 — Extraire les années d'expérience**
+[✅] **TASK-011-05 — Extraire les années d'expérience**
 
-[➖] **TASK-011-06 — Extraire les exigences linguistiques**
+[✅] **TASK-011-06 — Extraire les exigences linguistiques**
 
-[➖] **TASK-011-07 — Extraire les contraintes de mobilité et de visa si mentionnées**
+[✅] **TASK-011-07 — Extraire les contraintes de mobilité et de visa si mentionnées**
 
 ### [➖] FEATURE 011.2 — Analyse de pertinence
 
-[➖] **TASK-011-08 — Comparer l'annonce au CV maître**
+[✅] **TASK-011-08 — Comparer l'annonce au CV maître**
 
 [➖] **TASK-011-09 — Identifier les compétences transférables**
 
-[➖] **TASK-011-10 — Identifier les informations manquantes**
+[✅] **TASK-011-10 — Identifier les informations manquantes**
 
-[➖] **TASK-011-11 — Générer un résumé de l'annonce**
+[✅] **TASK-011-11 — Générer un résumé de l'annonce**
 
-[➖] **TASK-011-12 — Expliquer les raisons de compatibilité**
+[✅] **TASK-011-12 — Expliquer les raisons de compatibilité**
 
-### [➖] FEATURE 011.3 — Historique des analyses
+### [✅] FEATURE 011.3 — Historique des analyses
 
-[➖] **TASK-011-13 — Versionner les analyses**
+[✅] **TASK-011-13 — Versionner les analyses**
 
-[➖] **TASK-011-14 — Réutiliser les analyses en cache**
+[✅] **TASK-011-14 — Réutiliser les analyses en cache**
 
-[➖] **TASK-011-15 — Invalider le cache si l'annonce change**
+[✅] **TASK-011-15 — Invalider le cache si l'annonce change**
 
 ### Critères d'acceptation
 
@@ -2034,7 +2034,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |
 | [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 24 | 0.3 |
-| [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 0 | 0.3 |
+| [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 14 | 0.3 |
 | [➖] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 0 | 0.4 |
 | [➖] | 013 — Cover Letter Generator | P1 | 3 | 18 | 0 | 0.4 |
 | [➖] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 0 | 0.4 |

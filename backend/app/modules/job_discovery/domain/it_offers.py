@@ -23,10 +23,23 @@ _MOTIFS = (
     r"\b(solutions? architect|architecte (logiciel|solution|si|technique)|technical architect)\b",
     r"\b(sysadmin|administrateur (systemes?|reseaux?)|network engineer|infrastructure engineer)\b",
     r"\b(engineering manager|tech lead|cto)\b",
+    # Encadrement technique : « Manager I, Engineering - X », « Director, Engineering »…
+    r"\b(manager|director|head|vp|vice president)\b.*\bengineering\b",
+    r"\bengineering\b.*\b(manager|director)\b",
+    # Recherche appliquée et IA : « AI Research Engineer », « Staff Applied Scientist »…
+    r"\b(applied|research|ai|ml|data) (science|scientist|engineer|researcher)s?\b",
+    r"\b(applied|research) science\b",
+    r"\bresearch (manager|scientist|engineer)\b",
+    r"\bapplied (ai|science)\b",
+    r"\b(distinguished |principal |staff |senior )?architect\b",
+    r"\b(technical program manager|systems? analyst|business systems)\b",
     r"\b(ingenieur (developpement|logiciel|etudes)|chef de projet (it|informatique|si))\b",
 )
 _REGEX = re.compile("|".join(_MOTIFS))
-_EXCLUSIONS = re.compile(r"\b(sales|commercial|account|recruit\w*|talent|legal|finance)\b")
+_EXCLUSIONS = re.compile(
+    r"\b(sales|commercial|account|recruit\w*|talent|sourcer|sourcing|legal|finance|financial|"
+    r"compensation|fp&a|marketing|procurement|contracts?|compliance|designer|ux)\b"
+)
 
 
 def is_it_offer(title: str) -> bool:

@@ -26,7 +26,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 19 | EPIC 003, EPIC 007 |
 | [✅] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 17 | EPIC 005, EPIC 007, EPIC 008 |
 | [➖] | 010 — AI PLATFORM & COST MANAGEMENT | P0 | 6 | 35 | 24 | EPIC 002, EPIC 004 |
-| [➖] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 0 | EPIC 009, EPIC 010 |
+| [➖] | 011 — JOB INTELLIGENCE & OFFER ANALYSIS | P1 | 3 | 15 | 14 | EPIC 009, EPIC 010 |
 | [➖] | 012 — LATEX RESUME GENERATOR | P1 | 5 | 27 | 0 | EPIC 005, EPIC 010, EPIC 011 |
 | [➖] | 013 — COVER LETTER GENERATOR | P1 | 3 | 18 | 0 | EPIC 005, EPIC 010, EPIC 011, EPIC 012 |
 | [➖] | 014 — APPLICATION TRACKING & CANDIDATE CRM | P1 | 5 | 22 | 0 | EPIC 004, EPIC 008, EPIC 012, EPIC 013 |
@@ -602,35 +602,35 @@ Total : 404 tâches.
 - **Objectif :** enrichir les offres pertinentes avec une analyse sémantique.
 - **Dépendances :** EPIC 009, EPIC 010
 
-### [➖] FEATURE 011.1 — Extraction des exigences
+### [✅] FEATURE 011.1 — Extraction des exigences
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-011-01 | Extraire les missions | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-02 | Extraire les compétences obligatoires | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-03 | Extraire les compétences souhaitées | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-04 | Extraire les outils et technologies | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-05 | Extraire les années d'expérience | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-06 | Extraire les exigences linguistiques | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-07 | Extraire les contraintes de mobilité et de visa si mentionnées | P1 | BACKLOG | à estimer |
+| [✅] | TASK-011-01 | Extraire les missions | P1 | DONE | à estimer |
+| [✅] | TASK-011-02 | Extraire les compétences obligatoires | P1 | DONE | à estimer |
+| [✅] | TASK-011-03 | Extraire les compétences souhaitées | P1 | DONE | à estimer |
+| [✅] | TASK-011-04 | Extraire les outils et technologies | P1 | DONE | à estimer |
+| [✅] | TASK-011-05 | Extraire les années d'expérience | P1 | DONE | à estimer |
+| [✅] | TASK-011-06 | Extraire les exigences linguistiques | P1 | DONE | à estimer |
+| [✅] | TASK-011-07 | Extraire les contraintes de mobilité et de visa si mentionnées | P1 | DONE | à estimer |
 
 ### [➖] FEATURE 011.2 — Analyse de pertinence
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-011-08 | Comparer l'annonce au CV maître | P1 | BACKLOG | à estimer |
+| [✅] | TASK-011-08 | Comparer l'annonce au CV maître | P1 | DONE | à estimer |
 | [➖] | TASK-011-09 | Identifier les compétences transférables | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-10 | Identifier les informations manquantes | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-11 | Générer un résumé de l'annonce | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-12 | Expliquer les raisons de compatibilité | P1 | BACKLOG | à estimer |
+| [✅] | TASK-011-10 | Identifier les informations manquantes | P1 | DONE | à estimer |
+| [✅] | TASK-011-11 | Générer un résumé de l'annonce | P1 | DONE | à estimer |
+| [✅] | TASK-011-12 | Expliquer les raisons de compatibilité | P1 | DONE | à estimer |
 
-### [➖] FEATURE 011.3 — Historique des analyses
+### [✅] FEATURE 011.3 — Historique des analyses
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-011-13 | Versionner les analyses | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-14 | Réutiliser les analyses en cache | P1 | BACKLOG | à estimer |
-| [➖] | TASK-011-15 | Invalider le cache si l'annonce change | P1 | BACKLOG | à estimer |
+| [✅] | TASK-011-13 | Versionner les analyses | P1 | DONE | à estimer |
+| [✅] | TASK-011-14 | Réutiliser les analyses en cache | P1 | DONE | à estimer |
+| [✅] | TASK-011-15 | Invalider le cache si l'annonce change | P1 | DONE | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 

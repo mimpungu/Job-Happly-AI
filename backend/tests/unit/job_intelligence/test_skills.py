@@ -189,3 +189,22 @@ class TestCritereCompetences:
         resultat = evaluate_skills(profil(), extract_requirements(OFFRE_FR), Decimal(1)).result
 
         assert "pas forcément absente chez vous" in resultat.explanation
+
+
+class TestBruitDesAnnoncesReelles:
+    """Constaté sur de vraies annonces d'éditeurs logiciels (job boards publics)."""
+
+    def test_zones_geographiques_et_mots_courants_ne_sont_pas_des_competences(self) -> None:
+        assert extract_terms("Experience working with teams in the US and EMEA") == []
+        assert extract_terms("This role requires strong communication") == []
+
+    def test_les_abreviations_avec_point_ne_sont_pas_des_jetons_techniques(self) -> None:
+        assert extract_terms("Reinforcement learning (e.g. PPO, GRPO) and etc.") == ["PPO", "GRPO"]
+
+    def test_les_vraies_competences_restent_reconnues(self) -> None:
+        assert extract_terms("Python, Node.js, Docker, AWS") == [
+            "Python",
+            "Node.js",
+            "Docker",
+            "AWS",
+        ]

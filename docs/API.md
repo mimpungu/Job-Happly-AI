@@ -150,6 +150,16 @@ Réponse : `{filename, format, page_count, warnings, text, proposed_profile}`. `
 - **Brouillon libre, validation stricte** : un brouillon peut être incomplet. Un élément envoyé avec `validated: true` doit être complet (expérience : intitulé, entreprise, début ; formation : diplôme, établissement ; langue : niveau). Valider le profil exige prénom, nom et **tous** les éléments confirmés : rien n'est validé à la place de l'utilisateur. Après modification d'un élément déjà confirmé, le client doit renvoyer `validated: false` pour exiger une nouvelle relecture.
 - **Préférences** : métiers, pays, villes, télétravail, contrats, salaire souhaité (avec devise) et langues de candidature, versionnées avec le profil.
 
+## Analyse d'une offre
+
+Analyse **par règles** (sans IA, sans coût), calculée au premier appel puis réutilisée tant que l'annonce ne change pas. Elle ne restitue que ce qui est écrit dans l'annonce : ce qui n'y figure pas reste vide ou est listé dans « informations manquantes ».
+
+| Route | Rôle |
+|---|---|
+| `GET /offers/{id}/analysis` | `{analysis_id, computed_at, reused, analysis}` : `missions`, `mandatory_skills`, `expected_skills`, `desired_skills`, `technologies` (vocabulaire fermé), `years_experience` / `years_mandatory`, `languages` (langue, niveau écrit, exigé ou souhaité), `mobility` (`visa`, `relocation_offered`, `travel`), `missing` (code + libellé), `summary` (extractif : phrases de l'annonce, jamais reformulées). 404 `offer_not_found`. |
+| `GET /offers/{id}/analysis/history` | Versions successives (une par texte d'annonce, champ structuré ou version de règles). Les anciennes ne sont jamais réécrites. |
+| `POST /offers/{id}/analysis/ai-summary` | Résumé **par IA, facultatif**, via la passerelle (consentement, plafonds, cache, journal). Seul le texte public de l'offre est transmis. Réponse : `summary`, `key_points`, `provider`, `model`, `cache_hit`, `cost`. Erreurs IA : 409 / 502 (voir `/ai/test`). |
+
 ## Compatibilité (score)
 
 Score indicatif, déterministe, expliqué (`docs/architecture/MATCHING.md`). Calculé sur le profil **validé** : sans lui, 409 `no_validated_profile`.

@@ -28,9 +28,12 @@ Clé = empreinte (tâche, version du prompt, modèle, instructions, contenu, sch
 | Fournisseur | Rôle | Remarques |
 |---|---|---|
 | Ollama `gemma4:e4b` / `gemma4:12b` | Local, gratuit | M1 16 Go ; rien ne quitte la machine ; modèle à installer (`ollama pull`) |
-| Gemini `gemini-2.5-flash-lite` (niv. 1), `gemini-3-flash-preview` (niv. 2) | API | Tarifs USD relevés le 2026-11-04 ; **palier gratuit : contenus réutilisables et relus par des humains -> textes publics seulement** |
+| Gemini `gemini-3.1-flash-lite` (niv. 1), `gemini-3-flash-preview` (niv. 2) | API | Tarifs USD relevés le 2026-11-04 ; `gemini-2.5-flash-lite` est retiré aux nouveaux comptes (404) ; réflexion réglée sur « minimal » ; **palier gratuit : contenus réutilisables et relus par des humains -> textes publics seulement** |
 
-Ordre de grandeur (tarifs payants, USD) : résumer une offre ≈ 0,0003 $ avec `gemini-2.5-flash-lite` ; une lettre ou un CV ≈ 0,01 $ avec `gemini-3-flash-preview`. Les tarifs augmentent pour plusieurs modèles au 1er décembre 2026 et au 1er janvier 2027.
+Ordre de grandeur (tarifs payants, USD) : résumer une offre ≈ 0,0008 $ avec `gemini-3.1-flash-lite` ; une lettre ou un CV ≈ 0,01 $ avec `gemini-3-flash-preview`. Les tarifs augmentent pour plusieurs modèles au 1er décembre 2026 et au 1er janvier 2027.
+
+## Banc d'essai
+`PYTHONPATH=backend uv run --project backend python backend/tools/ai_benchmark.py --n 20` compare les modèles sur de vraies offres publiques collectées (passage par la passerelle : journal, plafonds, cache). Mesures automatiques : JSON conforme, **ancrage** (part des compétences réellement présentes dans le texte, un ancrage bas révèle des inventions), vitesse, tokens, coût au tarif payant. La qualité d'écriture se juge en relisant la comparaison côte à côte. `--gemini` envoie les textes d'offres (publics) à Google et exige l'accord de l'utilisateur.
 
 ## Limites connues
 - Aucun fournisseur concret n'est branché : tous les tests utilisent de faux fournisseurs.

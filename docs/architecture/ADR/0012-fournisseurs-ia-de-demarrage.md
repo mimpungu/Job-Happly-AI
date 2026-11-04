@@ -8,7 +8,7 @@
 La plateforme IA (passerelle, plafonds, cache, journal) est prête mais n'a aucun fournisseur réel. Il faut la valider de bout en bout, à moindre coût et sans exposer de données personnelles.
 
 ## Décision
-1. **API payante, pour démarrer : Gemini via Google AI Studio.** Modèles par défaut : `gemini-2.5-flash-lite` (niveau 1) et `gemini-3-flash-preview` (niveau 2), réglables par variables d'environnement.
+1. **API payante, pour démarrer : Gemini via Google AI Studio.** Modèles par défaut : `gemini-3.1-flash-lite` (niveau 1 ; `gemini-2.5-flash-lite` a été retiré aux nouveaux comptes, constaté en réel) et `gemini-3-flash-preview` (niveau 2), réglables par variables d'environnement.
 2. **Local : Ollama** (boucle locale uniquement), modèles `gemma4:e4b` (niveau 1) et `gemma4:12b` (niveau 2), sur un MacBook M1 16 Go.
 3. **Palier gratuit Gemini = contenus réutilisables et relisibles par des humains** (conditions Google lues le 2026-11-04). Le fournisseur déclare donc `uses_data_for_training` ; toute requête marquée `contains_personal_data` l'exclut du routage. Palier par défaut : `free` (hypothèse la plus prudente) ; `paid` seulement si l'utilisateur lie un compte de facturation.
 4. **Les tarifs sont en USD** : les plafonds doivent être définis en USD pour Gemini (aucune conversion).

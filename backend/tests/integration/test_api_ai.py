@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.ai_management.application.gateway import AIGateway
 from app.modules.ai_management.application.providers import get_providers
 from app.modules.ai_management.domain.models import ProviderKind
-from app.modules.ai_management.presentation.router import get_gateway
+from app.modules.ai_management.presentation.dependencies import get_gateway
 from tests.integration.conftest import SessionPartagee
 from tests.unit.ai_management.fakes import FakeProvider
 
