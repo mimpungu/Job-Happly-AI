@@ -30,5 +30,6 @@ Un ADR documente une décision d'architecture importante : contexte, décision, 
 | [0015](0015-suivi-des-candidatures-et-crm.md) | Architecture du suivi des candidatures (CRM) et tableau de bord | Accepté |
 | [0016](0016-planification-automatisation-et-notifications.md) | Planification, automatisation des recherches et centre de notifications | Accepté |
 | [0017](0017-page-d-accueil-themes-et-derogation-graphique.md) | Page d'accueil, thèmes clair et sombre, dérogation du graphique d'entonnoir | Accepté |
+| [0018](0018-preparation-aux-entretiens.md) | Préparation aux entretiens et suivi des entretiens | Accepté |
 
 Modèle : [TEMPLATE.md](TEMPLATE.md)

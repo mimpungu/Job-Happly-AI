@@ -1458,54 +1458,58 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 016 — INTERVIEW PREPARATION & CAREER ASSISTANT
+# [✅] EPIC 016 — INTERVIEW PREPARATION & CAREER ASSISTANT
 
 **Priorité : P2 — Fonctionnalités avancées**
 
 **Objectif :** accompagner le candidat après l'envoi de ses candidatures.
 
-### [➖] FEATURE 016.1 — Préparation personnalisée
+### [✅] FEATURE 016.1 — Préparation personnalisée
 
-[➖] **TASK-016-01 — Analyser l'offre et le CV envoyé**
+[✅] **TASK-016-01 — Analyser l'offre et le CV envoyé**
 
-[➖] **TASK-016-02 — Générer des questions RH**
+> L'offre est lue avec son analyse (compétences) ; le parcours vient du **profil validé** dont le CV est issu, pas du texte du PDF envoyé. Un avertissement signale l'absence de CV associé (ADR-0018).
 
-[➖] **TASK-016-03 — Générer des questions techniques**
+[✅] **TASK-016-02 — Générer des questions RH**
 
-[➖] **TASK-016-04 — Préparer une présentation personnelle**
+[✅] **TASK-016-03 — Générer des questions techniques**
 
-[➖] **TASK-016-05 — Proposer des réponses structurées**
+[✅] **TASK-016-04 — Préparer une présentation personnelle**
 
-[➖] **TASK-016-06 — Préparer des questions pour le recruteur**
+[✅] **TASK-016-05 — Proposer des réponses structurées**
 
-### [➖] FEATURE 016.2 — Simulation
+[✅] **TASK-016-06 — Préparer des questions pour le recruteur**
 
-[➖] **TASK-016-07 — Créer le moteur de simulation**
+### [✅] FEATURE 016.2 — Simulation
 
-[➖] **TASK-016-08 — Ajouter les réponses utilisateur**
+[✅] **TASK-016-07 — Créer le moteur de simulation**
 
-[➖] **TASK-016-09 — Fournir des retours**
+[✅] **TASK-016-08 — Ajouter les réponses utilisateur**
 
-[➖] **TASK-016-10 — Sauvegarder les simulations**
+[✅] **TASK-016-09 — Fournir des retours**
 
-### [➖] FEATURE 016.3 — Suivi des entretiens
+[✅] **TASK-016-10 — Sauvegarder les simulations**
 
-[➖] **TASK-016-11 — Créer une fiche entretien**
+### [✅] FEATURE 016.3 — Suivi des entretiens
 
-[➖] **TASK-016-12 — Enregistrer les dates**
+[✅] **TASK-016-11 — Créer une fiche entretien**
 
-[➖] **TASK-016-13 — Enregistrer les retours**
+[✅] **TASK-016-12 — Enregistrer les dates**
 
-[➖] **TASK-016-14 — Préparer les relances post-entretien**
+[✅] **TASK-016-13 — Enregistrer les retours**
+
+[✅] **TASK-016-14 — Préparer les relances post-entretien**
 
 ### Critères d'acceptation
 
-- [➖] Questions adaptées au poste.
-- [➖] Réponses basées sur le vrai parcours.
-- [➖] Utilisation IA à la demande.
-- [➖] Historique conservé.
+- [✅] Questions adaptées au poste.
+- [✅] Réponses basées sur le vrai parcours.
+- [✅] Utilisation IA à la demande.
+- [✅] Historique conservé.
 
 **Livrable :** assistant de préparation aux entretiens.
+
+> Réalisé : module `interview_preparation` (ADR-0018), génération niveau 0 sans IA, IA facultative à la demande (`none`/`local`/`ai`) avec repli explicite, simulation avec retours et historique, fiches d'entretien synchronisées avec le suivi de candidatures, brouillon de relance. Limite : la préparation s'appuie sur le profil validé et non sur le texte du PDF du CV envoyé.
 
 ---
 
@@ -2047,7 +2051,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 013 — Cover Letter Generator | P1 | 3 | 18 | 18 | 0.4 |
 | [✅] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 22 | 0.4 |
 | [✅] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 19 | 0.5 |
-| [➖] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 0 | 0.5 |
+| [✅] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 14 | 0.5 |
 | [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 0 | 1.0 |
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |

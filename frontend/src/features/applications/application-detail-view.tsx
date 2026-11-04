@@ -86,6 +86,13 @@ export function ApplicationDetailView({ id }: { id: string }) {
               >
                 Voir l&apos;offre
               </Link>
+              {" · "}
+              <Link
+                href={`/interview-preparation?application=${c.id}`}
+                className="text-accent underline underline-offset-4"
+              >
+                Préparer l&apos;entretien
+              </Link>
             </>
           ) : null}
         </p>

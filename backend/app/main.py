@@ -25,6 +25,8 @@ from app.modules.document_generation.presentation.cover_letter_router import (
 )
 from app.modules.document_generation.presentation.errors import register_generation_errors
 from app.modules.document_generation.presentation.router import router as resume_router
+from app.modules.interview_preparation.presentation.errors import register_interview_errors
+from app.modules.interview_preparation.presentation.router import router as interview_router
 from app.modules.job_discovery.presentation.companies_router import (
     register_company_errors,
 )
@@ -83,6 +85,7 @@ def create_app() -> FastAPI:
     register_france_travail_errors(application)
     register_manual_errors(application)
     register_ai_errors(application)
+    register_interview_errors(application)
 
     @application.get("/api/v1/health", tags=["platform"])
     async def health() -> dict[str, str]:
@@ -102,6 +105,7 @@ def create_app() -> FastAPI:
     application.include_router(dashboard_router)
     application.include_router(notifications_router)
     application.include_router(scheduler_router)
+    application.include_router(interview_router)
     return application
 
 
