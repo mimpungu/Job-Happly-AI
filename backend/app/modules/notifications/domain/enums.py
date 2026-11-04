@@ -33,4 +33,3 @@ class ScheduledTaskType(StrEnum):
     AI_BUDGET_CHECK = "ai_budget_check"
     DAILY_DIGEST = "daily_digest"
     STALE_JOBS_CLEANUP = "stale_jobs_cleanup"
-

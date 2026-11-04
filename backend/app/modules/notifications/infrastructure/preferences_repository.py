@@ -100,4 +100,3 @@ class SQLAlchemyNotificationPreferencesRepository(NotificationPreferencesReposit
 
         await self._session.flush()
         return _to_entity(model)
-

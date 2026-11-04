@@ -183,4 +183,3 @@ class NotificationService:
             daily_digest_time=daily_digest_time,
             timezone=timezone,
         )
-

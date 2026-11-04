@@ -84,4 +84,3 @@ class TestDailyDigestService:
         assert "5 nouvelle(s) offre(s)" in call_kwargs["body"]
         assert "2 relance(s)" in call_kwargs["body"]
         assert call_kwargs["payload"]["new_offers_count"] == 5
-

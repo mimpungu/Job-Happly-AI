@@ -33,4 +33,3 @@ class EmailConsentRequiredError(NotificationError):
 
 class EmailNotConfiguredError(NotificationError):
     """Le canal e-mail n'est pas configuré ou l'adresse du destinataire est manquante."""
-
