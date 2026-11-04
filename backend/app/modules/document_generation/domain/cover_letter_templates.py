@@ -112,4 +112,3 @@ def render_latex_cover_letter(content: CoverLetterContent) -> str:
 
 \\end{{document}}
 """
-

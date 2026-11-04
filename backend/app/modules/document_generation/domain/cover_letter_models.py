@@ -118,4 +118,3 @@ class CoverLetterOptions(BaseModel):
     recipient_name: str | None = Field(default=None, max_length=200)
     recipient_department: str | None = Field(default=None, max_length=200)
     custom_opening: str | None = Field(default=None, max_length=1000)
-

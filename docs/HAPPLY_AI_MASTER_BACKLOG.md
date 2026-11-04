@@ -1308,79 +1308,79 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 014 — APPLICATION TRACKING & CANDIDATE CRM
+# [✅] EPIC 014 — APPLICATION TRACKING & CANDIDATE CRM
 
 **Priorité : P1 — Gestion des candidatures**
 
 **Objectif :** centraliser et suivre le parcours de chaque candidature.
 
-### [➖] FEATURE 014.1 — Gestion des candidatures
+### [✅] FEATURE 014.1 — Gestion des candidatures
 
-[➖] **TASK-014-01 — Créer Application Entity**
+[✅] **TASK-014-01 — Créer Application Entity**
 
-[➖] **TASK-014-02 — Associer une candidature à une offre**
+[✅] **TASK-014-02 — Associer une candidature à une offre**
 
-[➖] **TASK-014-03 — Gérer les statuts**
+[✅] **TASK-014-03 — Gérer les statuts**
 
-[➖] **TASK-014-04 — Enregistrer la date d'envoi**
+[✅] **TASK-014-04 — Enregistrer la date d'envoi**
 
-[➖] **TASK-014-05 — Enregistrer les coordonnées du recruteur lorsqu'elles sont connues**
+[✅] **TASK-014-05 — Enregistrer les coordonnées du recruteur lorsqu'elles sont connues**
 
-### [➖] FEATURE 014.2 — Historique
+### [✅] FEATURE 014.2 — Historique
 
-[➖] **TASK-014-06 — Historiser les changements de statut**
+[✅] **TASK-014-06 — Historiser les changements de statut**
 
-[➖] **TASK-014-07 — Ajouter des notes**
+[✅] **TASK-014-07 — Ajouter des notes**
 
-[➖] **TASK-014-08 — Ajouter des événements**
+[✅] **TASK-014-08 — Ajouter des événements**
 
-[➖] **TASK-014-09 — Associer les documents envoyés**
+[✅] **TASK-014-09 — Associer les documents envoyés**
 
-[➖] **TASK-014-10 — Gérer les dates de relance**
+[✅] **TASK-014-10 — Gérer les dates de relance**
 
-### [➖] FEATURE 014.3 — Interface CRM
+### [✅] FEATURE 014.3 — Interface CRM
 
-[➖] **TASK-014-11 — Créer la vue tableau**
+[✅] **TASK-014-11 — Créer la vue tableau**
 
-[➖] **TASK-014-12 — Créer la vue Kanban**
+[✅] **TASK-014-12 — Créer la vue Kanban**
 
-[➖] **TASK-014-13 — Créer les filtres**
+[✅] **TASK-014-13 — Créer les filtres**
 
-[➖] **TASK-014-14 — Créer la fiche candidature**
+[✅] **TASK-014-14 — Créer la fiche candidature**
 
-[➖] **TASK-014-15 — Ajouter les statistiques**
+[✅] **TASK-014-15 — Ajouter les statistiques**
 
-### [➖] FEATURE 014.4 — Préparation de candidature
+### [✅] FEATURE 014.4 — Préparation de candidature
 
-[➖] **TASK-014-16 — Créer un dossier de candidature**
+[✅] **TASK-014-16 — Créer un dossier de candidature**
 
-[➖] **TASK-014-17 — Vérifier les documents**
+[✅] **TASK-014-17 — Vérifier les documents**
 
-[➖] **TASK-014-18 — Ajouter le lien vers l'annonce originale**
+[✅] **TASK-014-18 — Ajouter le lien vers l'annonce originale**
 
-[➖] **TASK-014-19 — Ajouter l'action d'ouverture du site de candidature**
+[✅] **TASK-014-19 — Ajouter l'action d'ouverture du site de candidature**
 
-[➖] **TASK-014-20 — Ajouter la confirmation manuelle d'envoi**
+[✅] **TASK-014-20 — Ajouter la confirmation manuelle d'envoi**
 
-### [➖] FEATURE 014.5 — Dashboard
+### [✅] FEATURE 014.5 — Dashboard
 
-[➖] **TASK-014-21 — Créer le Dashboard**
+[✅] **TASK-014-21 — Créer le Dashboard**
 
 - Offres trouvées, nouvelles offres, offres pertinentes.
 - Candidatures envoyées, entretiens, budget IA consommé.
 - Dernières recherches et dernières activités.
 
-[➖] **TASK-014-22 — Calculer le taux de réponse sur données réelles**
+[✅] **TASK-014-22 — Calculer le taux de réponse sur données réelles**
 
 - Aucun chiffre affiché sans donnée réelle sous-jacente.
 
 ### Critères d'acceptation
 
-- [➖] Historique fiable.
-- [➖] Statuts modifiables.
-- [➖] Documents associés.
-- [➖] Candidatures filtrables.
-- [➖] Envoi externe toujours contrôlé par l'utilisateur.
+- [✅] Historique fiable.
+- [✅] Statuts modifiables.
+- [✅] Documents associés.
+- [✅] Candidatures filtrables.
+- [✅] Envoi externe toujours contrôlé par l'utilisateur.
 
 **Livrable :** CRM personnel de candidatures.
 
@@ -2037,7 +2037,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 14 | 0.3 |
 | [✅] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 27 | 0.4 |
 | [✅] | 013 — Cover Letter Generator | P1 | 3 | 18 | 18 | 0.4 |
-| [➖] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 0 | 0.4 |
+| [✅] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 22 | 0.4 |
 | [➖] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 0 | 0.5 |
 | [➖] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 0 | 0.5 |
 | [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 0 | 1.0 |

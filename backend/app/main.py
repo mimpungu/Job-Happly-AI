@@ -1,6 +1,6 @@
 """Point d'entrée de l'API."""
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -11,6 +11,10 @@ from app.core.config import get_settings
 from app.core.database.session import create_engine, create_session_factory
 from app.modules.ai_management.presentation.router import register_ai_errors
 from app.modules.ai_management.presentation.router import router as ai_router
+from app.modules.application_management.presentation.router import (
+    applications_router,
+    dashboard_router,
+)
 from app.modules.candidate_profile.presentation.router import (
     register_document_errors,
 )
@@ -40,7 +44,7 @@ from app.modules.job_intelligence.presentation.router import router as matching_
 
 
 @asynccontextmanager
-async def _lifespan(application: FastAPI) -> AsyncIterator[None]:
+async def _lifespan(application: FastAPI) -> AsyncGenerator[None]:
     settings = get_settings()
     if settings.database_url is None:
         # Sans base, seule la santé répond ; les autres routes renvoient 503.
@@ -86,6 +90,8 @@ def create_app() -> FastAPI:
     application.include_router(ai_router)
     application.include_router(resume_router)
     application.include_router(cover_letter_router)
+    application.include_router(applications_router)
+    application.include_router(dashboard_router)
     return application
 
 

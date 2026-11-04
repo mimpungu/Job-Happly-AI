@@ -49,4 +49,3 @@ class CoverLetterContentResponse(BaseModel):
     complimentary_close: str
     signature: str
     word_count: int
-
