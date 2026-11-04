@@ -44,11 +44,15 @@ Docker Compose (PostgreSQL, API, frontend ; ports liés à `127.0.0.1`) et scrip
 ```bash
 ./infrastructure/scripts/start.sh       # démarrer les services
 ./infrastructure/scripts/stop.sh        # arrêter (données conservées)
+./infrastructure/scripts/ia-start.sh    # démarrer l'IA locale Ollama (facultatif, à la demande)
+./infrastructure/scripts/ia-stop.sh     # arrêter l'IA locale et libérer la mémoire
 ./infrastructure/scripts/test.sh        # tests backend et frontend
 ./infrastructure/scripts/lint.sh        # formatage, lint, typage
 ./infrastructure/scripts/build.sh       # images Docker
 ./infrastructure/scripts/reset-test.sh  # base de TEST uniquement (projet Docker dédié)
-./infrastructure/scripts/migrate.sh     # disponible avec Alembic (EPIC 004)
+./infrastructure/scripts/migrate.sh     # appliquer les migrations (première installation, mises à jour)
+
+# Démarrage, arrêt, mémoire, dépannage : docs/operations/DEMARRAGE_ET_ARRET.md
 ```
 
 ## Branches

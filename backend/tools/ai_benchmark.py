@@ -18,6 +18,7 @@ import random
 import time
 import urllib.request
 import uuid
+from collections import Counter
 from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
@@ -95,6 +96,17 @@ async def main() -> None:
         "--gemini", action="store_true", help="envoie les offres (publiques) à Gemini"
     )
     parser.add_argument("--out", type=Path, default=Path("benchmark.md"))
+    parser.add_argument(
+        "--pause",
+        type=float,
+        default=0.0,
+        help="secondes d'attente après chaque appel réel (quota du palier gratuit)",
+    )
+    parser.add_argument(
+        "--models",
+        nargs="*",
+        help="restreint aux modèles listés (ex. gemma4:e4b gemini-3.1-flash-lite)",
+    )
     args = parser.parse_args()
 
     reglages = get_settings()
@@ -118,13 +130,21 @@ async def main() -> None:
             if modele is None:
                 continue
             nom = f"{fournisseur.name}:{modele}"
-            resultats[nom], sorties[nom] = await executer(uow, owner, fournisseur, niveau, offres)
+            if args.models and modele not in args.models:
+                continue
+            pause = args.pause if fournisseur.kind.value == "api" else 0.0
+            resultats[nom], sorties[nom] = await executer(
+                uow, owner, fournisseur, niveau, offres, pause
+            )
             s = summarize(resultats[nom])
             print(
                 f"{nom}: valides {s.valid_rate:.0%}, médiane {s.median_seconds:.1f}s, "
                 f"p90 {s.p90_seconds:.1f}s, ancrage {s.mean_grounded or 0:.0%}",
                 flush=True,
             )
+            erreurs = Counter(r.error for r in resultats[nom] if r.error)
+            for message, nombre in erreurs.most_common(3):
+                print(f"    {nombre} fois : {message}", flush=True)
     await moteur.dispose()
     ecrire(args.out, offres, resultats, sorties)
     print(f"Comparaison écrite dans {args.out}")
@@ -136,6 +156,7 @@ async def executer(
     fournisseur: AIProvider,
     niveau: int,
     offres: list[dict[str, object]],
+    pause: float = 0.0,
 ) -> tuple[list[Run], list[list[str]]]:
     passerelle = AIGateway(uow, [fournisseur], timeout=240.0)
     runs: list[Run] = []
@@ -155,10 +176,13 @@ async def executer(
             runs.append(Run(False, time.monotonic() - debut, error=str(erreur)))
             competences.append([])
             continue
+        duree = time.monotonic() - debut
+        if pause and not r.cache_hit:
+            await asyncio.sleep(pause)  # respecte le quota par minute du palier gratuit
         runs.append(
             Run(
                 True,
-                time.monotonic() - debut,
+                duree,
                 r.input_tokens,
                 r.output_tokens,
                 r.value.skills,
