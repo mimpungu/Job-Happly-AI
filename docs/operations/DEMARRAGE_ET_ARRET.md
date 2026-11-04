@@ -120,3 +120,15 @@ Aucun service au démarrage du Mac, aucune tâche planifiée, aucun redémarrage
 La collecte d'offres et le calcul des scores sont des **boutons** de l'interface. (Les
 conteneurs Docker ont `restart: unless-stopped` : ils ne repartent qu'avec Docker Desktop, et pas
 après `stop.sh`.)
+
+## Compilation LaTeX (CV et lettres)
+
+Les CV et lettres sont compilés par pdfLaTeX.
+
+- **Docker** : l'image de l'API embarque TeX Live ; les PDF sont conservés dans le volume
+  `documents_data`.
+- **Hors Docker** : installer TeX Live (`brew install --cask mactex-no-gui` sur macOS,
+  `apt install texlive-latex-extra texlive-fonts-recommended lmodern` sur Debian/Ubuntu).
+  `HAPPLY_PDFLATEX_PATH` n'est utile que si `pdflatex` n'est pas dans le `PATH`.
+- Sans pdfLaTeX, l'API démarre et permet de consulter les documents ; seule la génération
+  répond `503 latex_compiler_unavailable`.

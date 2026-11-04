@@ -27,7 +27,7 @@ class CompileVersionRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     latex_source: str = Field(min_length=10, max_length=1_000_000)
-    expected_keywords: list[str] = Field(default_factory=list)
+    expected_keywords: list[str] = Field(default_factory=list, max_length=100)
 
 
 class ATSCheckResponse(BaseModel):
@@ -55,6 +55,16 @@ class ATSReportResponse(BaseModel):
     single_column: bool
 
 
+class GenerationMetaResponse(BaseModel):
+    """Règles appliquées à la génération : traçabilité du prompt et des options."""
+
+    origin: str
+    prompt_version: str | None = None
+    style: str | None = None
+    length_target: str | None = None
+    language: str | None = None
+
+
 class DocumentVersionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -64,6 +74,7 @@ class DocumentVersionResponse(BaseModel):
     size_bytes: int
     sha256: str
     ats_report: ATSReportResponse | None = None
+    generation: GenerationMetaResponse | None = None
 
 
 class GeneratedDocumentResponse(BaseModel):

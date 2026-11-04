@@ -22,6 +22,7 @@ from app.modules.candidate_profile.presentation.router import router as profile_
 from app.modules.document_generation.presentation.cover_letter_router import (
     router as cover_letter_router,
 )
+from app.modules.document_generation.presentation.errors import register_generation_errors
 from app.modules.document_generation.presentation.router import router as resume_router
 from app.modules.job_discovery.presentation.companies_router import (
     register_company_errors,
@@ -74,6 +75,7 @@ def create_app() -> FastAPI:
     register_error_handlers(application)
     register_domain_errors(application)
     register_document_errors(application)
+    register_generation_errors(application)
     register_matching_errors(application)
     register_company_errors(application)
     register_france_travail_errors(application)

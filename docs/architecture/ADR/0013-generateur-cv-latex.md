@@ -53,3 +53,33 @@ Les contraintes clés sont :
 - Les développeurs doivent disposer de `pdflatex` (TeX Live / MacTeX) ou de l'image conteneur pour la compilation réelle.
 - Le CV maître n'est jamais altéré lors de la production de versions ciblées.
 
+
+## Révision du 2026-11-04 — audit et corrections
+
+Un audit avec compilation et extraction réelles a montré que plusieurs contrôles annoncés ne
+l'étaient pas. Décisions correctives :
+
+1. **Sécurité de la compilation** (CLAUDE.md §11) : liste de refus statique des commandes et
+   paquets qui lisent ou écrivent des fichiers (`latex_safety`), TeX en mode paranoïaque
+   (`openin_any=p`, `openout_any=p`, `shell_escape=f`), environnement minimal (aucune clé d'API
+   transmise), limites CPU/mémoire/taille, groupe de processus tué au délai, espace réseau vide
+   via `unshare --net` quand le système l'autorise (sinon avertissement journalisé). Limite
+   assumée : l'isolation par conteneur dédié n'est pas faite ; la barrière réseau est
+   best-effort, le shell-escape coupé restant la protection principale.
+2. **Audit ATS fondé sur la géométrie réelle** : détection des colonnes par le flux de lecture et
+   la position des fragments, rubriques reconnues sur des lignes de titre, ordre réel des
+   rubriques, accents vérifiés sur les textes du profil, marges, polices, pages, images.
+3. **Aucun fait inventé** : accroche sans chiffre ni qualificatif, contrôle champ par champ des
+   expériences, formations, certifications, langues et réalisations, chiffres de l'accroche
+   rattachés au profil. Le CV n'est généré que depuis un **profil validé**.
+4. **Caractères** : symboles remplacés, emojis retirés, latin rare réduit à sa base, écritures
+   non latines refusées explicitement (pdfLaTeX) ; `cmap` chargé avant `fontenc`, sans quoi
+   « œ » ressort en « ÷ ». Piste ultérieure : XeLaTeX pour le cyrillique, le grec ou le CJK.
+5. **Mots-clés** : lecture des clés réelles de l'analyse d'offre (`mandatory_skills`,
+   `expected_skills`, `desired_skills`, `technologies`) et normalisation partagée avec le matching.
+6. **Architecture** : accès aux données derrière `GenerationInputsPort`, routes minces, erreurs
+   traduites centralement, compilateur résolu à l'usage (consulter un CV n'exige pas TeX).
+7. **Déploiement** : TeX Live dans l'image Docker et la CI, volume pour les documents.
+
+Reste à faire : reformulation par IA (tâche 012-08, accord utilisateur et plafond requis),
+interface frontend de génération.

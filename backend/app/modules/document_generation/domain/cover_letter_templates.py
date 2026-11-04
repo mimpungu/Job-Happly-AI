@@ -1,114 +1,119 @@
-"""Template LaTeX pour lettre de motivation professionnelle (TASK-013-12).
+"""Template LaTeX de la lettre de motivation (TASK-013-12).
 
-Produit un document d'une seule page, sobre, aéré et élégant, conforme aux standards
-de recrutement internationaux et français.
+Une page, sobre et aérée. Une variante compacte sert quand la lettre déborde : on resserre la
+mise en page plutôt que de couper le texte.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+from app.modules.document_generation.domain.cover_letter_conventions import conventions_for
 from app.modules.document_generation.domain.cover_letter_models import CoverLetterContent
-from app.modules.document_generation.domain.latex_escape import latex_escape
+from app.modules.document_generation.domain.latex_escape import latex_escape, latex_escape_url
 
 
-def render_latex_cover_letter(content: CoverLetterContent) -> str:
-    """Génère le code source LaTeX (.tex) complet d'une lettre de motivation."""
-    nom_candidat = latex_escape(content.candidate_name)
-    adresse_candidat = latex_escape(content.candidate_address)
-    email_candidat = latex_escape(content.candidate_email)
-    phone_candidat = latex_escape(content.candidate_phone)
+@dataclass(frozen=True)
+class _Layout:
+    font_size: str
+    geometry: str
+    parskip: str
+
+
+_STANDARD = _Layout("11pt", "margin=2.2cm, top=2.0cm, bottom=2.0cm", "1.0em")
+_COMPACT = _Layout("10pt", "margin=1.9cm, top=1.5cm, bottom=1.5cm", "0.7em")
+
+
+def _lignes(*lignes: str) -> str:
+    return " \\\\\n".join(ligne for ligne in lignes if ligne)
+
+
+def render_latex_cover_letter(content: CoverLetterContent, *, compact: bool = False) -> str:
+    """Code source LaTeX (.tex) complet d'une lettre de motivation."""
+    mise_en_page = _COMPACT if compact else _STANDARD
+    libelles = conventions_for(
+        language=content.language, country_code=None, recipient_name=None
+    ).labels
+
+    courriel = ""
+    if content.candidate_email:
+        cible = latex_escape_url(content.candidate_email)
+        courriel = f"\\href{{mailto:{cible}}}{{{latex_escape(content.candidate_email)}}}"
+    expediteur = _lignes(
+        f"\\textbf{{{latex_escape(content.candidate_name)}}}",
+        latex_escape(content.candidate_city),
+        courriel,
+        latex_escape(content.candidate_phone),
+    )
 
     entreprise = latex_escape(content.recipient_company)
-    service = latex_escape(content.recipient_department)
+    attention = latex_escape(content.recipient_name)
+    destinataire = _lignes(
+        f"\\textbf{{{entreprise}}}" if entreprise else "",
+        latex_escape(content.recipient_department),
+        f"{libelles.attention} {attention}" if attention else "",
+    )
+    bloc_destinataire = (
+        f"""\\hfill
+\\begin{{minipage}}[t]{{0.45\\textwidth}}
+\\raggedleft
+{destinataire}
+\\end{{minipage}}"""
+        if destinataire
+        else ""
+    )
 
-    date_lieu = latex_escape(content.date_and_location)
-    objet = latex_escape(content.subject)
-    salutation = latex_escape(content.salutation)
-
-    # Paragraphes du corps de texte
-    p1_intro = latex_escape(content.introduction)
-    p2_parcours = latex_escape(content.background_highlight)
-    p3_valeur = latex_escape(content.added_value)
-    p4_closing = latex_escape(content.closing_and_call_to_action)
-
-    politesse = latex_escape(content.complimentary_close)
-    signature = latex_escape(content.signature)
-
-    # Bloc coordonnées candidat
-    coord_candidat_lignes = [f"\\textbf{{{nom_candidat}}}"]
-    if adresse_candidat:
-        coord_candidat_lignes.append(adresse_candidat)
-    if email_candidat:
-        coord_candidat_lignes.append(f"\\href{{mailto:{email_candidat}}}{{{email_candidat}}}")
-    if phone_candidat:
-        coord_candidat_lignes.append(phone_candidat)
-    bloc_expediteur = " \\\\\n".join(coord_candidat_lignes)
-
-    # Bloc destinataire
-    coord_dest_lignes = [f"\\textbf{{{entreprise}}}"]
-    if service:
-        coord_dest_lignes.append(service)
-    bloc_destinataire = " \\\\\n".join(coord_dest_lignes)
+    separateur = " :" if content.language == "fr" else ":"
+    paragraphes = "\n\n".join(latex_escape(p) for p in content.body_paragraphs() if p)
 
     return f"""% !TEX TS-program = pdflatex
 % !TEX encoding = UTF-8 Unicode
-\\documentclass[11pt,a4paper]{{article}}
+\\documentclass[{mise_en_page.font_size},a4paper]{{article}}
 
+% cmap AVANT fontenc : extraction correcte du texte (accents, ligatures) par les lecteurs de PDF.
+\\usepackage{{cmap}}
 \\usepackage[utf8]{{inputenc}}
 \\usepackage[T1]{{fontenc}}
 \\usepackage{{lmodern}}
 \\usepackage{{geometry}}
-\\geometry{{a4paper, margin=2.2cm, top=2.0cm, bottom=2.0cm}}
+\\geometry{{a4paper, {mise_en_page.geometry}}}
 
 \\usepackage{{hyperref}}
-\\hypersetup{{
-    colorlinks=true,
-    linkcolor=black,
-    urlcolor=black
-}}
+\\hypersetup{{colorlinks=true, linkcolor=black, urlcolor=black}}
 
 \\pagestyle{{empty}}
 \\setlength{{\\parindent}}{{0pt}}
-\\setlength{{\\parskip}}{{1.0em}}
+\\setlength{{\\parskip}}{{{mise_en_page.parskip}}}
 
 \\begin{{document}}
 
-% En-tête expéditeur et destinataire
+% Expéditeur et destinataire
 \\begin{{minipage}}[t]{{0.5\\textwidth}}
-{bloc_expediteur}
+{expediteur}
 \\end{{minipage}}
-\\hfill
-\\begin{{minipage}}[t]{{0.45\\textwidth}}
-\\raggedleft
 {bloc_destinataire}
-\\end{{minipage}}
 
 \\vspace{{1.5em}}
 
-\\hfill {date_lieu}
+\\hfill {latex_escape(content.date_and_location)}
 
 \\vspace{{1.0em}}
 
-\\textbf{{Objet : {objet}}}
+\\textbf{{{libelles.subject_label}{separateur} {latex_escape(content.subject)}}}
 
 \\vspace{{0.5em}}
 
-{salutation}
+{latex_escape(content.salutation)}
 
-{p1_intro}
-
-{p2_parcours}
-
-{p3_valeur}
-
-{p4_closing}
+{paragraphes}
 
 \\vspace{{0.5em}}
 
-{politesse}
+{latex_escape(content.complimentary_close)}
 
 \\vspace{{1.5em}}
 
-\\textbf{{{signature}}}
+\\textbf{{{latex_escape(content.signature)}}}
 
 \\end{{document}}
 """

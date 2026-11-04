@@ -35,7 +35,16 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run mypy
+      # pdfLaTeX est indispensable aux tests de compilation réelle (EPIC 012/013).
+      - name: Installer TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-base \
+            texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended lmodern
       - run: uv run pytest
+        env:
+          # Un test de compilation ne doit jamais être ignoré en silence en CI.
+          HAPPLY_REQUIRE_PDFLATEX: "1"
 
   frontend:
     runs-on: ubuntu-latest

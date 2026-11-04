@@ -7,6 +7,8 @@ from app.main import create_app
 from app.modules.document_generation.infrastructure.latex_compiler import (
     IsolatedLaTeXCompiler,
 )
+from app.modules.document_generation.presentation.downloads import attachment_headers
+from app.modules.document_generation.presentation.router import MAX_AUDIT_PDF_BYTES
 
 
 @pytest.fixture
@@ -16,8 +18,9 @@ async def client():  # type: ignore[no-untyped-def]
         yield c
 
 
-async def test_audit_ats_endpoint_sur_pdf_reel(client: httpx.AsyncClient) -> None:
-    compiler = IsolatedLaTeXCompiler()
+async def test_audit_ats_endpoint_sur_pdf_reel(
+    client: httpx.AsyncClient, compiler: IsolatedLaTeXCompiler
+) -> None:
     tex = r"""\documentclass[10pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -54,3 +57,40 @@ async def test_audit_ats_fichier_vide_renvoie_400(client: httpx.AsyncClient) -> 
     )
     assert reponse.status_code == 400
     assert "Fichier PDF vide" in reponse.json()["error"]["message"]
+
+
+async def test_audit_ats_refuse_un_fichier_qui_n_est_pas_un_pdf(client: httpx.AsyncClient) -> None:
+    reponse = await client.post(
+        "/api/v1/resumes/audit-ats",
+        files={"file": ("cv.pdf", b"MZ\x90 executable deguise", "application/pdf")},
+    )
+    assert reponse.status_code == 415
+
+
+async def test_audit_ats_refuse_un_fichier_trop_volumineux(client: httpx.AsyncClient) -> None:
+    contenu = b"%PDF-1.4\n" + b"0" * MAX_AUDIT_PDF_BYTES
+    reponse = await client.post(
+        "/api/v1/resumes/audit-ats", files={"file": ("gros.pdf", contenu, "application/pdf")}
+    )
+    assert reponse.status_code == 413
+
+
+async def test_audit_ats_pdf_corrompu_donne_un_rapport_en_echec_sans_erreur_500(
+    client: httpx.AsyncClient,
+) -> None:
+    reponse = await client.post(
+        "/api/v1/resumes/audit-ats",
+        files={"file": ("casse.pdf", b"%PDF-1.4 contenu tronque", "application/pdf")},
+    )
+    assert reponse.status_code == 200
+    assert reponse.json()["passed"] is False
+    assert reponse.json()["score"] == 0
+
+
+def test_en_tete_de_telechargement_gere_les_noms_accentues_et_non_latins() -> None:
+    """Un titre « Łukasz — CV » ne doit pas provoquer d'erreur d'encodage d'en-tête HTTP."""
+    en_tete = attachment_headers('Łukasz Wójcik "CV" é_v1.pdf')["Content-Disposition"]
+
+    assert en_tete.isascii()
+    assert "filename*=UTF-8''" in en_tete
+    assert '""' not in en_tete.split(";")[1]

@@ -1,154 +1,322 @@
-"""Tests unitaires du générateur et de l'audit de lettre de motivation (FEATURE 013.1 et 013.2)."""
+"""Génération factuelle de la lettre (TASK-013-01 à 08, 013-16, 013-18)."""
+
+from datetime import date
+from typing import Any
+
+import pytest
 
 from app.modules.candidate_profile.domain.profile import (
     DocDate,
+    EducationDoc,
     ExperienceDoc,
     Identity,
     ProfileDocument,
     SkillDoc,
 )
+from app.modules.document_generation.domain.cover_letter_conventions import (
+    conventions_for,
+    format_letter_date,
+)
 from app.modules.document_generation.domain.cover_letter_generator import (
-    audit_cover_letter,
     extract_company_offer_context,
     generate_cover_letter_content,
 )
 from app.modules.document_generation.domain.cover_letter_models import (
+    CompanyOfferContext,
     CoverLetterContent,
     CoverLetterOptions,
+    IncompleteProfileError,
+    count_words,
+)
+from tests.unit.document_generation.cover_letter_samples import (
+    AUJOURDHUI,
+    DESCRIPTION_OFFRE,
+    contexte_offre,
+    profil_alice,
 )
 
 
-def _profil_candidat() -> ProfileDocument:
-    return ProfileDocument(
-        identity=Identity(
-            first_name="Marc",
-            last_name="Lambert",
-            city="Nantes",
-            email="marc.lambert@example.com",
-            phone="+33 6 11 22 33 44",
-            headline="Ingénieur Cloud & DevOps",
-        ),
-        experiences=(
-            ExperienceDoc(
-                title="DevOps Engineer",
-                company="SaaS Corp",
-                start=DocDate(year=2021),
-                is_current=True,
-                description="Automatisation d'infrastructures avec Terraform et AWS.",
-                achievements=("Disponibilité portée à 99.99%", "Migration Kubernetes"),
-            ),
-        ),
-        skills=(
-            SkillDoc(name="Terraform", category="DevOps"),
-            SkillDoc(name="AWS", category="Cloud"),
-            SkillDoc(name="Kubernetes", category="DevOps"),
-            SkillDoc(name="Python", category="Langages"),
-        ),
+def _lettre(
+    profil: ProfileDocument | None = None,
+    ctx: CompanyOfferContext | None = None,
+    **options: Any,
+) -> CoverLetterContent:
+    return generate_cover_letter_content(
+        profil or profil_alice(),
+        ctx or contexte_offre(),
+        CoverLetterOptions(**options),
+        today=AUJOURDHUI,
     )
 
 
-def test_extraction_contexte_offre() -> None:
-    """Vérifie l'extraction structurée des données de l'offre et entreprise (TASK-013-01 à 03)."""
-    desc = """À propos de Datadog : leader mondial du monitoring cloud.
-    Vos missions :
-    - Concevoir des pipelines d'automatisation Terraform
-    - Optimiser le déploiement sur Kubernetes
-    - Assurer la fiabilité des infrastructures de production
-    """
-    context = extract_company_offer_context(
-        job_title="Senior Site Reliability Engineer",
-        company_name="Datadog France",
-        offer_description=desc,
-        company_location="Paris",
-        required_skills=("Terraform", "Kubernetes", "AWS"),
+def test_extraction_contexte_offre_sans_rien_deduire() -> None:
+    ctx = contexte_offre()
+
+    assert ctx.company_name == "Doctolib"
+    assert ctx.responsibilities == (
+        "Concevoir des API FastAPI robustes",
+        "Écrire des requêtes SQL sur PostgreSQL",
+        "Participer aux revues de code",
+    )
+    assert ctx.required_skills == ("Python", "FastAPI", "Rust")
+    assert ctx.offer_text == DESCRIPTION_OFFRE
+
+
+def test_entreprise_absente_ou_vide_reste_inconnue() -> None:
+    for nom in (None, "", "   "):
+        ctx = extract_company_offer_context(
+            job_title="Dev", company_name=nom, offer_description="Texte."
+        )
+        assert ctx.company_name is None  # plus de « l'entreprise » inventé comme nom
+
+
+def test_lettre_fr_en_quatre_parties_factuelles() -> None:
+    lettre = _lettre()
+
+    assert lettre.subject == "Candidature au poste de Développeur Python Backend"
+    assert lettre.salutation == "Madame, Monsieur,"
+    assert "Développeur Python Backend chez Doctolib (Paris)" in lettre.introduction
+    assert "Concevoir" not in lettre.introduction  # verbe abaissé : « notamment concevoir »
+    assert "notamment concevoir des API FastAPI robustes et écrire des requêtes" in (
+        lettre.introduction
+    )
+    assert lettre.background_highlight.startswith(
+        "Depuis 2021, j'exerce comme Lead Tech Python chez DataCorp."
+    )
+    assert "J'y mobilise notamment Python et FastAPI." in lettre.background_highlight
+    assert "Parmi mes réalisations : Latence réduite de 40 % ; Migration vers PostgreSQL." in (
+        lettre.background_highlight
+    )
+    assert "Plusieurs compétences demandées par l'offre figurent dans mon profil" in (
+        lettre.added_value
+    )
+    assert "entretien" in lettre.closing_and_call_to_action
+    assert all(lettre.body_paragraphs())
+
+
+def test_aucun_fait_invente_regression_de_l_ancien_generateur() -> None:
+    """L'ancienne lettre affirmait « solides compétences », « rigueur éprouvée », « France »…"""
+    texte = _lettre().full_text() + _lettre(language="en").full_text()
+
+    for invente in (
+        "Fort de",
+        "solide",
+        "rigueur éprouvée",
+        "résultats mesurables",
+        "pluridisciplinaires",
+        "Ingénieur",
+        "France",
+        "proven",
+        "robust, maintainable",
+    ):
+        assert invente not in texte
+    chiffres = {c for c in texte if c.isdigit()}
+    assert chiffres <= set("2021403600332026418")  # profil, offre, date
+
+
+def test_competence_absente_du_profil_jamais_citee() -> None:
+    lettre = _lettre()
+    assert "Rust" not in lettre.full_text()  # demandée par l'offre, absente du profil
+
+
+def test_formulations_neutres_en_genre() -> None:
+    texte = _lettre().full_text()
+    for genre in ("ravi", "heureux", "attentif", "motivé", "Forte"):
+        assert genre not in texte
+
+
+def test_realisations_pertinentes_en_tete() -> None:
+    profil = profil_alice()
+    experience = profil.experiences[0].model_copy(
+        update={"achievements": ("Organisation d'ateliers", "Migration vers FastAPI", "Revue")}
+    )
+    profil = profil.model_copy(update={"experiences": (experience, profil.experiences[1])})
+    lettre = _lettre(profil)
+
+    assert "Parmi mes réalisations : Migration vers FastAPI ; Organisation d'ateliers." in (
+        lettre.background_highlight
     )
 
-    assert context.company_name == "Datadog France"
-    assert context.job_title == "Senior Site Reliability Engineer"
-    assert len(context.responsibilities) >= 2
-    assert "Terraform" in context.keywords
-    assert "Kubernetes" in context.keywords
 
-
-def test_generation_fr_structure_en_quatre_parties() -> None:
-    """Vérifie la rédaction en 4 parties professionnelles (TASK-013-07, 08)."""
-    profil = _profil_candidat()
-    context = extract_company_offer_context(
-        job_title="Lead DevOps",
-        company_name="Acme Cloud",
-        offer_description="Missions de déploiement d'infrastructure sur AWS.",
-        required_skills=("AWS", "Terraform"),
+def test_seconde_experience_citee_seulement_si_pertinente() -> None:
+    assert "De 2018 à 2021, j'ai exercé comme Développeuse Backend chez WebAgency." in (
+        _lettre().background_highlight
     )
-    options = CoverLetterOptions(language="fr")
 
-    content = generate_cover_letter_content(profil, context, options)
-
-    assert content.candidate_name == "Marc Lambert"
-    assert content.recipient_company == "Acme Cloud"
-    assert "Candidature au poste de Lead DevOps" in content.subject
-    assert "Madame, Monsieur" in content.salutation
-
-    # 4 parties distinctes
-    assert "Acme Cloud" in content.introduction
-    assert "SaaS Corp" in content.background_highlight
-    assert "Terraform" in content.added_value or "AWS" in content.added_value
-    assert "entretien" in content.closing_and_call_to_action
-    assert content.word_count >= 150
-
-
-def test_generation_en_adaptation_ton_et_langue() -> None:
-    """Vérifie l'adaptation des formules en langue anglaise (TASK-013-16, 18)."""
-    profil = _profil_candidat()
-    context = extract_company_offer_context(
-        job_title="Cloud Engineer",
-        company_name="Global Tech Ltd",
-        offer_description="Deploying multi-region systems on AWS.",
-        required_skills=("AWS", "Terraform"),
+    sans_rapport = ExperienceDoc(
+        title="Barista", company="Café", start=DocDate(year=2010), end=DocDate(year=2012)
     )
-    options = CoverLetterOptions(language="en")
-
-    content = generate_cover_letter_content(profil, context, options)
-
-    assert "Application for Cloud Engineer position" in content.subject
-    assert "Dear Hiring Team at Global Tech Ltd," in content.salutation
-    assert "Sincerely," in content.complimentary_close
-    assert "interview" in content.closing_and_call_to_action
-
-
-def test_audit_qualite_et_detection_cliches() -> None:
-    """Vérifie l'évaluation sur 100 points et le rejet des clichés creux (TASK-013-11)."""
-    profil = _profil_candidat()
-    context = extract_company_offer_context(
-        job_title="DevOps Specialist",
-        company_name="Fintech SAS",
-        offer_description="Gestion d'infrastructure sécurisée.",
+    profil = profil_alice().model_copy(
+        update={"experiences": (profil_alice().experiences[0], sans_rapport)}
     )
-    content = generate_cover_letter_content(profil, context, CoverLetterOptions())
+    assert "Barista" not in _lettre(profil).background_highlight
 
-    audit = audit_cover_letter(content, profil, context)
-    assert audit.score >= 70
-    assert audit.passed is True
-    assert len(audit.generic_phrases_detected) == 0
 
-    # Test avec cliché interdit injecté
-    content_modifie = CoverLetterContent(
-        candidate_name=content.candidate_name,
-        candidate_address=content.candidate_address,
-        candidate_email=content.candidate_email,
-        candidate_phone=content.candidate_phone,
-        recipient_company=content.recipient_company,
-        recipient_department=content.recipient_department,
-        date_and_location=content.date_and_location,
-        subject=content.subject,
-        salutation=content.salutation,
-        introduction="Je suis extrêmement motivé par cette opportunité.",
-        background_highlight=content.background_highlight,
-        added_value=content.added_value,
-        closing_and_call_to_action=content.closing_and_call_to_action,
-        complimentary_close=content.complimentary_close,
-        signature=content.signature,
-        word_count=content.word_count,
+def test_faits_utilises_traces_pour_le_controle() -> None:
+    lettre = _lettre()
+
+    assert ("DataCorp", "Lead Tech Python") in lettre.facts.experiences
+    assert set(lettre.facts.skills) == {"Python", "FastAPI"}
+    assert "Latence réduite de 40 %" in lettre.facts.achievements
+
+
+def test_textes_de_l_utilisateur_inseres_tels_quels_et_marques() -> None:
+    lettre = _lettre(
+        custom_opening="Votre produit change le quotidien de 12 000 soignants.",
+        motivation="J'ai suivi votre blog technique depuis 5 ans.",
     )
-    audit_cliche = audit_cover_letter(content_modifie, profil, context)
-    assert audit_cliche.passed is False
-    assert "extrêmement motivé" in audit_cliche.generic_phrases_detected
+
+    assert lettre.introduction == "Votre produit change le quotidien de 12 000 soignants."
+    assert "J'ai suivi votre blog technique depuis 5 ans." in lettre.added_value
+    assert lettre.user_written == (
+        "Votre produit change le quotidien de 12 000 soignants.",
+        "J'ai suivi votre blog technique depuis 5 ans.",
+    )
+
+
+def test_destinataire_nomme_n_invente_pas_de_civilite() -> None:
+    lettre = _lettre(recipient_name="Claire Martin", recipient_department="Recrutement")
+
+    assert lettre.salutation == "Madame, Monsieur,"  # genre inconnu
+    assert lettre.recipient_name == "Claire Martin"
+    assert lettre.recipient_department == "Recrutement"
+
+
+def test_sans_ville_pas_de_lieu_invente() -> None:
+    profil = profil_alice().model_copy(
+        update={"identity": profil_alice().identity.model_copy(update={"city": None})}
+    )
+    lettre = _lettre(profil)
+
+    assert lettre.candidate_city is None
+    assert lettre.date_and_location == "Le 4 novembre 2026"
+
+
+def test_coordonnees_exactes() -> None:
+    lettre = _lettre()
+    assert (lettre.candidate_name, lettre.candidate_city) == ("Alice Mercier", "Paris")
+    assert lettre.candidate_email == "alice.mercier@example.com"
+    assert lettre.candidate_phone == "+33 6 00 00 00 00"
+    assert lettre.signature == "Alice Mercier"
+    assert lettre.date_and_location == "Paris, le 4 novembre 2026"
+
+
+def test_lettre_anglaise_etats_unis_par_defaut() -> None:
+    lettre = _lettre(language="en")
+
+    assert lettre.subject == "Application for the position of Développeur Python Backend"
+    assert lettre.salutation == "Dear Hiring Manager,"
+    assert lettre.complimentary_close == "Sincerely,"
+    assert lettre.date_and_location == "Paris, November 4, 2026"
+    assert lettre.background_highlight.startswith(
+        "Since 2021, I work as Lead Tech Python at DataCorp."
+    )
+    assert "Among my achievements: Latence réduite de 40 %; Migration vers PostgreSQL." in (
+        lettre.background_highlight
+    )
+    assert "interview" in lettre.closing_and_call_to_action
+
+
+def test_lettre_anglaise_style_britannique() -> None:
+    lettre = _lettre(language="en", country_code="gb")
+
+    assert lettre.salutation == "Dear Sir or Madam,"
+    assert lettre.complimentary_close == "Yours faithfully,"
+    assert lettre.date_and_location == "Paris, 4 November 2026"
+
+
+def test_conventions_par_pays() -> None:
+    assert (
+        conventions_for(language="en", country_code="GB", recipient_name="Ms Smith").salutation
+        == "Dear Ms Smith,"
+    )
+    assert (
+        conventions_for(
+            language="en", country_code="GB", recipient_name="Ms Smith"
+        ).complimentary_close
+        == "Yours sincerely,"
+    )
+    assert (
+        conventions_for(
+            language="en", country_code="US", recipient_name="Ms Smith"
+        ).complimentary_close
+        == "Sincerely,"
+    )
+    francais = conventions_for(language="fr", country_code="CA", recipient_name=None)
+    assert "salutations distinguées" in francais.complimentary_close
+    assert francais.labels.subject_label == "Objet"
+
+
+def test_format_de_date() -> None:
+    jour = date(2026, 3, 1)
+    assert format_letter_date(jour, language="fr", country_code=None, city="Lyon") == (
+        "Lyon, le 1 mars 2026"
+    )
+    assert format_letter_date(jour, language="en", country_code="IE", city=None) == "1 March 2026"
+
+
+def test_langue_non_geree_refusee_au_lieu_de_basculer_en_francais() -> None:
+    """Avant : « de » produisait une lettre française étiquetée allemande."""
+    with pytest.raises(ValueError, match="language"):
+        CoverLetterOptions(language="de")
+    with pytest.raises(ValueError, match="country_code"):
+        CoverLetterOptions(country_code="FRA")
+
+
+def test_profil_sans_nom_refuse() -> None:
+    profil = profil_alice().model_copy(update={"identity": Identity(city="Paris")})
+    with pytest.raises(IncompleteProfileError, match="nom"):
+        _lettre(profil)
+
+
+def test_profil_vide_refuse() -> None:
+    profil = ProfileDocument(identity=Identity(first_name="Alice", last_name="Mercier"))
+    with pytest.raises(IncompleteProfileError):
+        _lettre(profil)
+
+
+def test_sans_experience_la_formation_puis_les_competences() -> None:
+    avec_formation = ProfileDocument(
+        identity=Identity(first_name="Alice", last_name="Mercier"),
+        educations=(EducationDoc(degree="Master Informatique", institution="Université de Lyon"),),
+    )
+    lettre = _lettre(avec_formation)
+    assert "Mon parcours de formation comprend Master Informatique (Université de Lyon)." in (
+        lettre.background_highlight
+    )
+    assert lettre.facts.degrees == ("Master Informatique",)
+
+    seulement_competences = ProfileDocument(
+        identity=Identity(first_name="Alice", last_name="Mercier"),
+        skills=(SkillDoc(name="Python"), SkillDoc(name="Docker")),
+    )
+    assert (
+        "compétences suivantes : Python et Docker."
+        in _lettre(seulement_competences).background_highlight
+    )
+
+
+def test_sans_competence_commune_aucune_affirmation_d_adequation() -> None:
+    profil = ProfileDocument(
+        identity=Identity(first_name="Alice", last_name="Mercier"),
+        experiences=(ExperienceDoc(title="Boulangère", company="Fournil", is_current=True),),
+        skills=(SkillDoc(name="Pâtisserie"),),
+    )
+    lettre = _lettre(profil)
+
+    assert "figurent dans mon profil" not in lettre.added_value
+    assert "rejoignent mon parcours" not in lettre.introduction
+    assert "Un échange me permettrait de comprendre les besoins de Doctolib" in lettre.added_value
+
+
+def test_entreprise_inconnue_formulations_sans_nom() -> None:
+    lettre = _lettre(ctx=contexte_offre(company_name=None, company_location=None))
+
+    assert lettre.recipient_company is None
+    assert " chez " not in lettre.introduction
+    assert "Doctolib" not in lettre.full_text()
+
+
+def test_la_lettre_sans_apport_personnel_est_courte_donc_signalee_ailleurs() -> None:
+    """Honnêteté : sans texte de l'utilisateur, on ne remplit pas pour atteindre 250 mots."""
+    assert count_words(_lettre().body_text()) < 250

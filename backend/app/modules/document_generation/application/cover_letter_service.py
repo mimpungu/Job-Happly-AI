@@ -1,227 +1,205 @@
-"""Service applicatif pour la génération, la compilation et la gestion des
-versions de lettres de motivation.
-"""
+"""Cas d'usage de la lettre de motivation : génération, édition, versions (EPIC 013)."""
 
 from __future__ import annotations
 
-import difflib
+import asyncio
 import uuid
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from datetime import date
+from typing import TYPE_CHECKING, Any
 
+from app.modules.document_generation.application.library import DocumentLibrary
 from app.modules.document_generation.application.ports import (
     DocumentRepositoryPort,
     DocumentStoragePort,
+    GenerationInputsPort,
     LaTeXCompilerPort,
+    NoValidatedProfileError,
+    OfferContext,
+    OfferNotFoundError,
+)
+from app.modules.document_generation.domain.ats_analyzer import read_pdf_text
+from app.modules.document_generation.domain.cover_letter_audit import (
+    audit_letter,
+    audit_letter_text,
+    verify_letter_facts,
 )
 from app.modules.document_generation.domain.cover_letter_generator import (
-    audit_cover_letter,
     extract_company_offer_context,
     generate_cover_letter_content,
 )
 from app.modules.document_generation.domain.cover_letter_models import (
+    CompanyOfferContext,
     CoverLetterAudit,
     CoverLetterContent,
     CoverLetterOptions,
+)
+from app.modules.document_generation.domain.cover_letter_prompts import (
+    COVER_LETTER_PROMPT_VERSION,
 )
 from app.modules.document_generation.domain.cover_letter_templates import (
     render_latex_cover_letter,
 )
 from app.modules.document_generation.domain.enums import DocumentKind
-from app.modules.document_generation.domain.models import DocumentComparison
+from app.modules.document_generation.domain.fact_checker import UnverifiedFactError
 
 if TYPE_CHECKING:
-    from app.modules.candidate_profile.domain.profile import ProfileDocument
     from app.modules.document_generation.infrastructure.models import (
         DocumentVersionModel,
         GeneratedDocumentModel,
     )
 
+_MAX_PAGES = 1
+
 
 class CoverLetterService:
-    """Orchestrateur pour les lettres de motivation (EPIC 013)."""
+    """Orchestre la lettre : profil validé + offre → texte factuel → PDF → audit → version."""
 
     def __init__(
         self,
         repository: DocumentRepositoryPort,
         storage: DocumentStoragePort,
         compiler: LaTeXCompilerPort,
+        inputs: GenerationInputsPort,
+        *,
+        today: Callable[[], date] = date.today,
     ) -> None:
         self._repository = repository
         self._storage = storage
         self._compiler = compiler
+        self._inputs = inputs
+        self._today = today
+        self.library = DocumentLibrary(repository, storage, DocumentKind.COVER_LETTER)
 
     async def generate_tailored_letter(
-        self,
-        *,
-        owner_id: uuid.UUID,
-        master_profile: ProfileDocument,
-        options: CoverLetterOptions,
-        job_title: str,
-        company_name: str | None,
-        offer_description: str,
-        offer_id: uuid.UUID | None = None,
-        company_location: str | None = None,
-        company_sector: str | None = None,
-        required_skills: tuple[str, ...] = (),
+        self, *, owner_id: uuid.UUID, offer_id: uuid.UUID, options: CoverLetterOptions
     ) -> tuple[GeneratedDocumentModel, DocumentVersionModel, CoverLetterContent, CoverLetterAudit]:
-        """Génère une lettre de motivation ciblée, compile le PDF et enregistre la version 1."""
-        # 1. Analyse offre et entreprise (TASK-013-01 à 05)
-        context = extract_company_offer_context(
-            job_title=job_title,
-            company_name=company_name,
-            offer_description=offer_description,
-            company_location=company_location,
-            company_sector=company_sector,
-            required_skills=required_skills,
-        )
+        """Génère la lettre depuis le profil validé et l'offre, la compile et l'enregistre (v1)."""
+        profile = await self._inputs.validated_profile(owner_id=owner_id)
+        offer = await self._inputs.offer_context(owner_id=owner_id, offer_id=offer_id)
+        context = _to_context(offer)
+        aujourdhui = self._today()
 
-        # 2. Génération structurée en 4 parties (TASK-013-07, 08, 10, 16, 18)
-        content = generate_cover_letter_content(master_profile, context, options)
+        # Le pays de l'offre guide les usages (date, salutation) sauf indication contraire.
+        if options.country_code is None and offer.country_code:
+            options = options.model_copy(update={"country_code": offer.country_code.upper()})
 
-        # 3. Contrôle qualité éditorial et factuel (TASK-013-09, 10, 11)
-        audit = audit_cover_letter(content, master_profile, context)
+        content = generate_cover_letter_content(profile, context, options, today=aujourdhui)
+        faits = verify_letter_facts(content, profile, context, today=aujourdhui)
+        if faits:  # TASK-013-09/10 : jamais de lettre qui contredit le CV
+            raise UnverifiedFactError(
+                "La lettre générée contient des faits non prouvés : " + "; ".join(faits)
+            )
 
-        # 4. Rendu du template LaTeX (TASK-013-12)
-        latex_source = render_latex_cover_letter(content)
+        latex_source, pdf_bytes, pages = await self._compile(content, compact=False)
+        if pages > _MAX_PAGES:
+            # Resserrer la mise en page plutôt que couper le texte de l'utilisateur.
+            latex_source, pdf_bytes, pages = await self._compile(content, compact=True)
+        audit = audit_letter(content, profile, context, today=aujourdhui, page_count=pages)
 
-        # 5. Compilation isolée du PDF (TASK-013-13)
-        pdf_bytes = await self._compiler.compile(latex_source)
-
-        # 6. Stockage de l'artefact PDF (ADR-0007 / TASK-013-15)
         storage_key, sha256, size_bytes = await self._storage.store(pdf_bytes, extension="pdf")
+        try:
+            document = await self._repository.create_document(
+                owner_id=owner_id,
+                kind=DocumentKind.COVER_LETTER,
+                title=_title(context),
+                language=options.language,
+                offer_id=offer_id,
+            )
+            version = await self._repository.add_version(
+                owner_id=owner_id,
+                document_id=document.id,
+                latex_source=latex_source,
+                storage_key=storage_key,
+                sha256=sha256,
+                size_bytes=size_bytes,
+                ats_report={
+                    **audit.to_dict(),
+                    "generation": {
+                        "origin": "generated",
+                        "prompt_version": COVER_LETTER_PROMPT_VERSION,
+                        "language": options.language,
+                        "country_code": options.country_code,
+                    },
+                },
+            )
+        except Exception:
+            await self._storage.delete(storage_key)  # pas de PDF orphelin si la base échoue
+            raise
+        return document, version, content, audit
 
-        # 7. Enregistrement en base de données du document logique et de sa version 1
-        doc_title = f"Lettre - {context.job_title} ({context.company_name})"
-        document = await self._repository.create_document(
-            owner_id=owner_id,
-            kind=DocumentKind.COVER_LETTER,
-            title=doc_title,
-            language=options.language,
-            offer_id=offer_id,
-        )
-
-        version_model = await self._repository.add_version(
-            owner_id=owner_id,
-            document_id=document.id,
-            latex_source=latex_source,
-            storage_key=storage_key,
-            sha256=sha256,
-            size_bytes=size_bytes,
-            ats_report=audit.to_dict(),
-        )
-
-        return document, version_model, content, audit
+    async def _compile(
+        self, content: CoverLetterContent, *, compact: bool
+    ) -> tuple[str, bytes, int]:
+        latex_source = render_latex_cover_letter(content, compact=compact)
+        pdf_bytes = await self._compiler.compile(latex_source)
+        lecture = await asyncio.to_thread(read_pdf_text, pdf_bytes)
+        return latex_source, pdf_bytes, lecture[1] if lecture else 0
 
     async def compile_custom_version(
-        self,
-        *,
-        owner_id: uuid.UUID,
-        document_id: uuid.UUID,
-        latex_source: str,
-        audit_data: dict[str, object] | None = None,
-    ) -> DocumentVersionModel:
-        """Compile une version manuellement éditée de la lettre (TASK-013-14, 15)."""
-        document = await self._repository.get_document(owner_id=owner_id, document_id=document_id)
-        if document is None:
-            raise ValueError(f"Document introuvable : {document_id}")
-
+        self, *, owner_id: uuid.UUID, document_id: uuid.UUID, latex_source: str
+    ) -> tuple[DocumentVersionModel, CoverLetterAudit]:
+        """Compile une version éditée et l'audite réellement (jamais de score fabriqué)."""
+        document = await self.library.get_document(owner_id=owner_id, document_id=document_id)
         pdf_bytes = await self._compiler.compile(latex_source)
+
+        lecture = await asyncio.to_thread(read_pdf_text, pdf_bytes)
+        texte, pages = lecture if lecture else ("", 0)
+        profile, context = await self._references(owner_id, document.offer_id)
+        audit = audit_letter_text(
+            texte,
+            language=document.language,
+            profile=profile,
+            context=context,
+            today=self._today(),
+            page_count=pages,
+        )
+
         storage_key, sha256, size_bytes = await self._storage.store(pdf_bytes, extension="pdf")
+        try:
+            version = await self._repository.add_version(
+                owner_id=owner_id,
+                document_id=document_id,
+                latex_source=latex_source,
+                storage_key=storage_key,
+                sha256=sha256,
+                size_bytes=size_bytes,
+                ats_report={**audit.to_dict(), "generation": {"origin": "manual_edit"}},
+            )
+        except Exception:
+            await self._storage.delete(storage_key)
+            raise
+        return version, audit
 
-        return await self._repository.add_version(
-            owner_id=owner_id,
-            document_id=document_id,
-            latex_source=latex_source,
-            storage_key=storage_key,
-            sha256=sha256,
-            size_bytes=size_bytes,
-            ats_report=audit_data or {"score": 85, "passed": True},
-        )
+    async def _references(
+        self, owner_id: uuid.UUID, offer_id: uuid.UUID | None
+    ) -> tuple[Any, CompanyOfferContext | None]:
+        """Profil validé et offre servant de référence à l'audit ; None si disparus."""
+        try:
+            profile = await self._inputs.validated_profile(owner_id=owner_id)
+        except NoValidatedProfileError:
+            profile = None
+        context = None
+        if offer_id is not None:
+            try:
+                context = _to_context(
+                    await self._inputs.offer_context(owner_id=owner_id, offer_id=offer_id)
+                )
+            except OfferNotFoundError:
+                context = None  # offre supprimée depuis : la lettre reste éditable
+        return profile, context
 
-    async def get_document(
-        self, *, owner_id: uuid.UUID, document_id: uuid.UUID
-    ) -> GeneratedDocumentModel | None:
-        return await self._repository.get_document(owner_id=owner_id, document_id=document_id)
 
-    async def list_documents(
-        self,
-        *,
-        owner_id: uuid.UUID,
-        offer_id: uuid.UUID | None = None,
-    ) -> list[GeneratedDocumentModel]:
-        docs = await self._repository.list_documents(
-            owner_id=owner_id, kind=DocumentKind.COVER_LETTER, offer_id=offer_id
-        )
-        return list(docs)
+def _to_context(offer: OfferContext) -> CompanyOfferContext:
+    return extract_company_offer_context(
+        job_title=offer.title,
+        company_name=offer.company,
+        offer_description=offer.description,
+        company_location=offer.location,
+        required_skills=offer.required_skills,
+    )
 
-    async def list_versions(
-        self, *, owner_id: uuid.UUID, document_id: uuid.UUID
-    ) -> list[DocumentVersionModel]:
-        versions = await self._repository.list_versions(owner_id=owner_id, document_id=document_id)
-        return list(versions)
 
-    async def download_pdf(
-        self, *, owner_id: uuid.UUID, document_id: uuid.UUID, version: int
-    ) -> tuple[bytes, str]:
-        doc = await self._repository.get_document(owner_id=owner_id, document_id=document_id)
-        ver = await self._repository.get_version(
-            owner_id=owner_id, document_id=document_id, version=version
-        )
-        if doc is None or ver is None:
-            raise FileNotFoundError("Version ou document introuvable.")
-
-        pdf_bytes = await self._storage.read(ver.storage_key)
-        safe_title = "".join(c for c in doc.title if c.isalnum() or c in ("-", "_", " ")).strip()
-        filename = f"{safe_title}_v{version}.pdf"
-        return pdf_bytes, filename
-
-    async def download_latex(
-        self, *, owner_id: uuid.UUID, document_id: uuid.UUID, version: int
-    ) -> tuple[str, str]:
-        doc = await self._repository.get_document(owner_id=owner_id, document_id=document_id)
-        ver = await self._repository.get_version(
-            owner_id=owner_id, document_id=document_id, version=version
-        )
-        if doc is None or ver is None or not ver.latex_source:
-            raise FileNotFoundError("Code LaTeX introuvable pour cette version.")
-
-        safe_title = "".join(c for c in doc.title if c.isalnum() or c in ("-", "_", " ")).strip()
-        filename = f"{safe_title}_v{version}.tex"
-        return ver.latex_source, filename
-
-    async def compare_versions(
-        self, *, owner_id: uuid.UUID, document_id: uuid.UUID, version_a: int, version_b: int
-    ) -> DocumentComparison:
-        ver_a = await self._repository.get_version(
-            owner_id=owner_id, document_id=document_id, version=version_a
-        )
-        ver_b = await self._repository.get_version(
-            owner_id=owner_id, document_id=document_id, version=version_b
-        )
-        if ver_a is None or ver_b is None:
-            raise ValueError("L'une des versions à comparer n'existe pas.")
-
-        source_a = (ver_a.latex_source or "").splitlines(keepends=True)
-        source_b = (ver_b.latex_source or "").splitlines(keepends=True)
-
-        diff = difflib.unified_diff(
-            source_a,
-            source_b,
-            fromfile=f"v{version_a}.tex",
-            tofile=f"v{version_b}.tex",
-        )
-        diff_text = "".join(diff)
-
-        score_a = ver_a.ats_report.get("score") if ver_a.ats_report else None
-        score_b = ver_b.ats_report.get("score") if ver_b.ats_report else None
-        size_diff = ver_b.size_bytes - ver_a.size_bytes
-
-        return DocumentComparison(
-            document_id=document_id,
-            version_a=version_a,
-            version_b=version_b,
-            diff_latex=diff_text,
-            score_a=score_a,
-            score_b=score_b,
-            size_diff_bytes=size_diff,
-        )
+def _title(context: CompanyOfferContext) -> str:
+    entreprise = f" ({context.company_name})" if context.company_name else ""
+    return f"Lettre - {context.job_title}{entreprise}"

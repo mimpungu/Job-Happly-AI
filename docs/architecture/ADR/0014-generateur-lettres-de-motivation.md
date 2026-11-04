@@ -56,3 +56,41 @@ Les exigences majeures sont :
 - L'audit qualité fournit un retour immédiat sur la conformité de la lettre avant soumission.
 - La chaîne de compilation réutilise l'infrastructure sécurisée de l'EPIC 012 sans duplication.
 
+
+## Révision du 2026-11-04 — audit et corrections
+
+Un audit avec génération, compilation et exécution des tests d'intégration sur PostgreSQL a
+montré que l'EPIC 013 ne tenait pas ses promesses. Décisions correctives :
+
+1. **Aucun fait inventé** : l'ancien générateur affirmait « compétences solides », « rigueur
+   éprouvée », « résultats mesurables », une ville « France » par défaut et un poste
+   « Ingénieur » par défaut. Chaque phrase est désormais bâtie sur un champ du profil validé
+   ou de l'offre (période, intitulé, société, réalisations citées telles quelles) ; les
+   formulations sont neutres en genre ; aucune compétence absente du profil n'est citée.
+2. **Contrôle des faits bloquant** (`verify_letter_facts`) : employeurs, intitulés, compétences,
+   réalisations, diplômes et coordonnées doivent exister dans le profil maître ; tout nombre du
+   texte généré doit provenir du profil ou de l'offre. Les textes saisis par l'utilisateur
+   (`custom_opening`, `motivation`) ne sont pas jugés. `cv_coherent` est calculé (il valait
+   toujours « vrai »).
+3. **Audit réel** : grille sur 100 réellement évaluée (pertinence, personnalisation, parcours,
+   rédaction, structure), longueur 250–350 mots, une page vérifiée sur le PDF compilé (la mise en
+   page est resserrée si la lettre déborde, jamais coupée). Une version éditée est auditée sur le
+   texte du PDF ; l'ancien faux score `{"score": 85}` est supprimé.
+4. **Langues et pays** : `fr` et `en` seulement (toute autre langue est refusée au lieu de produire
+   du français étiqueté autrement) ; salutation, formule de politesse et date selon le pays,
+   pays de l'offre utilisé par défaut ; libellés « Objet » / « Subject ».
+5. **Sélection** : expériences et compétences choisies par pertinence avec la même logique que le
+   CV (`content_selection`), et non « la première expérience ».
+6. **Architecture** : profil **validé** uniquement ; accès aux données derrière
+   `GenerationInputsPort` (les clés d'analyse d'offre étaient mal lues) ; `DocumentLibrary`
+   commune au CV et à la lettre (un CV n'est plus servi comme une lettre) ; routes minces ;
+   erreurs centralisées ; réponse de génération enrichie (texte, audit, traçabilité).
+7. **Prompt versionné** : empreinte du document source contrôlée par un test, version journalisée
+   avec chaque lettre.
+8. **Template** : `cmap` avant `fontenc`, lien `mailto` correctement échappé, bloc destinataire
+   omis s'il est vide.
+
+Limites assumées : la lettre produite sans IA est factuelle mais sobre (≈ 130 mots) ; les 250 à
+350 mots visés s'obtiennent avec le champ `motivation` ou une future rédaction par IA (accord
+utilisateur et plafond de coût requis). Pas de correction orthographique par dictionnaire
+(dépendance à valider). Aucune recherche externe sur l'entreprise.

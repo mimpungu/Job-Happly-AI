@@ -49,8 +49,10 @@ class Settings(BaseSettings):
     ollama_model_level2: str = "gemma4:12b"
     # Stockage documentaire et compilation LaTeX (EPIC 012 / ADR-0007)
     storage_dir: str = "storage"
-    pdflatex_path: str = "/Library/TeX/texbin/pdflatex"
+    # None : recherche automatique (PATH puis emplacements usuels TeX Live / MacTeX).
+    pdflatex_path: str | None = None
     latex_timeout_seconds: float = 15.0
+    latex_memory_limit_mb: int = 1024
 
     @field_validator(
         "gemini_api_key",

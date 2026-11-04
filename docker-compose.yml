@@ -25,6 +25,7 @@ services:
       HAPPLY_ENVIRONMENT: ${HAPPLY_ENVIRONMENT:-development}
       HAPPLY_CORS_ALLOWED_ORIGINS: '["http://127.0.0.1:3000"]'
       HAPPLY_LOG_LEVEL: ${HAPPLY_LOG_LEVEL:-INFO}
+      HAPPLY_STORAGE_DIR: /srv/storage
       HAPPLY_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       # IA (facultative). Vide = fournisseur non configuré ; les secrets viennent de .env.
       HAPPLY_GEMINI_API_KEY: ${HAPPLY_GEMINI_API_KEY:-}
@@ -37,6 +38,9 @@ services:
       HAPPLY_OLLAMA_URL: ${HAPPLY_OLLAMA_URL:-http://host.docker.internal:11434}
       HAPPLY_OLLAMA_MODEL_LEVEL1: ${HAPPLY_OLLAMA_MODEL_LEVEL1:-gemma4:e4b}
       HAPPLY_OLLAMA_MODEL_LEVEL2: ${HAPPLY_OLLAMA_MODEL_LEVEL2:-gemma4:12b}
+    volumes:
+      # Sans ce volume, les PDF générés disparaîtraient à chaque recréation du conteneur.
+      - documents_data:/srv/storage
     ports:
       - "127.0.0.1:8000:8000"
     healthcheck:
@@ -66,3 +70,4 @@ services:
 
 volumes:
   postgres_data:
+  documents_data:
