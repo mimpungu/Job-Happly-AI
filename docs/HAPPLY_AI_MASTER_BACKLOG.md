@@ -1163,85 +1163,85 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 012 — LATEX RESUME GENERATOR
+# [✅] EPIC 012 — LATEX RESUME GENERATOR
 
 **Priorité : P1 — Génération documentaire**
 
 **Objectif :** produire des CV personnalisés, professionnels et compatibles avec les contraintes ATS.
 
-### [➖] FEATURE 012.1 — Templates LaTeX
+### [✅] FEATURE 012.1 — Templates LaTeX
 
-[➖] **TASK-012-01 — Créer le template principal**
+[✅] **TASK-012-01 — Créer le template principal**
 
-[➖] **TASK-012-02 — Créer les sections standards**
+[✅] **TASK-012-02 — Créer les sections standards**
 
-[➖] **TASK-012-03 — Garantir la mise en page mono-colonne**
+[✅] **TASK-012-03 — Garantir la mise en page mono-colonne**
 
-[➖] **TASK-012-04 — Gérer les caractères internationaux**
+[✅] **TASK-012-04 — Gérer les caractères internationaux**
 
-[➖] **TASK-012-05 — Gérer les variations de longueur**
+[✅] **TASK-012-05 — Gérer les variations de longueur**
 
-### [➖] FEATURE 012.2 — Génération du contenu
+### [✅] FEATURE 012.2 — Génération du contenu
 
-[➖] **TASK-012-06 — Construire le contexte de génération**
+[✅] **TASK-012-06 — Construire le contexte de génération**
 
-[➖] **TASK-012-07 — Sélectionner les expériences pertinentes**
+[✅] **TASK-012-07 — Sélectionner les expériences pertinentes**
 
-[➖] **TASK-012-08 — Adapter les formulations**
+[✅] **TASK-012-08 — Adapter les formulations**
 
-[➖] **TASK-012-09 — Intégrer les mots-clés vérifiés**
+[✅] **TASK-012-09 — Intégrer les mots-clés vérifiés**
 
-[➖] **TASK-012-10 — Contrôler les faits**
+[✅] **TASK-012-10 — Contrôler les faits**
 
-[➖] **TASK-012-11 — Produire le code LaTeX**
+[✅] **TASK-012-11 — Produire le code LaTeX**
 
-### [➖] FEATURE 012.3 — Compilation
+### [✅] FEATURE 012.3 — Compilation
 
-[➖] **TASK-012-12 — Installer et configurer pdfLaTeX**
+[✅] **TASK-012-12 — Installer et configurer pdfLaTeX**
 
-[➖] **TASK-012-13 — Développer le service de compilation isolé**
+[✅] **TASK-012-13 — Développer le service de compilation isolé**
 
-[➖] **TASK-012-14 — Gérer les erreurs de compilation**
+[✅] **TASK-012-14 — Gérer les erreurs de compilation**
 
-[➖] **TASK-012-15 — Appliquer les limites de ressources**
+[✅] **TASK-012-15 — Appliquer les limites de ressources**
 
-[➖] **TASK-012-16 — Désactiver l'accès réseau pendant la compilation**
+[✅] **TASK-012-16 — Désactiver l'accès réseau pendant la compilation**
 
-### [➖] FEATURE 012.4 — Contrôle ATS
+### [✅] FEATURE 012.4 — Contrôle ATS
 
-[➖] **TASK-012-17 — Extraire le texte PDF**
+[✅] **TASK-012-17 — Extraire le texte PDF**
 
-[➖] **TASK-012-18 — Vérifier l'ordre de lecture**
+[✅] **TASK-012-18 — Vérifier l'ordre de lecture**
 
-[➖] **TASK-012-19 — Vérifier les caractères accentués**
+[✅] **TASK-012-19 — Vérifier les caractères accentués**
 
-[➖] **TASK-012-20 — Vérifier les rubriques**
+[✅] **TASK-012-20 — Vérifier les rubriques**
 
-[➖] **TASK-012-21 — Détecter les problèmes de mise en page**
+[✅] **TASK-012-21 — Détecter les problèmes de mise en page**
 
-### [➖] FEATURE 012.5 — Versions et exports
+### [✅] FEATURE 012.5 — Versions et exports
 
-[➖] **TASK-012-22 — Sauvegarder les versions**
+[✅] **TASK-012-22 — Sauvegarder les versions**
 
-[➖] **TASK-012-23 — Associer chaque version à une offre**
+[✅] **TASK-012-23 — Associer chaque version à une offre**
 
-[➖] **TASK-012-24 — Télécharger le PDF**
+[✅] **TASK-012-24 — Télécharger le PDF**
 
-[➖] **TASK-012-25 — Télécharger le LaTeX**
+[✅] **TASK-012-25 — Télécharger le LaTeX**
 
-[➖] **TASK-012-26 — Comparer les versions**
+[✅] **TASK-012-26 — Comparer les versions**
 
-[➖] **TASK-012-27 — Intégrer `docs/HAPPLY_AI_CV_GENERATION_PROMPT.md` comme prompt versionné**
+[✅] **TASK-012-27 — Intégrer `docs/HAPPLY_AI_CV_GENERATION_PROMPT.md` comme prompt versionné**
 
 ### Critères d'acceptation
 
-- [➖] PDF réellement compilé.
-- [➖] Texte sélectionnable.
-- [➖] Extraction vérifiée.
-- [➖] Une seule colonne.
-- [➖] Documents modifiables.
-- [➖] CV maître préservé.
-- [➖] Aucune information inventée.
+- [✅] PDF réellement compilé.
+- [✅] Texte sélectionnable.
+- [✅] Extraction vérifiée.
+- [✅] Une seule colonne.
+- [✅] Documents modifiables.
+- [✅] CV maître préservé.
+- [✅] Aucune information inventée.
 
 **Livrable :** générateur de CV professionnel.
 
@@ -2035,7 +2035,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
 | [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 24 | 0.3 |
 | [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 14 | 0.3 |
-| [➖] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 0 | 0.4 |
+| [✅] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 27 | 0.4 |
 | [➖] | 013 — Cover Letter Generator | P1 | 3 | 18 | 0 | 0.4 |
 | [➖] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 0 | 0.4 |
 | [➖] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 0 | 0.5 |

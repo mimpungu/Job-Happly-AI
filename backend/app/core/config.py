@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     ollama_url: str = "http://127.0.0.1:11434"
     ollama_model_level1: str = "gemma4:e4b"
     ollama_model_level2: str = "gemma4:12b"
+    # Stockage documentaire et compilation LaTeX (EPIC 012 / ADR-0007)
+    storage_dir: str = "storage"
+    pdflatex_path: str = "/Library/TeX/texbin/pdflatex"
+    latex_timeout_seconds: float = 15.0
 
     @field_validator(
         "gemini_api_key",

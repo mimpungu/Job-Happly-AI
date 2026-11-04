@@ -15,6 +15,7 @@ from app.modules.candidate_profile.presentation.router import (
     register_document_errors,
 )
 from app.modules.candidate_profile.presentation.router import router as profile_router
+from app.modules.document_generation.presentation.router import router as resume_router
 from app.modules.job_discovery.presentation.companies_router import (
     register_company_errors,
 )
@@ -80,6 +81,7 @@ def create_app() -> FastAPI:
     application.include_router(matching_router)
     application.include_router(analysis_router)
     application.include_router(ai_router)
+    application.include_router(resume_router)
     return application
 
 

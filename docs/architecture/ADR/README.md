@@ -23,5 +23,8 @@ Un ADR documente une décision d'architecture importante : contexte, décision, 
 | [0008](0008-authentification-differee.md) | Authentification différée, exécution locale | Accepté |
 | [0009](0009-taches-de-fond-postgresql.md) | Tâches de fond adossées à PostgreSQL | Accepté |
 | [0010](0010-contrastes-boutons-pleins.md) | Texte sombre sur les boutons pleins (contraste) | Accepté |
+| [0011](0011-ia-hybride-local-et-api.md) | IA hybride local et API | Accepté |
+| [0012](0012-fournisseurs-ia-de-demarrage.md) | Fournisseurs IA de démarrage (Gemini + Ollama) | Accepté |
+| [0013](0013-generateur-cv-latex.md) | Architecture du générateur de CV LaTeX et contrôle ATS | Accepté |
 
 Modèle : [TEMPLATE.md](TEMPLATE.md)
