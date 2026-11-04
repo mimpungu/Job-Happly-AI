@@ -40,6 +40,7 @@ def to_collection_filter(offer_filter: OfferFilter, titles: tuple[str, ...]) -> 
         country_codes=offer_filter.country_codes,
         titles=titles,
         keywords=termes,
+        multilingual=offer_filter.multilingual,
     )
 
 

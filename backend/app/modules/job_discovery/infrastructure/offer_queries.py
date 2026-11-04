@@ -11,6 +11,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.job_discovery.domain.enums import OfferState
+from app.modules.job_discovery.domain.multilingual import expand_term
 from app.modules.job_discovery.domain.search import (
     OfferDetail,
     OfferFilter,
@@ -65,16 +66,30 @@ def _conditions(owner_id: uuid.UUID, f: OfferFilter) -> list[ColumnElement[bool]
     if f.statuses:
         conditions.append(JobOfferModel.status.in_([s.value for s in f.statuses]))
     if f.text:
+        variantes = expand_term(f.text) if f.multilingual else (f.text,)
         conditions.append(
             or_(
-                _contient(JobOfferModel.title, f.text),
-                _contient(JobOfferModel.company_name, f.text),
-                _contient(JobOfferModel.description, f.text),
+                *(
+                    _contient(colonne, v)
+                    for v in variantes
+                    for colonne in (
+                        JobOfferModel.title,
+                        JobOfferModel.company_name,
+                        JobOfferModel.description,
+                    )
+                )
             )
         )
     for mot in f.keywords:
+        variantes = expand_term(mot) if f.multilingual else (mot,)
         conditions.append(
-            or_(_contient(JobOfferModel.title, mot), _contient(JobOfferModel.description, mot))
+            or_(
+                *(
+                    _contient(colonne, v)
+                    for v in variantes
+                    for colonne in (JobOfferModel.title, JobOfferModel.description)
+                )
+            )
         )
     if f.company:
         conditions.append(_contient(JobOfferModel.company_name, f.company))
@@ -92,6 +107,13 @@ def _conditions(owner_id: uuid.UUID, f: OfferFilter) -> list[ColumnElement[bool]
             and_(
                 JobOfferModel.salary_currency == f.salary_currency,
                 func.coalesce(JobOfferModel.salary_max, JobOfferModel.salary_min) >= f.salary_min,
+            )
+        )
+    if f.max_experience_years is not None:
+        conditions.append(
+            or_(
+                JobOfferModel.required_experience_years.is_(None),
+                JobOfferModel.required_experience_years <= f.max_experience_years,
             )
         )
     if f.published_since is not None:

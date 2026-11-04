@@ -75,6 +75,14 @@ export interface OfferFilters {
   publishedSince: string;
   /** Compatibilité minimale (0-100) ; vide = pas de filtre. */
   minScore: string;
+  /** Langue de l'annonce (code ISO 639-1, ex. `fr`) ; vide = toutes. */
+  language: string;
+  /** Expérience exigée au plus N ans ; les offres à exigence inconnue restent affichées. */
+  maxExperience: string;
+  /** Cherche aussi les équivalents français/anglais des termes. */
+  multilingual: boolean;
+  /** Intitulés visés, séparés par des virgules : sert à interroger les sources (TASK-006-21). */
+  titles: string;
   sort: OfferSort;
   state: StateFilter;
   page: number;

@@ -141,6 +141,31 @@ class TestFiltres:
         with pytest.raises(ValueError, match="devise"):
             OfferFilter(salary_min=Decimal(50000))
 
+    async def test_filtre_experience_garde_les_offres_dont_l_exigence_est_inconnue(
+        self, session: AsyncSession, user_id: uuid.UUID, repo: SqlOfferQueryRepository
+    ) -> None:
+        junior = await _offre(session, user_id, required_experience_years=1)
+        inconnue = await _offre(session, user_id, required_experience_years=None)
+        await _offre(session, user_id, required_experience_years=8)
+
+        trouvees = await _ids(repo, user_id, max_experience_years=2)
+
+        # Une exigence inconnue n'est pas une exigence élevée : l'offre reste visible.
+        assert set(trouvees) == {junior.id, inconnue.id}
+
+    async def test_recherche_multilingue_trouve_les_equivalents_francais_et_anglais(
+        self, session: AsyncSession, user_id: uuid.UUID, repo: SqlOfferQueryRepository
+    ) -> None:
+        anglais = await _offre(session, user_id, title="Senior Software Engineer")
+        francais = await _offre(session, user_id, title="Développeur backend")
+        await _offre(session, user_id, title="Comptable")
+
+        sans = await _ids(repo, user_id, text="développeur")
+        avec = await _ids(repo, user_id, text="développeur", multilingual=True)
+
+        assert sans == [francais.id]
+        assert set(avec) == {francais.id, anglais.id}
+
     async def test_filtre_date_de_publication(
         self, session: AsyncSession, user_id: uuid.UUID, repo: SqlOfferQueryRepository
     ) -> None:

@@ -83,6 +83,12 @@ class OfferFilter(BaseModel):
     salary_currency: str | None = None
     published_since: datetime | None = None
     language: str | None = None
+    # Expérience exigée au plus de N ans. Une offre dont l'exigence est inconnue reste incluse :
+    # l'absence d'information n'est pas une exigence.
+    max_experience_years: int | None = Field(default=None, ge=0, le=40)
+    # Cherche aussi les équivalents français/anglais des termes (lexique fermé, voir
+    # `domain/multilingual.py`).
+    multilingual: bool = False
     # Score de correspondance minimal (0-100). Les offres sans score sont exclues : une offre
     # non évaluée n'est pas une offre « mauvaise ».
     min_score: Decimal | None = Field(default=None, ge=0, le=100)

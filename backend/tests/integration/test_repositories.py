@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -86,6 +87,23 @@ class TestJobOfferRepository:
         assert offre is not None
         assert offre.country_code == "FR"
         assert offre.first_seen_at == MAINTENANT
+
+    async def test_l_experience_exigee_est_deduite_a_l_ingestion_puis_completee_au_rafraichissement(
+        self, session: AsyncSession, user_id: uuid.UUID
+    ) -> None:
+        source = await _source(session, user_id)
+        offre = replace(_offre(), description="Vous avez 4 ans d'expérience.")
+        resultat = await _observer(session, user_id, source, offre, MAINTENANT)
+        modele = await session.get(JobOfferModel, resultat.offer_id)
+        assert modele is not None and modele.required_experience_years == 4
+
+        # Offre antérieure à la colonne : une réobservation sans changement la renseigne.
+        modele.required_experience_years = None
+        await session.flush()
+        await _observer(session, user_id, source, offre, MAINTENANT + timedelta(hours=1))
+        await session.refresh(modele)
+
+        assert modele.required_experience_years == 4
 
     async def test_rejouer_la_meme_observation_ne_cree_aucun_doublon(
         self, session: AsyncSession, user_id: uuid.UUID

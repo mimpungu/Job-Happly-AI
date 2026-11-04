@@ -13,6 +13,7 @@ from sqlalchemy import (
     Index,
     Integer,
     Numeric,
+    SmallInteger,
     String,
     Text,
     func,
@@ -98,6 +99,10 @@ class JobOfferModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
             name="salary_requires_currency",
         ),
         CheckConstraint("salary_min IS NULL OR salary_min >= 0", name="salary_min_positive"),
+        CheckConstraint(
+            "required_experience_years IS NULL OR required_experience_years BETWEEN 0 AND 40",
+            name="required_experience_valid",
+        ),
         CheckConstraint("char_length(content_hash) = 64", name="content_hash_sha256"),
         CheckConstraint("last_seen_at >= first_seen_at", name="seen_dates_valid"),
         Index("ix_job_offers_owner_id_country_code", "owner_id", "country_code"),
@@ -135,6 +140,8 @@ class JobOfferModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
     application_url: Mapped[str] = mapped_column(Text)
     canonical_url: Mapped[str | None] = mapped_column(Text)
     language: Mapped[str | None] = mapped_column(String(10))
+    # Années d'expérience exigées, déduites de l'annonce ; NULL = inconnu (jamais 0 par défaut).
+    required_experience_years: Mapped[int | None] = mapped_column(SmallInteger)
     # Offre fictive du mode démonstration (TASK-002-10) : jamais mêlée aux données réelles.
     is_demo: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     content_hash: Mapped[str] = mapped_column(String(64))

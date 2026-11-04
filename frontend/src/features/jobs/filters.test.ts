@@ -7,6 +7,7 @@ import {
   filtersToApiQuery,
   filtersToParams,
   filtersToSavedCriteria,
+  parseTitles,
 } from "./filters";
 
 const complets = {
@@ -113,5 +114,44 @@ describe("score minimal", () => {
       ...filtres,
       page: 1,
     });
+  });
+});
+
+describe("filtres de la recherche multilingue, de l'expérience et des intitulés", () => {
+  it("fait l'aller-retour URL, API et recherche sauvegardée", () => {
+    const filtres = filtersFromParams(
+      new URLSearchParams("language=EN&max_experience=3&multilingual=1&titles=Dev, Analyste"),
+    );
+
+    expect(filtres).toMatchObject({
+      language: "en",
+      maxExperience: "3",
+      multilingual: true,
+      titles: "Dev, Analyste",
+    });
+    expect(filtersToParams(filtres).get("max_experience")).toBe("3");
+    const api = filtersToApiQuery(filtres, 25);
+    expect(api.get("max_experience_years")).toBe("3");
+    expect(api.get("multilingual")).toBe("true");
+    expect(api.get("language")).toBe("en");
+    const criteres = filtersToSavedCriteria(filtres);
+    // Les intitulés servent aux sources, ils ne font pas partie du filtre des offres.
+    expect(criteres).not.toHaveProperty("titles");
+    expect(filtersFromSavedCriteria(criteres)).toMatchObject({
+      language: "en",
+      maxExperience: "3",
+      multilingual: true,
+    });
+  });
+
+  it("ignore une expérience ou une langue invalide venant de l'URL", () => {
+    const filtres = filtersFromParams(new URLSearchParams("max_experience=99&language=english"));
+
+    expect(filtres.maxExperience).toBe("");
+    expect(filtres.language).toBe("");
+  });
+
+  it("nettoie la liste d'intitulés", () => {
+    expect(parseTitles(" Dev ,, Dev, Analyste ")).toEqual(["Dev", "Analyste"]);
   });
 });

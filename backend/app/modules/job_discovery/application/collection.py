@@ -31,6 +31,7 @@ from app.modules.job_discovery.domain.connector import (
 from app.modules.job_discovery.domain.criteria import SearchCriteria
 from app.modules.job_discovery.domain.enums import SearchRunStatus, SourceKind
 from app.modules.job_discovery.domain.it_offers import is_it_offer
+from app.modules.job_discovery.domain.multilingual import expand_term
 from app.modules.job_discovery.domain.offers import NormalizedOffer
 from app.modules.job_discovery.domain.text import normalize_text
 from app.modules.job_discovery.infrastructure.resilience import ResilientConnector
@@ -57,21 +58,28 @@ class CollectionFilter:
     """Intitulés visés : l'offre est gardée si son titre en contient un (TASK-006-21)."""
     keywords: tuple[str, ...] = ()
     """Mots-clés exigés : chacun doit figurer dans le titre ou la description."""
+    multilingual: bool = False
+    """Accepte aussi les équivalents français/anglais des intitulés et mots-clés."""
 
     @property
     def is_empty(self) -> bool:
         return not (self.it_only or self.city or self.country_codes or self.titles or self.keywords)
+
+    def _variantes(self, terme: str) -> tuple[str, ...]:
+        return expand_term(terme) if self.multilingual else (terme,)
 
     def keeps(self, offre: NormalizedOffer) -> bool:
         if self.it_only and not is_it_offer(offre.title):
             return False
         if self.titles:
             titre = normalize_text(offre.title)
-            if not any(normalize_text(t) in titre for t in self.titles):
+            if not any(normalize_text(v) in titre for t in self.titles for v in self._variantes(t)):
                 return False
         if self.keywords:
             contenu = normalize_text(f"{offre.title} {offre.description}")
-            if not all(normalize_text(m) in contenu for m in self.keywords):
+            if not all(
+                any(normalize_text(v) in contenu for v in self._variantes(m)) for m in self.keywords
+            ):
                 return False
         if self.city and not (
             offre.location and normalize_text(self.city) in normalize_text(offre.location)

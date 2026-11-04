@@ -134,6 +134,45 @@ export function SearchForm({ filters, onSubmit, onSaveSearch }: SearchFormProps)
             />
           )}
         </Field>
+        <Field label="Langue de l'annonce" hint="Code ISO, ex. fr, en">
+          {(champ) => (
+            <Input
+              {...champ}
+              value={draft.language}
+              maxLength={2}
+              onChange={(e) => maj("language", e.target.value.toLowerCase())}
+            />
+          )}
+        </Field>
+        <Field
+          label="Expérience exigée (ans max.)"
+          hint="Les offres sans exigence connue restent affichées."
+        >
+          {(champ) => (
+            <Input
+              {...champ}
+              type="number"
+              min={0}
+              max={40}
+              inputMode="numeric"
+              value={draft.maxExperience}
+              onChange={(e) => maj("maxExperience", e.target.value)}
+            />
+          )}
+        </Field>
+        <Field
+          label="Intitulés visés"
+          hint="Séparés par des virgules ; utilisés pour interroger les sources."
+        >
+          {(champ) => (
+            <Input
+              {...champ}
+              value={draft.titles}
+              maxLength={500}
+              onChange={(e) => maj("titles", e.target.value)}
+            />
+          )}
+        </Field>
         <Field label="Compatibilité minimale" hint="Nécessite un profil validé.">
           {({ id }) => (
             <Select
@@ -156,6 +195,14 @@ export function SearchForm({ filters, onSubmit, onSaveSearch }: SearchFormProps)
           )}
         </Field>
       </div>
+      <label className="flex items-center gap-2 text-sm text-foreground">
+        <input
+          type="checkbox"
+          checked={draft.multilingual}
+          onChange={(e) => maj("multilingual", e.target.checked)}
+        />
+        Inclure les équivalents français / anglais (ex. développeur ↔ developer)
+      </label>
       <div className="flex flex-wrap justify-end gap-3">
         <Button variant="ghost" onClick={reinitialiser}>
           Réinitialiser
