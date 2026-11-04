@@ -24,6 +24,7 @@ from app.modules.ai_management.infrastructure.models import (
     AIBudgetModel,
     AICacheEntryModel,
     AISettingsModel,
+    AITaskBudgetModel,
     AIUsageModel,
 )
 
@@ -46,6 +47,7 @@ class SqlAIUsageRepository:
         since: datetime,
         until: datetime,
         provider: str | None = None,
+        task_type: str | None = None,
     ) -> Decimal:
         """Dépense sur [since, until[ : coût réel s'il est connu, sinon estimé."""
         cout = func.coalesce(AIUsageModel.actual_cost, AIUsageModel.estimated_cost)
@@ -57,6 +59,8 @@ class SqlAIUsageRepository:
         )
         if provider is not None:
             requete = requete.where(AIUsageModel.provider == provider)
+        if task_type is not None:
+            requete = requete.where(AIUsageModel.task_type == task_type)
         return Decimal(await self._session.scalar(requete) or 0)
 
 
@@ -78,6 +82,8 @@ class AIConfig:
     personal_data_policy: PersonalDataPolicy = PersonalDataPolicy.ALLOWED
     provider_daily_caps: Mapping[str, Decimal] = field(default_factory=dict)
     """Plafond journalier propre à un fournisseur (en plus des plafonds globaux)."""
+    task_daily_caps: Mapping[str, Decimal] = field(default_factory=dict)
+    """Plafond journalier propre à un type de tâche (en plus des plafonds globaux)."""
 
 
 class SqlAIConfigRepository:
@@ -119,7 +125,42 @@ class SqlAIConfigRepository:
             if reglages
             else PersonalDataPolicy.ALLOWED,
             provider_daily_caps=await self._plafonds_fournisseurs(owner_id),
+            task_daily_caps=await self._plafonds_taches(owner_id),
         )
+
+    async def _plafonds_taches(self, owner_id: uuid.UUID) -> dict[str, Decimal]:
+        lignes = await self._session.execute(
+            select(AITaskBudgetModel.task_type, AITaskBudgetModel.daily_amount).where(
+                AITaskBudgetModel.owner_id == owner_id
+            )
+        )
+        return {tache: montant for tache, montant in lignes}  # noqa: C416 - Row, pas un tuple
+
+    async def set_task_cap(
+        self, owner_id: uuid.UUID, task_type: str, *, daily: Decimal | None, currency: str
+    ) -> None:
+        """Pose (ou retire, avec `None`) le plafond journalier d'un type de tâche."""
+        existant = (
+            await self._session.execute(
+                select(AITaskBudgetModel).where(
+                    AITaskBudgetModel.owner_id == owner_id,
+                    AITaskBudgetModel.task_type == task_type,
+                )
+            )
+        ).scalar_one_or_none()
+        if daily is None:
+            if existant is not None:
+                await self._session.delete(existant)
+        elif existant is None:
+            self._session.add(
+                AITaskBudgetModel(
+                    owner_id=owner_id, task_type=task_type, daily_amount=daily, currency=currency
+                )
+            )
+        else:
+            existant.daily_amount = daily
+            existant.currency = currency
+        await self._session.flush()
 
     async def _plafonds_fournisseurs(self, owner_id: uuid.UUID) -> dict[str, Decimal]:
         lignes = await self._session.execute(

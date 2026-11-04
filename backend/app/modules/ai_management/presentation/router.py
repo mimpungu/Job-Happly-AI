@@ -9,7 +9,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from app.core.api.dependencies import SessionDep as Session
 from app.core.api.dependencies import get_owner_id
@@ -27,6 +27,7 @@ from app.modules.ai_management.domain.errors import (
     PersonalDataBlockedError,
     ProviderFailureError,
 )
+from app.modules.ai_management.domain.estimate_profiles import ESTIMATE_PROFILES
 from app.modules.ai_management.domain.models import AIMode, AIRequest, BackendPreference
 from app.modules.ai_management.domain.provider import AIProvider
 from app.modules.ai_management.infrastructure.repositories import (
@@ -54,6 +55,11 @@ class ProviderView(BaseModel):
     """Palier gratuit : le fournisseur peut réutiliser et faire relire les contenus."""
 
 
+class TaskView(BaseModel):
+    task_type: str
+    label: str
+
+
 class SettingsResponse(BaseModel):
     mode: AIMode
     backend_preference: BackendPreference
@@ -65,6 +71,10 @@ class SettingsResponse(BaseModel):
     alert_thresholds: list[int]
     provider_daily_caps: dict[str, Decimal]
     """Plafond journalier propre à un fournisseur (vide = seulement les plafonds globaux)."""
+    task_daily_caps: dict[str, Decimal]
+    """Plafond journalier propre à un type de tâche (vide = seulement les plafonds globaux)."""
+    tasks: list[TaskView]
+    """Tâches IA de l'application, pour régler un plafond par tâche."""
     budget_defined: bool
     api_consent: bool
     api_consent_at: datetime | None
@@ -160,6 +170,8 @@ async def _reglages(
         monthly_budget=limites.monthly,
         alert_thresholds=list(limites.alert_thresholds),
         provider_daily_caps=dict(config.provider_daily_caps),
+        task_daily_caps=dict(config.task_daily_caps),
+        tasks=[TaskView(task_type=p.task_type, label=p.label) for p in ESTIMATE_PROFILES.values()],
         budget_defined=limites.is_defined,
         api_consent=config.api_consent_at is not None,
         api_consent_at=config.api_consent_at,
@@ -231,6 +243,20 @@ async def put_provider_cap(
     config = await SqlAIConfigRepository(session).get(owner_id)
     await SqlAIConfigRepository(session).set_provider_cap(
         owner_id, provider, daily=body.daily, currency=config.limits.currency
+    )
+    return await _reglages(session, owner_id, providers)
+
+
+@router.put("/task-caps/{task_type}", response_model=SettingsResponse)
+async def put_task_cap(
+    session: Session, owner_id: Owner, providers: Providers, task_type: str, body: ProviderCapBody
+) -> SettingsResponse:
+    """Plafonne la dépense journalière d'un type de tâche IA, en plus des plafonds globaux."""
+    if task_type not in ESTIMATE_PROFILES:
+        raise AINotConfiguredError(f"Tâche IA inconnue : {task_type!r}.")
+    config = await SqlAIConfigRepository(session).get(owner_id)
+    await SqlAIConfigRepository(session).set_task_cap(
+        owner_id, task_type, daily=body.daily, currency=config.limits.currency
     )
     return await _reglages(session, owner_id, providers)
 
@@ -308,10 +334,18 @@ async def get_usage(session: Session, owner_id: Owner, limit: int = 25) -> Usage
 class EstimateBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    task_type: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]{1,59}$")
+    """Tâche de l'application : son profil (taille maximale, sortie) est utilisé."""
     level: int = Field(default=1, ge=1, le=2)
-    characters: int = Field(ge=0, le=200_000)
-    """Taille du contenu à traiter : seule la taille compte, jamais le contenu lui-même."""
+    characters: int | None = Field(default=None, ge=0, le=200_000)
+    """Taille du contenu, pour une estimation libre : seule la taille compte, jamais le contenu."""
     max_output_tokens: int = Field(default=800, ge=1, le=8_000)
+
+    @model_validator(mode="after")
+    def _une_source_de_taille(self) -> EstimateBody:
+        if self.task_type is None and self.characters is None:
+            raise ValueError("Précisez une tâche ou une taille de texte.")
+        return self
 
 
 class EstimateResponse(BaseModel):
@@ -329,17 +363,20 @@ async def estimate_cost(
     gateway: GatewayDep, owner_id: Owner, body: EstimateBody
 ) -> EstimateResponse:
     """Coût maximal d'une opération IA avant de la lancer. N'appelle aucun modèle."""
+    profil = ESTIMATE_PROFILES.get(body.task_type) if body.task_type else None
+    if body.task_type and profil is None:
+        raise AINotConfiguredError(f"Tâche IA inconnue : {body.task_type!r}.")
     requete = AIRequest(
         task_type="estimate",
-        level=body.level,
+        level=profil.level if profil else body.level,
         prompt_version="estimate-v1",
         instructions="",
-        content="x" * body.characters,
-        max_output_tokens=body.max_output_tokens,
+        content="x" * (profil.max_characters if profil else (body.characters or 0)),
+        max_output_tokens=profil.max_output_tokens if profil else body.max_output_tokens,
         json_schema=None,
         contains_personal_data=False,
     )
-    estimation = await gateway.estimate(owner_id=owner_id, request=requete)
+    estimation = await gateway.estimate(owner_id=owner_id, request=requete, for_task=body.task_type)
     return EstimateResponse(
         provider=estimation.provider,
         model=estimation.model,

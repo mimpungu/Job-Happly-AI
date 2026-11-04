@@ -227,3 +227,30 @@ async def test_plafond_par_fournisseur_alertes_et_estimation_via_l_api(
     corps = estimation.json()
     assert corps["paid"] is True and Decimal(corps["cost"]) > 0 and corps["allowed"] is True
     assert usage["alerts"] == []  # rien dépensé : aucune alerte
+
+
+async def test_plafond_par_tache_et_estimation_d_une_tache_via_l_api(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    _brancher(client, session, FakeProvider("api-test", reponses=[REPONSE_IA]))
+    await client.put("/api/v1/ai/settings", json={"backend_preference": "api_only"})
+    await client.put("/api/v1/ai/consent", json={"accepted": True})
+    await client.put("/api/v1/ai/budget", json={"daily": "1", "monthly": "10", "currency": "EUR"})
+
+    inconnue = await client.put("/api/v1/ai/task-caps/inconnue", json={"daily": "0.5"})
+    pose = await client.put("/api/v1/ai/task-caps/offer_summary", json={"daily": "0.01"})
+    estimation = (
+        await client.post("/api/v1/ai/estimate", json={"task_type": "offer_summary"})
+    ).json()
+    sans_taille = await client.post("/api/v1/ai/estimate", json={})
+    retire = await client.put("/api/v1/ai/task-caps/offer_summary", json={"daily": None})
+
+    assert inconnue.status_code == 409
+    corps = pose.json()
+    assert corps["task_daily_caps"] == {"offer_summary": "0.01"}
+    assert {t["task_type"] for t in corps["tasks"]} >= {"offer_summary", "cv_rewrite"}
+    # Le profil de la tâche (6 100 caractères, 600 tokens de sortie) dépasse 0,01 € : refus.
+    assert estimation["paid"] is True and estimation["allowed"] is False
+    assert "cette tâche" in estimation["reason"]
+    assert sans_taille.status_code == 422
+    assert retire.json()["task_daily_caps"] == {}

@@ -1,12 +1,17 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Toaster } from "@/components/ui/toaster";
 import type { AISettings } from "@/types/ai";
 
-import { AlertesBudget, EstimationCout, PlafondsFournisseurs } from "./budget-extras";
+import {
+  AlertesBudget,
+  EstimationCout,
+  PlafondsFournisseurs,
+  PlafondsParTache,
+} from "./budget-extras";
 
 const json = (corps: unknown, statut = 200) =>
   new Response(JSON.stringify(corps), { status: statut });
@@ -133,5 +138,38 @@ describe("EstimationCout", () => {
     await userEvent.click(screen.getByRole("button", { name: "Estimer" }));
 
     expect(await screen.findByText(/Gratuit : exécuté en local/)).toBeInTheDocument();
+  });
+});
+
+describe("PlafondsParTache", () => {
+  it("liste les tâches de l'application et envoie le plafond de la tâche", async () => {
+    const reglages = {
+      currency: "EUR",
+      task_daily_caps: { cv_rewrite: "0.05" },
+      tasks: [
+        { task_type: "cv_rewrite", label: "Reformulation des réalisations du CV" },
+        { task_type: "offer_summary", label: "Résumé d'une offre par l'IA" },
+      ],
+    } as unknown as AISettings;
+    const fetchSimule = vi.fn(async () => json(reglages));
+    vi.stubGlobal("fetch", fetchSimule);
+    avec(<PlafondsParTache reglages={reglages} />);
+
+    const champ = screen.getByLabelText(/Reformulation des réalisations du CV — plafond/);
+    expect(champ).toHaveValue("0.05");
+    expect(screen.getByLabelText(/Résumé d'une offre par l'IA — plafond/)).toHaveValue("");
+    await userEvent.clear(champ);
+    await userEvent.type(champ, "0.10");
+    await userEvent.click(
+      within(screen.getByRole("form", { name: /Plafond de la tâche Reformulation/ })).getByRole(
+        "button",
+        { name: "Enregistrer" },
+      ),
+    );
+
+    await waitFor(() => expect(fetchSimule).toHaveBeenCalled());
+    const [url, init] = fetchSimule.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain("/api/v1/ai/task-caps/cv_rewrite");
+    expect(JSON.parse(init.body as string)).toEqual({ daily: "0.10" });
   });
 });

@@ -6,7 +6,7 @@ L'application fonctionne **sans IA** (règles, SQL, scores déterministes). L'IA
 - **Niveau 0** : aucune IA. **Niveau 1** : modèle économique (extraction, classification, résumé). **Niveau 2** : modèle plus performant (CV, lettres, analyse approfondie).
 - **Hybride** (ADR-0011) : le modèle local d'abord (gratuit, données sur la machine), l'API payante en renfort.
 - **Aucun appel payant** sans : un fournisseur API configuré, un plafond **journalier et mensuel** défini par l'utilisateur, et son **consentement** à l'envoi de données.
-- Le **coût maximal** est estimé avant chaque appel (entrée estimée prudemment + sortie à la limite de tokens). L'appel est refusé s'il ferait dépasser le plafond journalier, mensuel ou la limite par opération. Un **plafond journalier par fournisseur** peut s'ajouter aux plafonds globaux. Les **alertes** (seuils 50/80/100 % par défaut) sont calculées à partir de la dépense réelle et affichées dans le Centre IA tant qu'elles sont franchies ; à 100 %, les appels payants sont bloqués avec une explication. Jamais d'augmentation automatique d'un plafond.
+- Le **coût maximal** est estimé avant chaque appel (entrée estimée prudemment + sortie à la limite de tokens). L'appel est refusé s'il ferait dépasser le plafond journalier, mensuel ou la limite par opération. Un **plafond journalier par fournisseur** et un **plafond journalier par tâche** (résumé d'offre, questions et commentaires d'entretien, reformulation du CV) peuvent s'ajouter aux plafonds globaux. Les réalisations d'un CV sont **regroupées par lots de 25** dans une même requête. Le **coût maximal** de chaque opération est affiché avant de la lancer. Les **alertes** (seuils 50/80/100 % par défaut) sont calculées à partir de la dépense réelle et affichées dans le Centre IA tant qu'elles sont franchies ; à 100 %, les appels payants sont bloqués avec une explication. Jamais d'augmentation automatique d'un plafond.
 - Deux devises différentes ne sont jamais converties : l'appel est refusé.
 
 ## Valeurs par défaut (ADR-0005, à recalibrer avec les tarifs réels)
@@ -40,3 +40,13 @@ Ordre de grandeur (tarifs payants, USD) : résumer une offre ≈ 0,0008 $ avec `
 - Plafond par fournisseur : non fait. Les franchissements de seuil sont signalés par la passerelle ; l'envoi en notification dépend du réglage `notify_ai_budget_alerts` (EPIC 015).
 - Politique de confidentialité (`allowed`, `local_only`, `never`) : voir `docs/security/PRIVACY.md` ; catalogue des données envoyées : `GET /api/v1/privacy/ai-transfers`.
 - Un délai dépassé n'est pas compté comme dépensé.
+
+## Réduction de la consommation (TASK-010-32)
+
+Règles vérifiées par la CI (`tests/architecture/test_ai_consumption.py`) :
+
+- **Niveau 0 d'abord** : chaque tâche IA déclare le traitement déterministe qui fonctionne sans elle (analyse par règles, préparation d'entretien sans IA, CV non reformulé). L'IA enrichit, elle ne remplace jamais le socle.
+- **Cache systématique** : la passerelle consulte le cache (empreinte tâche + prompt + modèle + contenu) avant tout appel ; un appel servi par le cache ne coûte rien.
+- **Contextes minimaux** : textes tronqués, jamais le CV complet par défaut.
+- **Sorties JSON strictes et bornées** : tout appel déclare un schéma et une sortie maximale.
+- **Modèle le moins cher suffisant** : chaque tâche demande le niveau minimal ; en mode **économique**, les fournisseurs capables sont essayés du moins cher au plus cher, et le modèle local reste toujours essayé avant l'API payante. Les modes équilibré et qualité conservent l'ordre configuré.

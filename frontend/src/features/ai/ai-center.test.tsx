@@ -21,6 +21,8 @@ const reglages = (extra: Partial<AISettings> = {}): AISettings => ({
   monthly_budget: null,
   alert_thresholds: [50, 80, 100],
   provider_daily_caps: {},
+  task_daily_caps: {},
+  tasks: [],
   budget_defined: false,
   api_consent: false,
   api_consent_at: null,

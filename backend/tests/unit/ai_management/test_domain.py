@@ -295,3 +295,51 @@ class TestAlertesActives:
         sans = replace(self._limites(), daily=None, monthly=None)
 
         assert active_alerts(sans, spent_today=Decimal("5"), spent_month=Decimal("5")) == ()
+
+
+def test_chaque_profil_d_estimation_correspond_a_une_tache_du_catalogue_des_transferts() -> None:
+    from app.modules.ai_management.domain.estimate_profiles import ESTIMATE_PROFILES
+    from app.modules.privacy.domain.ai_transfers import AI_TRANSFERS
+
+    documentees = {t.task_type for t in AI_TRANSFERS}
+
+    assert set(ESTIMATE_PROFILES) <= documentees
+    assert all(p.level in (1, 2) and p.max_characters > 0 for p in ESTIMATE_PROFILES.values())
+
+
+class TestModeleLeMoinsCherSuffisant:
+    def _routes(self, mode: AIMode, *fournisseurs: FakeProvider) -> list[str]:
+        routes = plan_routes(
+            list(fournisseurs), requete("a" * 500), mode=mode, preference=BackendPreference.API_ONLY
+        )
+        return [r.provider.name for r in routes]
+
+    def test_en_mode_economique_le_moins_cher_passe_en_premier(self) -> None:
+        cher = FakeProvider("cher", input_price="10", output_price="50")
+        bon_marche = FakeProvider("bon-marche", input_price="1", output_price="2")
+
+        assert self._routes(AIMode.ECONOMY, cher, bon_marche) == ["bon-marche", "cher"]
+
+    def test_en_mode_qualite_l_ordre_de_configuration_est_conserve(self) -> None:
+        cher = FakeProvider("cher", input_price="10", output_price="50")
+        bon_marche = FakeProvider("bon-marche", input_price="1", output_price="2")
+
+        assert self._routes(AIMode.QUALITY, cher, bon_marche) == ["cher", "bon-marche"]
+
+    def test_a_cout_egal_l_ordre_de_configuration_est_conserve(self) -> None:
+        a, b = FakeProvider("a"), FakeProvider("b")
+
+        assert self._routes(AIMode.ECONOMY, a, b) == ["a", "b"]
+
+    def test_le_tri_ne_fait_jamais_passer_l_api_avant_le_local(self) -> None:
+        api = FakeProvider("api", input_price="0.1", output_price="0.1")
+        local = FakeProvider("local", ProviderKind.LOCAL)
+
+        routes = plan_routes(
+            [api, local],
+            requete("a"),
+            mode=AIMode.ECONOMY,
+            preference=BackendPreference.HYBRID,
+        )
+
+        assert [r.provider.name for r in routes] == ["local", "api"]

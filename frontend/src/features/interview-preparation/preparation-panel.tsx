@@ -16,6 +16,7 @@ import type { AnswerOutline, AssistMode, InterviewQuestion, Preparation } from "
 import { AiNotice } from "./ai-notice";
 import { CATEGORY_LABELS, MODE_OPTIONS } from "./labels";
 import { useGeneratePreparation, usePreparation } from "./use-interviews";
+import { TaskCostNote } from "@/features/ai/task-cost-note";
 
 export function PreparationPanel({ applicationId }: { applicationId: string }) {
   const preparation = usePreparation(applicationId);
@@ -43,6 +44,9 @@ export function PreparationPanel({ applicationId }: { applicationId: string }) {
       <Button onClick={lancer} loading={generer.isPending}>
         {preparation.data ? "Régénérer la préparation" : "Préparer l'entretien"}
       </Button>
+      <div className="basis-full">
+        <TaskCostNote task="interview_questions" enabled={mode === "ai"} />
+      </div>
     </div>
   );
 

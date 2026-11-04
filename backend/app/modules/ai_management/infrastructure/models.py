@@ -93,6 +93,22 @@ class AIBudgetModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
     )
 
 
+class AITaskBudgetModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
+    """Plafond journalier d'un type de tâche IA (TASK-010-12), en plus des plafonds globaux."""
+
+    __tablename__ = "ai_task_budgets"
+    __table_args__ = (
+        CheckConstraint("daily_amount > 0", name="daily_amount_positive"),
+        CheckConstraint(_DEVISE, name="currency_format"),
+        CheckConstraint("task_type ~ '^[a-z][a-z0-9_]{1,59}$'", name="task_type_format"),
+        UniqueConstraint("owner_id", "task_type", name="uq_ai_task_budgets_owner_task"),
+    )
+
+    task_type: Mapped[str] = mapped_column(String(60))
+    daily_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    currency: Mapped[str] = mapped_column(String(3))
+
+
 class AICacheEntryModel(PrimaryKeyMixin, CreatedAtMixin, OwnedMixin, Base):
     __tablename__ = "ai_cache_entries"
     __table_args__ = (

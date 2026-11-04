@@ -13,7 +13,7 @@ import uuid
 from collections.abc import Sequence
 from typing import Any
 
-from app.modules.ai_management.application.gateway import AIGateway
+from app.modules.ai_management.application.gateway import AIGateway, AIResult
 from app.modules.ai_management.domain.errors import AIError
 from app.modules.ai_management.domain.models import AIRequest, ProviderKind
 from app.modules.document_generation.application.ports import (
@@ -66,6 +66,17 @@ def _valider(brut: Any) -> list[tuple[int, str]]:
     return paires
 
 
+# Regroupement (TASK-010-17) : les réalisations sont reformulées par lots dans une même requête,
+# ce qui n'envoie les consignes qu'une fois par lot. La taille du lot est bornée pour que la
+# sortie (120 tokens par réalisation) tienne dans la limite autorisée et ne soit jamais tronquée.
+MAX_ACHIEVEMENTS_PER_REQUEST = 25
+
+
+def _lots(achievements: Sequence[str]) -> list[list[str]]:
+    taille = MAX_ACHIEVEMENTS_PER_REQUEST
+    return [list(achievements[i : i + taille]) for i in range(0, len(achievements), taille)]
+
+
 class GatewayResumeRewriter:
     def __init__(self, gateway: AIGateway) -> None:
         self._gateway = gateway
@@ -80,8 +91,26 @@ class GatewayResumeRewriter:
     ) -> RewriteOutcome:
         if mode is RewriteMode.NONE or not achievements:
             raise ValueError("Aucune reformulation demandée.")
+        propositions: dict[str, str] = {}
+        resultats = []
+        # Lots traités l'un après l'autre : le contrôle du plafond reste exact, et un lot déjà
+        # reformulé est en cache si l'utilisateur relance après un échec.
+        for lot in _lots(achievements):
+            resultat = await self._reformuler_lot(owner_id, lot, language, mode)
+            resultats.append(resultat)
+            propositions.update({lot[i]: texte for i, texte in resultat.value if 0 <= i < len(lot)})
+        return RewriteOutcome(
+            proposals=propositions,
+            provider=resultats[0].provider,
+            model=resultats[0].model,
+            cache_hit=all(r.cache_hit for r in resultats),
+        )
+
+    async def _reformuler_lot(
+        self, owner_id: uuid.UUID, lot: list[str], language: str, mode: RewriteMode
+    ) -> AIResult[list[tuple[int, str]]]:
         contenu = json.dumps(
-            {"language": language, "achievements": dict(enumerate(achievements))},
+            {"language": language, "achievements": dict(enumerate(lot))},
             ensure_ascii=False,
         )
         requete = AIRequest(
@@ -90,23 +119,12 @@ class GatewayResumeRewriter:
             prompt_version=REWRITE_PROMPT_VERSION,
             instructions=_INSTRUCTIONS,
             content=contenu,
-            max_output_tokens=min(4000, 120 * len(achievements) + 200),
+            max_output_tokens=min(4000, 120 * len(lot) + 200),
             json_schema=_SCHEMA,
             contains_personal_data=True,
             allowed_kinds=frozenset({ProviderKind.LOCAL}) if mode is RewriteMode.LOCAL else None,
         )
         try:
-            resultat = await self._gateway.run(
-                owner_id=owner_id, request=requete, validate=_valider
-            )
+            return await self._gateway.run(owner_id=owner_id, request=requete, validate=_valider)
         except AIError as erreur:
             raise RewriterUnavailableError(str(erreur)) from erreur
-        propositions = {
-            achievements[i]: texte for i, texte in resultat.value if 0 <= i < len(achievements)
-        }
-        return RewriteOutcome(
-            proposals=propositions,
-            provider=resultat.provider,
-            model=resultat.model,
-            cache_hit=resultat.cache_hit,
-        )

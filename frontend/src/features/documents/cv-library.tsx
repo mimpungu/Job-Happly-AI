@@ -24,6 +24,7 @@ import type {
 import { formatDate, formatSize } from "./format";
 import { OfferSelect } from "./offer-select";
 import { useGenerateResume, useResumes } from "./use-documents";
+import { TaskCostNote } from "@/features/ai/task-cost-note";
 
 const STYLES: { value: ResumeStyle; label: string }[] = [
   { value: "classic", label: "Classique" },
@@ -193,6 +194,11 @@ export function CvLibrary() {
               )}
             </Field>
           </div>
+          {reecriture === "ai" ? (
+            <div className="sm:col-span-2">
+              <TaskCostNote task="cv_rewrite" />
+            </div>
+          ) : null}
           <div className="sm:col-span-2">
             <Button type="submit" loading={generer.isPending}>
               Générer le CV

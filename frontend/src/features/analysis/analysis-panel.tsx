@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Mobility, OfferAnalysis } from "@/types/analysis";
 
 import { useAISummary, useOfferAnalysis } from "./use-analysis";
+import { TaskCostNote } from "@/features/ai/task-cost-note";
 
 const LANGUES: Record<string, string> = {
   fr: "Français",
@@ -68,6 +69,7 @@ function ResumeIA({ offerId }: { offerId: string }) {
           Facultatif. Seul le texte public de l&apos;offre est transmis, jamais votre CV.
         </p>
       </div>
+      <TaskCostNote task="offer_summary" />
       {resume.isError ? (
         <p role="alert" className="text-sm text-danger">
           {resume.error.message}{" "}

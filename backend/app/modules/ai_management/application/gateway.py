@@ -162,7 +162,9 @@ class AIGateway:
                 continue  # hybride : la route suivante (l'API) prend le relais du local
         return await self._essayer(owner_id, operation, config, routes[-1], request, validate)
 
-    async def estimate(self, *, owner_id: uuid.UUID, request: AIRequest) -> CostEstimate:
+    async def estimate(
+        self, *, owner_id: uuid.UUID, request: AIRequest, for_task: str | None = None
+    ) -> CostEstimate:
         """Coût maximal et faisabilité d'une opération, sans l'exécuter ni rien journaliser."""
         async with self._uow.begin() as session:
             config = await SqlAIConfigRepository(session).get(owner_id)
@@ -183,7 +185,9 @@ class AIGateway:
         if route.provider.kind is not ProviderKind.API:
             return CostEstimate(route.provider.name, route.model, False, Decimal(0), devise, True)
         estimation = estimate_worst_case(request, tarif)
-        raison = await self._raison_de_refus(owner_id, config, route, request, tarif, estimation)
+        raison = await self._raison_de_refus(
+            owner_id, config, route, request, tarif, estimation, for_task or request.task_type
+        )
         return CostEstimate(
             route.provider.name,
             route.model,
@@ -202,6 +206,7 @@ class AIGateway:
         request: AIRequest,
         tarif: ModelPricing,
         estimation: Decimal,
+        task_type: str,
     ) -> str | None:
         limites = config.limits
         if config.api_consent_at is None:
@@ -226,6 +231,12 @@ class AIGateway:
                 until=jusque,
                 provider=route.provider.name,
             )
+            tache = await usage.total_cost(
+                owner_id=owner_id,
+                since=_debut_du_jour(maintenant),
+                until=jusque,
+                task_type=task_type,
+            )
         decision = decide(
             limites,
             level=request.level,
@@ -234,6 +245,8 @@ class AIGateway:
             spent_month=ce_mois,
             spent_provider_today=fournisseur,
             provider_daily_cap=config.provider_daily_caps.get(route.provider.name),
+            spent_task_today=tache,
+            task_daily_cap=config.task_daily_caps.get(task_type),
         )
         return None if decision.allowed else decision.reason
 
@@ -357,6 +370,12 @@ class AIGateway:
                 until=maintenant + timedelta(seconds=1),
                 provider=route.provider.name,
             )
+            depense_tache = await usage.total_cost(
+                owner_id=owner_id,
+                since=_debut_du_jour(maintenant),
+                until=maintenant + timedelta(seconds=1),
+                task_type=request.task_type,
+            )
         decision = decide(
             limites,
             level=request.level,
@@ -365,6 +384,8 @@ class AIGateway:
             spent_month=ce_mois,
             spent_provider_today=depense_fournisseur,
             provider_daily_cap=config.provider_daily_caps.get(route.provider.name),
+            spent_task_today=depense_tache,
+            task_daily_cap=config.task_daily_caps.get(request.task_type),
         )
         if not decision.allowed:
             await self._bloquer(owner_id, operation, route, request, tarif, estimation)

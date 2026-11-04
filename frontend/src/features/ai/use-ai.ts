@@ -11,6 +11,7 @@ import {
   saveAIConsent,
   saveAISettings,
   saveProviderCap,
+  saveTaskCap,
 } from "@/services/ai";
 
 export const AI_SETTINGS_KEY = ["ai", "settings"] as const;
@@ -38,6 +39,21 @@ export const useSaveProviderCap = () =>
   useSettingsWrite(({ provider, daily }: { provider: string; daily: string | null }) =>
     saveProviderCap(provider, daily),
   );
+
+export const useSaveTaskCap = () =>
+  useSettingsWrite(({ task, daily }: { task: string; daily: string | null }) =>
+    saveTaskCap(task, daily),
+  );
+
+/** Coût maximal d'une tâche de l'application (profil connu du serveur), relu à la demande. */
+export const useTaskEstimate = (task: string, enabled = true) =>
+  useQuery({
+    queryKey: ["ai", "estimate", task],
+    queryFn: () => estimateAICost({ task_type: task }),
+    enabled,
+    staleTime: 30_000,
+    retry: false,
+  });
 
 export const useEstimateAICost = () => useMutation({ mutationFn: estimateAICost });
 

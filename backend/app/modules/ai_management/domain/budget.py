@@ -38,6 +38,8 @@ def decide(
     spent_month: Decimal,
     spent_provider_today: Decimal | None = None,
     provider_daily_cap: Decimal | None = None,
+    spent_task_today: Decimal | None = None,
+    task_daily_cap: Decimal | None = None,
 ) -> BudgetDecision:
     """Refuse si le coût estimé ferait dépasser un plafond. Ne dépasse jamais, même d'un centime."""
     if limits.daily is None or limits.monthly is None:
@@ -72,6 +74,15 @@ def decide(
         return BudgetDecision(
             False,
             f"Le plafond de ce fournisseur ({provider_daily_cap} {devise}/jour) serait dépassé.",
+        )
+    if (
+        task_daily_cap is not None
+        and spent_task_today is not None
+        and spent_task_today + estimated > task_daily_cap
+    ):
+        return BudgetDecision(
+            False,
+            f"Le plafond de cette tâche ({task_daily_cap} {devise}/jour) serait dépassé.",
         )
     franchis = _seuils(limits, spent_today, spent_today + estimated, limits.daily) | _seuils(
         limits, spent_month, spent_month + estimated, limits.monthly

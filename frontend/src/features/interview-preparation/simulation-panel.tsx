@@ -28,6 +28,7 @@ import {
   useSimulations,
   useStartSimulation,
 } from "./use-interviews";
+import { TaskCostNote } from "@/features/ai/task-cost-note";
 
 export function SimulationPanel({ applicationId }: { applicationId: string }) {
   const simulations = useSimulations(applicationId);
@@ -268,6 +269,9 @@ function AnswerForm({
           >
             Évaluer ma réponse
           </Button>
+          <div className="basis-full">
+            <TaskCostNote task="interview_review" enabled={mode === "ai"} />
+          </div>
         </div>
       )}
       {answer ? <FeedbackView answer={answer} /> : null}

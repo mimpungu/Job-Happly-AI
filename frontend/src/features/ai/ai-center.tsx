@@ -20,7 +20,12 @@ import {
   useSaveAIConsent,
   useSaveAISettings,
 } from "./use-ai";
-import { AlertesBudget, EstimationCout, PlafondsFournisseurs } from "./budget-extras";
+import {
+  AlertesBudget,
+  EstimationCout,
+  PlafondsFournisseurs,
+  PlafondsParTache,
+} from "./budget-extras";
 
 export const MODES = [
   { value: "disabled", label: "IA désactivée" },
@@ -488,6 +493,9 @@ export function AICenter() {
       </Panel>
       <Panel title="Plafonds par fournisseur">
         <Chargement requete={reglages}>{(r) => <PlafondsFournisseurs reglages={r} />}</Chargement>
+      </Panel>
+      <Panel title="Plafonds par tâche">
+        <Chargement requete={reglages}>{(r) => <PlafondsParTache reglages={r} />}</Chargement>
       </Panel>
       <Panel title="Estimer le coût d'une opération">
         <EstimationCout />

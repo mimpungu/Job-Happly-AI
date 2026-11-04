@@ -1012,7 +1012,7 @@ Méthodes :
 
 [✅] **TASK-010-05 — Ajouter le mode local lorsque disponible**
 
-### [➖] FEATURE 010.2 — Gestion des coûts
+### [✅] FEATURE 010.2 — Gestion des coûts
 
 [✅] **TASK-010-06 — Créer AIUsage**
 
@@ -1026,9 +1026,9 @@ Méthodes :
 
 [✅] **TASK-010-11 — Ajouter les alertes**
 
-[➖] **TASK-010-12 — Ajouter les plafonds par tâche**
+[✅] **TASK-010-12 — Ajouter les plafonds par tâche**
 
-### [➖] FEATURE 010.3 — Cache et optimisation
+### [✅] FEATURE 010.3 — Cache et optimisation
 
 [✅] **TASK-010-13 — Développer le cache des analyses**
 
@@ -1040,7 +1040,9 @@ Méthodes :
 
 > Vérifié : chaque requête porte `prompt_version`, incluse dans l'empreinte du cache ; versions des prompts CV, lettre, reformulation, entretien.
 
-[➖] **TASK-010-17 — Regrouper les tâches compatibles**
+[✅] **TASK-010-17 — Regrouper les tâches compatibles**
+
+> Vérifié : les réalisations du CV sont reformulées par lots de 25 au plus dans une même requête (consignes envoyées une fois par lot, sortie jamais tronquée) ; testé sur 60 réalisations (3 requêtes).
 
 [✅] **TASK-010-18 — Limiter les contextes envoyés**
 
@@ -1058,7 +1060,7 @@ Méthodes :
 
 [✅] **TASK-010-23 — Ajouter le mode IA désactivée**
 
-### [➖] FEATURE 010.5 — Fiabilité des traitements IA
+### [✅] FEATURE 010.5 — Fiabilité des traitements IA
 
 [✅] **TASK-010-24 — Valider les sorties structurées**
 
@@ -1068,9 +1070,9 @@ Méthodes :
 
 [✅] **TASK-010-27 — Tester le cache et les plafonds**
 
-[➖] **TASK-010-28 — Afficher le coût estimé avant les opérations IA importantes**
+[✅] **TASK-010-28 — Afficher le coût estimé avant les opérations IA importantes**
 
-> Partiel : route `POST /ai/estimate` et panneau « Estimer le coût d'une opération » du Centre IA. Reste à afficher l'estimation dans chaque fonction qui appelle l'IA (reformulation, lettres, entretiens).
+> Vérifié : `POST /ai/estimate` (profil de chaque tâche) affiché avant le résumé d'offre, les questions et commentaires d'entretien et la reformulation du CV, avec la raison d'un refus éventuel.
 
 ### [➖] FEATURE 010.6 — API IA payante avec plafonds budgétaires stricts
 
@@ -1093,10 +1095,12 @@ Méthodes :
 - Alertes aux seuils configurés (par exemple 50 %, 80 %, 100 %).
 - Dépassement : blocage des appels non essentiels avec explication claire, jamais de désactivation silencieuse, aucune dépense au-delà du plafond.
 
-[➖] **TASK-010-32 — Réduction de la consommation**
+[✅] **TASK-010-32 — Réduction de la consommation**
 
 - Traitement déterministe d'abord (niveau 0), cache systématique, contextes minimaux, sorties JSON strictes.
 - Modèle le moins cher suffisant pour chaque tâche.
+
+> Vérifié : repli sans IA déclaré pour chaque tâche (`ESTIMATE_PROFILES`) ; cache consulté avant tout appel (tests du cache) ; contextes bornés (010-18) ; schéma JSON et sortie bornée exigés pour chaque appel (garde-fou CI `test_ai_consumption`) ; en mode économique, le candidat le moins cher est essayé en premier, le local toujours avant l'API.
 
 [✅] **TASK-010-33 — Consentement sur les données transmises**
 

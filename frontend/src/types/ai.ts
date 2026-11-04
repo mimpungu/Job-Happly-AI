@@ -24,6 +24,10 @@ export interface AISettings {
   alert_thresholds: number[];
   /** Plafond journalier par fournisseur payant (vide = seulement les plafonds globaux). */
   provider_daily_caps: Record<string, string>;
+  /** Plafond journalier par type de tâche (vide = seulement les plafonds globaux). */
+  task_daily_caps: Record<string, string>;
+  /** Tâches IA de l'application, pour régler un plafond par tâche. */
+  tasks: { task_type: string; label: string }[];
   budget_defined: boolean;
   api_consent: boolean;
   api_consent_at: string | null;

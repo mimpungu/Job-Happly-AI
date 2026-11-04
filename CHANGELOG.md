@@ -21,6 +21,8 @@ Couvre les jalons 0.1 à 0.5 du plan de releases. La version **1.0** (stable) n'
 - **Recherche multi-sources** : `POST /api/v1/search` interroge en parallèle les sources compatibles (entreprises suivies, sources officielles configurées), agrège sans doublon, rapporte chaque source et ses erreurs ; `GET /api/v1/sources` et panneau « Sources de données » ; filtre de collecte par intitulés visés et mots-clés ; bouton « Interroger les sources » et liste des sources interrogées.
 - **Recherche** : filtres par langue de l'annonce et par expérience exigée (déduite de l'annonce, migration 0012 ; exigence inconnue = offre conservée), recherche multilingue français ↔ anglais par lexique fermé, saisie des intitulés visés pour interroger les sources.
 - **Budget IA** : plafond journalier par fournisseur appliqué avant chaque appel, alertes de seuil affichées dans le Centre IA, estimation du coût maximal d'une opération sans appel de modèle.
+- **Budget IA (suite)** : plafonds journaliers par tâche (migration 0013), coût maximal affiché avant chaque opération IA (résumé d'offre, entretien, reformulation du CV), reformulation des réalisations regroupée par lots bornés.
+- **Consommation IA** : en mode économique, le fournisseur le moins cher est essayé en premier ; garde-fous CI (repli sans IA, schéma JSON strict et sortie bornée pour chaque tâche).
 - **Qualité** : suite de tests backend et frontend, parcours E2E complets (vraie API, vraie base, vrai pdfLaTeX), accessibilité vérifiée (deux thèmes, trois tailles), tests de volume, de pagination et de concurrence, mesure de couverture.
 
 ### Corrigé

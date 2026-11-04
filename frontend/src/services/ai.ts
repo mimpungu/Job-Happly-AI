@@ -35,5 +35,13 @@ export const saveProviderCap = (provider: string, daily: string | null) =>
   });
 
 /** Coût maximal d'une opération, calculé sans appeler de modèle. */
-export const estimateAICost = (corps: { characters: number; level: 1 | 2 }) =>
+export const estimateAICost = (
+  corps: { characters: number; level: 1 | 2 } | { task_type: string },
+) =>
   apiFetch<AICostEstimate>("/api/v1/ai/estimate", { method: "POST", body: JSON.stringify(corps) });
+
+export const saveTaskCap = (taskType: string, daily: string | null) =>
+  apiFetch<AISettings>(`/api/v1/ai/task-caps/${encodeURIComponent(taskType)}`, {
+    method: "PUT",
+    body: JSON.stringify({ daily }),
+  });

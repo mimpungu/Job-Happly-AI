@@ -1,10 +1,11 @@
-"""Choix du fournisseur et du modèle (TASK-010-04, 010-05). Fonction pure."""
+"""Choix du fournisseur et du modèle (TASK-010-04, 010-05, 010-32). Fonction pure."""
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from app.modules.ai_management.domain.cost import estimate_worst_case
 from app.modules.ai_management.domain.models import (
     AIMode,
     AIRequest,
@@ -29,6 +30,7 @@ def plan_routes(
 ) -> list[Route]:
     """Routes à essayer dans l'ordre. Le local passe toujours avant l'API payante.
 
+    En mode économique, les candidats d'un même genre sont triés du moins cher au plus cher.
     En mode hybride, l'API n'est retenue que si elle est configurée : si le local échoue, la
     route suivante est tentée (toujours soumise au plafond et au consentement).
     """
@@ -41,6 +43,7 @@ def plan_routes(
     }[preference]
     routes: list[Route] = []
     for genre in voulus:
+        candidates: list[Route] = []
         if request.allowed_kinds is not None and genre not in request.allowed_kinds:
             continue
         for fournisseur in providers:
@@ -50,5 +53,11 @@ def plan_routes(
                 continue  # jamais de données personnelles vers un palier qui les réutilise
             modele = fournisseur.model_for(request.level, mode.value)
             if modele is not None and modele in fournisseur.pricing:
-                routes.append(Route(fournisseur, modele))
+                candidates.append(Route(fournisseur, modele))
+        if mode is AIMode.ECONOMY:
+            # Modèle le moins cher suffisant (TASK-010-32) : tous ces candidats savent traiter
+            # la tâche (niveau géré), on essaie donc le moins coûteux d'abord. Le tri est stable :
+            # à coût égal, l'ordre de configuration est conservé.
+            candidates.sort(key=lambda r: estimate_worst_case(request, r.provider.pricing[r.model]))
+        routes.extend(candidates)
     return routes

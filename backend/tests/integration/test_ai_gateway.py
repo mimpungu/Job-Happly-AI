@@ -8,6 +8,7 @@ import json
 import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
@@ -219,6 +220,30 @@ async def test_le_plafond_d_un_fournisseur_bloque_ses_appels_sans_toucher_aux_au
     )
 
     assert cher.appels == 1 and autre.appels == 1
+
+
+async def test_le_plafond_d_une_tache_ne_bloque_pas_les_autres_taches(
+    session: AsyncSession, user_id: uuid.UUID
+) -> None:
+    await _config(session, user_id)
+    api = FakeProvider("api-test")
+    await SqlAIConfigRepository(session).set_task_cap(
+        user_id, "tache_a", daily=Decimal("0.01"), currency="EUR"
+    )
+    gros = "a" * 3000
+
+    def requete_de(tache: str, texte: str) -> AIRequest:
+        return replace(requete(texte), task_type=tache)
+
+    gateway = _gateway(session, api)
+    await gateway.run(owner_id=user_id, request=requete_de("tache_a", gros), validate=valider)
+    with pytest.raises(BudgetExceededError, match="cette tâche"):
+        await gateway.run(
+            owner_id=user_id, request=requete_de("tache_a", gros + "b"), validate=valider
+        )
+    await gateway.run(owner_id=user_id, request=requete_de("tache_b", gros + "c"), validate=valider)
+
+    assert api.appels == 2
 
 
 async def test_l_estimation_n_appelle_aucun_modele_et_signale_un_refus(

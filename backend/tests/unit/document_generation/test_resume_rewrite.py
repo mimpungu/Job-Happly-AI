@@ -214,6 +214,38 @@ class TestAdaptateur:
         assert json.loads(requete.content)["achievements"] == {"0": "A", "1": "B"}
         assert sortie.proposals == {"B": "Relecture"}  # index hors bornes ignoré
 
+    async def test_les_realisations_sont_regroupees_par_lots_bornes(self) -> None:
+        gateway = FakeGateway({"rewrites": [{"index": 0, "text": "Reformulé"}]})
+        realisations = [f"Réalisation {i}" for i in range(60)]
+
+        sortie = await GatewayResumeRewriter(gateway).rewrite(  # type: ignore[arg-type]
+            owner_id=uuid.uuid4(), achievements=realisations, language="fr", mode=RewriteMode.AI
+        )
+
+        # 60 réalisations : 3 requêtes (25 + 25 + 10), jamais une par réalisation.
+        tailles = [len(json.loads(r.content)["achievements"]) for r in gateway.requetes]
+        assert tailles == [25, 25, 10]
+        # La sortie maximale de chaque lot reste dans la limite : jamais de réponse tronquée.
+        assert all(r.max_output_tokens <= 4000 for r in gateway.requetes)
+        # Les index sont locaux à chaque lot : l'index 0 désigne la première réalisation du lot.
+        assert sortie.proposals == {
+            "Réalisation 0": "Reformulé",
+            "Réalisation 25": "Reformulé",
+            "Réalisation 50": "Reformulé",
+        }
+
+    async def test_un_seul_appel_tant_que_le_lot_tient(self) -> None:
+        gateway = FakeGateway({"rewrites": []})
+
+        await GatewayResumeRewriter(gateway).rewrite(  # type: ignore[arg-type]
+            owner_id=uuid.uuid4(),
+            achievements=[f"R{i}" for i in range(25)],
+            language="fr",
+            mode=RewriteMode.AI,
+        )
+
+        assert len(gateway.requetes) == 1
+
     async def test_mode_local_restreint_aux_modeles_locaux(self) -> None:
         gateway = FakeGateway({"rewrites": []})
 
