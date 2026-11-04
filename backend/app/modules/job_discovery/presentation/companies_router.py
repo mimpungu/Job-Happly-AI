@@ -9,12 +9,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select
 from starlette.types import ExceptionHandler
 
 from app.core.api.dependencies import SessionDep as Session
 from app.core.api.dependencies import UnitOfWorkDep, get_owner_id
 from app.core.api.errors import error_response
+from app.modules.demo.infrastructure.composition import build_demo_service, ensure_demo_inactive
 from app.modules.job_discovery.application.collection import (
     CollectionFilter,
     CollectionReport,
@@ -25,6 +25,7 @@ from app.modules.job_discovery.domain.enums import SearchRunStatus
 from app.modules.job_discovery.infrastructure.ats.discovery import discover_boards
 from app.modules.job_discovery.infrastructure.http import create_http_client
 from app.modules.job_discovery.infrastructure.models import JobSourceModel, TargetCompanyModel
+from app.modules.job_discovery.infrastructure.source_repository import SqlJobSourceRepository
 from app.modules.job_discovery.infrastructure.target_company_repository import (
     SqlTargetCompanyRepository,
     TargetCompanyError,
@@ -85,7 +86,7 @@ class CompanyResponse(BaseModel):
 
 
 class SourceOutcomeResponse(BaseModel):
-    company_id: uuid.UUID
+    company_id: uuid.UUID | None
     company_name: str
     source_key: str
     succeeded: bool
@@ -136,12 +137,7 @@ class CollectionResponse(BaseModel):
 async def _vues(session: Session, owner_id: uuid.UUID) -> list[CompanyResponse]:
     """Entreprises suivies, avec l'état de leur dernière collecte (table des sources)."""
     entreprises = await SqlTargetCompanyRepository(session).list(owner_id)
-    sources = {
-        s.key: s
-        for s in (
-            await session.execute(select(JobSourceModel).where(JobSourceModel.owner_id == owner_id))
-        ).scalars()
-    }
+    sources = await SqlJobSourceRepository(session).list_by_owner(owner_id)
     return [_vue(e, sources.get(_cle_source(e))) for e in entreprises]
 
 
@@ -187,6 +183,7 @@ async def discover_company(body: DiscoverBody) -> list[DiscoveredBoardResponse]:
 
 @router.post("/target-companies", response_model=CompanyResponse, status_code=201)
 async def add_company(session: Session, owner_id: Owner, body: CompanyBody) -> CompanyResponse:
+    await build_demo_service(session).ensure_inactive(owner_id)
     depot = SqlTargetCompanyRepository(session)
     entreprise = await depot.add(
         owner_id, name=body.name, careers_url=body.careers_url, now=datetime.now(UTC)
@@ -211,6 +208,7 @@ async def run_collection(
     uow: UnitOfWorkDep, owner_id: Owner, body: CollectionBody | None = None
 ) -> CollectionResponse:
     """Collecte, en parallèle, les offres de toutes les entreprises activées."""
+    await ensure_demo_inactive(uow, owner_id)
     service = CollectionService(uow, create_http_client)
     corps = body or CollectionBody()
     garder = CollectionFilter(

@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from app.core.domain.value_objects import CountryCode, EmploymentType, RemoteType
+from app.modules.job_discovery.application.collection import CollectionFilter
 from app.modules.job_discovery.domain.criteria import SearchCriteria
 from app.modules.job_discovery.domain.filtering import matches_criteria
 from app.modules.job_discovery.domain.offers import NormalizedOffer
@@ -113,3 +114,23 @@ class TestFiltrage:
 
         assert matches_criteria(offre, SearchCriteria(title="Data", language="fr-CA"))
         assert not matches_criteria(offre, SearchCriteria(title="Data", language="en"))
+
+
+def test_le_filtre_de_collecte_garde_les_intitules_vises_et_exige_les_mots_cles() -> None:
+    def offre(titre: str, description: str = "") -> NormalizedOffer:
+        return NormalizedOffer(
+            title=titre,
+            description=description,
+            application_url="https://exemple.test/o",
+            canonical_url="https://exemple.test/o",
+            company_name="Exemple",
+            content_hash="h",
+        )
+
+    garder = CollectionFilter(titles=("développeur", "software engineer"), keywords=("Python",))
+
+    assert garder.keeps(offre("Développeur backend", "Stack Python"))
+    assert garder.keeps(offre("Senior Software Engineer", "python et Go"))
+    assert not garder.keeps(offre("Comptable", "Python"))  # intitulé non visé
+    assert not garder.keeps(offre("Développeur", "Java uniquement"))  # mot-clé absent
+    assert CollectionFilter().is_empty and not garder.is_empty

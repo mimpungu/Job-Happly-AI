@@ -21,7 +21,7 @@ export interface DiscoveredBoard {
 }
 
 export interface SourceOutcome {
-  company_id: string;
+  company_id: string | null;
   company_name: string;
   source_key: string;
   succeeded: boolean;

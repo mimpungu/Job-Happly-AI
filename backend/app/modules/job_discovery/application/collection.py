@@ -10,7 +10,7 @@ Choix de conception :
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
@@ -40,6 +40,7 @@ from app.modules.job_discovery.infrastructure.target_company_repository import (
 )
 
 ClientFactory = Callable[[], AbstractAsyncContextManager[httpx.AsyncClient]]
+ExtraFactory = Callable[[httpx.AsyncClient], Sequence[JobSourceConnector]]
 
 # Erreurs qui signalent un refus du site : la source est écartée, jamais contournée.
 _REFUS = frozenset({"AccessDeniedError", "AuthenticationFailedError"})
@@ -52,14 +53,26 @@ class CollectionFilter:
     it_only: bool = False
     city: str | None = None
     country_codes: tuple[str, ...] = ()
+    titles: tuple[str, ...] = ()
+    """Intitulés visés : l'offre est gardée si son titre en contient un (TASK-006-21)."""
+    keywords: tuple[str, ...] = ()
+    """Mots-clés exigés : chacun doit figurer dans le titre ou la description."""
 
     @property
     def is_empty(self) -> bool:
-        return not (self.it_only or self.city or self.country_codes)
+        return not (self.it_only or self.city or self.country_codes or self.titles or self.keywords)
 
     def keeps(self, offre: NormalizedOffer) -> bool:
         if self.it_only and not is_it_offer(offre.title):
             return False
+        if self.titles:
+            titre = normalize_text(offre.title)
+            if not any(normalize_text(t) in titre for t in self.titles):
+                return False
+        if self.keywords:
+            contenu = normalize_text(f"{offre.title} {offre.description}")
+            if not all(normalize_text(m) in contenu for m in self.keywords):
+                return False
         if self.city and not (
             offre.location and normalize_text(self.city) in normalize_text(offre.location)
         ):
@@ -109,7 +122,8 @@ class NoEnabledCompanyError(Exception):
 
 @dataclass(frozen=True, slots=True)
 class CompanyCollection:
-    company_id: uuid.UUID
+    company_id: uuid.UUID | None
+    """`None` pour une source qui n'est pas une entreprise suivie (API officielle)."""
     company_name: str
     source_key: str
     outcome: SourceOutcome
@@ -125,7 +139,7 @@ class CollectionReport:
 
 @dataclass(frozen=True, slots=True)
 class _Cible:
-    company_id: uuid.UUID
+    company_id: uuid.UUID | None
     company_name: str
     connector: JobSourceConnector
     source_id: uuid.UUID
@@ -146,14 +160,35 @@ class CollectionService:
         self._resilient = resilient or ResilientConnector
 
     async def run(
-        self, *, owner_id: uuid.UUID, keep: CollectionFilter | None = None
+        self,
+        *,
+        owner_id: uuid.UUID,
+        keep: CollectionFilter | None = None,
+        extra_factory: ExtraFactory | None = None,
+        criteria: SearchCriteria | None = None,
     ) -> CollectionReport:
+        """Collecte les entreprises activées, plus d'éventuelles sources de recherche.
+
+        `extra_factory` construit, avec le client HTTP de la collecte, des sources de recherche
+        (API officielles) interrogées avec `criteria`, en parallèle des entreprises ; leur bilan
+        est distinct, jamais mélangé.
+        """
         keep = keep or CollectionFilter()
         debut = self._clock()
         async with self._client_factory() as client:
             cibles = await self._preparer(owner_id, client)
+            recherche = criteria or SearchCriteria(whole_catalogue=True)
+            # Seules les sources dont la couverture correspond à la recherche sont interrogées.
+            compatibles = [
+                c
+                for c in (extra_factory(client) if extra_factory else ())
+                if c.get_capabilities().covers(recherche)
+            ]
+            cibles += await self._preparer_extras(owner_id, compatibles)
             if not cibles:
                 raise NoEnabledCompanyError
+            # Seule une énumération complète du catalogue autorise à déclarer des offres disparues.
+            catalogue_complet = keep.is_empty and criteria is None
             rapport = await IngestionService(self._uow, clock=self._clock).ingest(
                 owner_id=owner_id,
                 connectors=[
@@ -161,10 +196,10 @@ class CollectionService:
                     for c in cibles
                 ],
                 source_ids={c.connector.key: c.source_id for c in cibles},
-                criteria=SearchCriteria(whole_catalogue=True),
+                criteria=recherche,
                 # Retirer des offres « disparues » n'est sûr que si tout le catalogue a été vu :
                 # avec un filtre, une offre absente peut simplement être hors filtre.
-                full_catalogue=keep.is_empty,
+                full_catalogue=catalogue_complet,
             )
         par_cle = {o.source_key: o for o in rapport.outcomes}
         resultats = tuple(
@@ -198,6 +233,21 @@ class CollectionService:
                 cibles.append(_Cible(entreprise.id, entreprise.name, protege, source.id))
         return cibles
 
+    async def _preparer_extras(
+        self, owner_id: uuid.UUID, connecteurs: Sequence[JobSourceConnector]
+    ) -> list[_Cible]:
+        cibles: list[_Cible] = []
+        if not connecteurs:
+            return cibles
+        async with self._uow.begin() as session:
+            sources = SqlJobSourceRepository(session)
+            for connecteur in connecteurs:
+                protege = self._resilient(connecteur)
+                source = await sources.sync_from_connector(owner_id, protege)
+                await sources.set_enabled(owner_id, protege.key, True)
+                cibles.append(_Cible(None, protege.name, protege, source.id))
+        return cibles
+
     async def _enregistrer_sante(
         self, owner_id: uuid.UUID, resultats: tuple[CompanyCollection, ...]
     ) -> None:
@@ -218,5 +268,9 @@ class CollectionService:
                     )
                     statut = HealthStatus(etat, maintenant, bilan.error_type)
                 await sources.record_health(owner_id, r.source_key, statut)
-                if bilan.error_type in _REFUS and (e := existantes.get(r.company_id)):
+                if (
+                    bilan.error_type in _REFUS
+                    and r.company_id is not None
+                    and (e := existantes.get(r.company_id))
+                ):
                     await entreprises.mark_unsupported(e, "access_denied", maintenant)

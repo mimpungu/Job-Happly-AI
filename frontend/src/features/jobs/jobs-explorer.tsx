@@ -15,6 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/table";
 import { toast } from "@/components/ui/toaster";
 import { useRecompute } from "@/features/matching/use-matching";
+import { QueriedSources } from "@/features/sources/queried-sources";
+import { useSearchSources } from "@/features/sources/use-sources";
 import { ApiError } from "@/services/api-client";
 import type { OfferFilters, OfferSort, OfferState } from "@/types/jobs";
 
@@ -49,6 +51,7 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
   const offres = useOffers(filters);
   const changerEtat = useChangeOfferState();
   const recalculer = useRecompute();
+  const interroger = useSearchSources();
   const modifierEtat = (id: string, state: OfferState | null) =>
     changerEtat.mutate(
       { id, state },
@@ -97,6 +100,25 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
               </p>
               <div className="flex flex-wrap items-end gap-3">
                 <ManualOfferDialog />
+                {savedOnly ? null : (
+                  <Button
+                    variant="secondary"
+                    loading={interroger.isPending}
+                    onClick={() =>
+                      interroger.mutate(filters, {
+                        onSuccess: (r) =>
+                          toast.success(
+                            r.queried
+                              ? `${r.sources.length} source${r.sources.length > 1 ? "s" : ""} interrogée${r.sources.length > 1 ? "s" : ""}.`
+                              : "Aucune source activée.",
+                          ),
+                        onError: (erreur) => toast.error(erreur.message),
+                      })
+                    }
+                  >
+                    Interroger les sources
+                  </Button>
+                )}
                 <Button
                   variant="secondary"
                   loading={recalculer.isPending}
@@ -128,6 +150,8 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
                 </div>
               </div>
             </div>
+
+            {interroger.data ? <QueriedSources result={interroger.data} /> : null}
 
             {offres.isPending ? (
               <div className="flex flex-col gap-2" role="status" aria-label="Chargement des offres">

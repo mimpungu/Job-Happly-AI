@@ -4,6 +4,7 @@ Les tests s'exécutent uniquement si HAPPLY_TEST_DATABASE_URL est défini et poi
 dont le nom finit par `_test` : une base de développement ne doit jamais être effacée.
 """
 
+import asyncio
 import os
 import uuid
 from collections.abc import AsyncIterator
@@ -83,20 +84,31 @@ async def user_id(session: AsyncSession) -> uuid.UUID:
 class SessionPartagee(UnitOfWork):
     """Unité de travail de TEST : réutilise la session du test (annulée à la fin du test)."""
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, *, serialiser: bool = False) -> None:
         super().__init__(async_sessionmaker())
         self._session = session
+        # Une seule connexion de test : pour les routes qui lancent des unités de travail
+        # concurrentes (sources en parallèle), elles passent l'une après l'autre, là où la
+        # production ouvre une session chacune. Désactivé par défaut : un `begin()` imbriqué
+        # dans la même tâche s'interbloquerait.
+        self._verrou_serie = asyncio.Lock() if serialiser else None
 
     @asynccontextmanager
     async def begin(self) -> AsyncIterator[AsyncSession]:
-        async with self._session.begin_nested():
+        if self._verrou_serie is None:
+            async with self._session.begin_nested():
+                yield self._session
+            return
+        async with self._verrou_serie, self._session.begin_nested():
             yield self._session
 
 
 @pytest.fixture
 async def client(session: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
     application = create_app()
-    application.dependency_overrides[get_unit_of_work] = lambda: SessionPartagee(session)
+    application.dependency_overrides[get_unit_of_work] = lambda: SessionPartagee(
+        session, serialiser=True
+    )
 
     async def _session_de_test() -> AsyncIterator[AsyncSession]:
         yield session

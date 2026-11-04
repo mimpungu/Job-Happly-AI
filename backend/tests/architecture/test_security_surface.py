@@ -23,6 +23,8 @@ _SORTANT: dict[str, str] = {
     "modules/job_discovery/infrastructure/ats/lever.py": "hôtes ATS fixes",
     "modules/job_discovery/application/collection.py": "type de client uniquement",
     "modules/job_discovery/application/target_connectors.py": "type de client uniquement",
+    "modules/job_discovery/infrastructure/search_sources.py": "type de client uniquement ; "
+    "seules les sources officielles configurées sont construites",
 }
 # Modules autorisés à lancer un processus.
 _PROCESSUS: dict[str, str] = {
