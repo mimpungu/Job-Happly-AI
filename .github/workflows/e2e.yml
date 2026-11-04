@@ -36,7 +36,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends texlive-latex-base \
             texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended lmodern
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           package_json_file: frontend/package.json
       - uses: actions/setup-node@v4
