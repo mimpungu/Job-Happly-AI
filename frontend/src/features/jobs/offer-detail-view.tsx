@@ -12,6 +12,7 @@ import { toast } from "@/components/ui/toaster";
 import { ApiError } from "@/services/api-client";
 
 import { AnalysisPanel } from "@/features/analysis/analysis-panel";
+import { TrackApplicationButton } from "@/features/applications/track-application-button";
 import { MatchPanel } from "@/features/matching/match-panel";
 
 import { formatDate, formatEmployment, formatRemote, formatSalary } from "./format";
@@ -111,6 +112,7 @@ export function OfferDetailView({ id }: { id: string }) {
               Voir l&apos;annonce d&apos;origine
             </a>
           ) : null}
+          <TrackApplicationButton offerId={id} />
           <Button
             variant="secondary"
             loading={changerEtat.isPending}

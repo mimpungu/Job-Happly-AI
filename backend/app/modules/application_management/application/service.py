@@ -1,41 +1,83 @@
-"""Service applicatif de gestion et suivi des candidatures (EPIC 014).
+"""Cas d'usage du suivi de candidatures (EPIC 014).
 
-Orchestre la création, l'évolution du statut, l'historique des événements,
-les dossiers de candidature, l'association documentaire et les métriques CRM.
+Principe directeur : l'application prépare et suit, l'utilisateur envoie. Aucune candidature
+n'est jamais soumise automatiquement, et l'envoi n'est enregistré que par une confirmation
+explicite (`confirm_manual_submission`).
 """
 
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 
 from app.modules.application_management.domain.entities import (
     ApplicationAggregate,
     ApplicationDossier,
     ApplicationStats,
     ContactInfo,
+    DocumentVersionInfo,
     TimelineEvent,
 )
 from app.modules.application_management.domain.enums import ApplicationStatus, EventKind
 from app.modules.application_management.domain.exceptions import (
+    AlreadySubmittedError,
     ApplicationNotFoundError,
+    DocumentKindMismatchError,
+    DocumentLockedError,
+    DocumentVersionNotFoundError,
     DuplicateApplicationError,
-    ExternalOfferLinkMissingError,
+    InvalidDateError,
+    InvalidStatusTransitionError,
+    NothingToAttachError,
+    OfferNotFoundError,
+)
+from app.modules.application_management.domain.ports import (
+    ApplicationFilter,
+    ApplicationRepositoryPort,
+    DocumentVersionReaderPort,
+    KanbanColumn,
+    OfferReaderPort,
 )
 from app.modules.application_management.domain.rules import (
+    INITIAL_STATUSES,
+    RESPONSE_STATUSES,
+    SUBMITTABLE_STATUSES,
+    compute_application_stats,
+    missing_dossier_elements,
+    safe_external_url,
     validate_status_transition,
+    verify_dossier_readiness,
 )
 
-if TYPE_CHECKING:
-    from app.modules.application_management.domain.ports import ApplicationRepositoryPort
+_CLOCK_TOLERANCE = timedelta(minutes=1)
+_KIND_CV = "cv"
+_KIND_LETTER = "cover_letter"
+
+
+def _require_aware(valeur: datetime, libelle: str) -> datetime:
+    if valeur.tzinfo is None or valeur.utcoffset() is None:
+        raise InvalidDateError(f"{libelle} : la date doit comporter un fuseau horaire.")
+    return valeur
 
 
 class ApplicationTrackingService:
-    """Service applicatif central pour le CRM de candidatures."""
+    """Service applicatif central du CRM de candidatures."""
 
-    def __init__(self, repository: ApplicationRepositoryPort) -> None:
+    def __init__(
+        self,
+        repository: ApplicationRepositoryPort,
+        offers: OfferReaderPort,
+        documents: DocumentVersionReaderPort,
+        *,
+        clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+    ) -> None:
         self._repository = repository
+        self._offers = offers
+        self._documents = documents
+        self._clock = clock
+
+    # ------------------------------------------------------------------ création et lecture
 
     async def create_application(
         self,
@@ -44,42 +86,64 @@ class ApplicationTrackingService:
         offer_id: uuid.UUID,
         initial_status: ApplicationStatus = ApplicationStatus.NEW_OFFER,
     ) -> ApplicationAggregate:
-        """Crée une nouvelle candidature associée à une offre d'emploi (TASK-014-01, 02)."""
-        existing = await self._repository.get_by_offer_id(owner_id, offer_id)
-        if existing is not None:
+        """Crée la candidature d'une offre (TASK-014-01, 02) ; une offre = une candidature."""
+        if initial_status not in INITIAL_STATUSES:
+            raise InvalidStatusTransitionError(
+                f"Une candidature ne peut pas être créée au statut '{initial_status.value}' : "
+                "l'envoi et les réponses s'enregistrent après coup."
+            )
+        if await self._offers.get_summary(owner_id, offer_id) is None:
+            raise OfferNotFoundError(f"Offre {offer_id} introuvable.")
+        if await self._repository.get_by_offer_id(owner_id, offer_id) is not None:
             raise DuplicateApplicationError(f"Une candidature existe déjà pour l'offre {offer_id}.")
 
-        app = await self._repository.create(
-            owner_id=owner_id,
-            offer_id=offer_id,
-            status=initial_status,
-        )
-
-        event = TimelineEvent(
-            id=uuid.uuid4(),
-            application_id=app.id,
-            kind=EventKind.STATUS_CHANGE,
-            occurred_at=datetime.now(UTC),
-            from_status=None,
+        created = await self._repository.create(owner_id, offer_id, initial_status)
+        await self._record(
+            owner_id,
+            created.id,
+            EventKind.STATUS_CHANGE,
+            "Création de la candidature dans le CRM.",
             to_status=initial_status,
-            body="Création de la candidature dans le CRM.",
         )
-        await self._repository.add_event(owner_id, app.id, event)
-        if event not in app.events:
-            app.events.append(event)
-        return app
+        return await self.get_application(owner_id=owner_id, application_id=created.id)
 
     async def get_application(
-        self,
-        *,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
+        self, *, owner_id: uuid.UUID, application_id: uuid.UUID
     ) -> ApplicationAggregate:
-        """Récupère la fiche détaillée d'une candidature (TASK-014-14)."""
-        app = await self._repository.get_by_id(owner_id, application_id)
+        """Fiche complète d'une candidature (TASK-014-14)."""
+        return await self._load(owner_id, application_id)
+
+    async def _load(
+        self, owner_id: uuid.UUID, application_id: uuid.UUID, *, for_update: bool = False
+    ) -> ApplicationAggregate:
+        app = await self._repository.get_by_id(owner_id, application_id, for_update=for_update)
         if app is None:
             raise ApplicationNotFoundError(f"Candidature {application_id} introuvable.")
         return app
+
+    async def _record(
+        self,
+        owner_id: uuid.UUID,
+        application_id: uuid.UUID,
+        kind: EventKind,
+        body: str,
+        *,
+        from_status: ApplicationStatus | None = None,
+        to_status: ApplicationStatus | None = None,
+        occurred_at: datetime | None = None,
+    ) -> TimelineEvent:
+        event = TimelineEvent(
+            id=uuid.uuid4(),
+            application_id=application_id,
+            kind=kind,
+            occurred_at=occurred_at or self._clock(),
+            from_status=from_status,
+            to_status=to_status,
+            body=body,
+        )
+        return await self._repository.add_event(owner_id, application_id, event)
+
+    # ------------------------------------------------------------------ statuts
 
     async def change_status(
         self,
@@ -89,53 +153,42 @@ class ApplicationTrackingService:
         target_status: ApplicationStatus,
         reason: str | None = None,
     ) -> ApplicationAggregate:
-        """Fait évoluer le statut avec validation et traçabilité historique (TASK-014-03, 06)."""
-        app = await self.get_application(owner_id=owner_id, application_id=application_id)
-        current = app.status
+        """Fait évoluer le statut selon la machine à états, avec trace (TASK-014-03, 06)."""
+        app = await self._load(owner_id, application_id, for_update=True)
+        if target_status == app.status:
+            return app  # rien à faire, rien à historiser
 
-        # Validation de la transition d'état
-        validate_status_transition(current, target_status)
+        precedent = app.status
+        validate_status_transition(precedent, target_status)
+        if target_status == ApplicationStatus.SENT:
+            raise InvalidStatusTransitionError(
+                "L'envoi se confirme explicitement (confirmation d'envoi) : "
+                "il ne se déduit pas d'un simple changement de statut."
+            )
+        if target_status == ApplicationStatus.READY_TO_SEND:
+            verify_dossier_readiness(await self._dossier(app))
 
-        applied_at = app.applied_at
-        response_received_at = app.response_received_at
-        now = datetime.now(UTC)
-
-        if target_status == ApplicationStatus.SENT and applied_at is None:
-            applied_at = now
-
-        if (
-            target_status
-            in {
-                ApplicationStatus.INTERVIEW,
-                ApplicationStatus.SECOND_INTERVIEW,
-                ApplicationStatus.OFFER_RECEIVED,
-                ApplicationStatus.REJECTED,
-            }
-            and response_received_at is None
-        ):
-            response_received_at = now
-
-        updated_app = await self._repository.update_status(
-            owner_id=owner_id,
-            application_id=application_id,
-            new_status=target_status,
-            applied_at=applied_at,
-            response_received_at=response_received_at,
+        now = self._clock()
+        await self._repository.update_status(
+            owner_id,
+            application_id,
+            target_status,
+            response_received_at=(
+                now
+                if target_status in RESPONSE_STATUSES and app.response_received_at is None
+                else None
+            ),
         )
-
-        event = TimelineEvent(
-            id=uuid.uuid4(),
-            application_id=application_id,
-            kind=EventKind.STATUS_CHANGE,
-            occurred_at=now,
-            from_status=current,
+        await self._record(
+            owner_id,
+            application_id,
+            EventKind.STATUS_CHANGE,
+            (reason or "").strip() or f"Passage du statut à '{target_status.value}'.",
+            from_status=precedent,
             to_status=target_status,
-            body=reason or f"Passage du statut à '{target_status.value}'.",
+            occurred_at=now,
         )
-        await self._repository.add_event(owner_id, application_id, event)
-        if event not in updated_app.events:
-            updated_app.events.append(event)
-        return updated_app
+        return await self._load(owner_id, application_id)
 
     async def confirm_manual_submission(
         self,
@@ -143,52 +196,50 @@ class ApplicationTrackingService:
         owner_id: uuid.UUID,
         application_id: uuid.UUID,
         notes: str | None = None,
+        applied_at: datetime | None = None,
     ) -> ApplicationAggregate:
-        """Confirme manuellement l'envoi externe par l'utilisateur (TASK-014-04, 20).
+        """Enregistre que l'utilisateur a lui-même envoyé sa candidature (TASK-014-04, 20).
 
-        Ne soumet jamais automatiquement : l'utilisateur confirme qu'il a postulé.
+        Ne soumet rien : c'est la trace d'un envoi fait ailleurs. `applied_at` permet de
+        saisir la vraie date si l'envoi a précédé son enregistrement.
         """
-        app = await self.get_application(owner_id=owner_id, application_id=application_id)
-        now = datetime.now(UTC)
+        app = await self._load(owner_id, application_id, for_update=True)
+        if app.applied_at is not None:
+            raise AlreadySubmittedError("L'envoi de cette candidature est déjà confirmé.")
+        if app.status not in SUBMITTABLE_STATUSES:
+            raise InvalidStatusTransitionError(
+                f"L'envoi ne peut pas être confirmé depuis le statut '{app.status.value}'."
+            )
 
-        updated_app = await self._repository.update_status(
-            owner_id=owner_id,
-            application_id=application_id,
-            new_status=ApplicationStatus.SENT,
-            applied_at=now,
+        precedent = app.status
+        now = self._clock()
+        envoyee_le = _require_aware(applied_at, "Date d'envoi") if applied_at else now
+        if envoyee_le > now + _CLOCK_TOLERANCE:
+            raise InvalidDateError("La date d'envoi ne peut pas être dans le futur.")
+
+        await self._repository.update_status(
+            owner_id, application_id, ApplicationStatus.SENT, applied_at=envoyee_le
         )
-
-        event = TimelineEvent(
-            id=uuid.uuid4(),
-            application_id=application_id,
-            kind=EventKind.STATUS_CHANGE,
-            occurred_at=now,
-            from_status=app.status,
+        corps = (notes or "").strip() or "Envoi manuel confirmé par l'utilisateur."
+        await self._record(
+            owner_id,
+            application_id,
+            EventKind.STATUS_CHANGE,
+            f"{corps} (envoyée le {envoyee_le.astimezone(UTC):%Y-%m-%d %H:%M} UTC)",
+            from_status=precedent,
             to_status=ApplicationStatus.SENT,
-            body=notes or "Envoi manuel confirmé par l'utilisateur.",
+            occurred_at=now,
         )
-        await self._repository.add_event(owner_id, application_id, event)
-        if event not in updated_app.events:
-            updated_app.events.append(event)
-        return updated_app
+        return await self._load(owner_id, application_id)
+
+    # ------------------------------------------------------------------ historique
 
     async def add_note(
-        self,
-        *,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        note_body: str,
+        self, *, owner_id: uuid.UUID, application_id: uuid.UUID, note_body: str
     ) -> TimelineEvent:
-        """Ajoute une note personnelle dans l'historique (TASK-014-07)."""
-        await self.get_application(owner_id=owner_id, application_id=application_id)
-        event = TimelineEvent(
-            id=uuid.uuid4(),
-            application_id=application_id,
-            kind=EventKind.NOTE,
-            occurred_at=datetime.now(UTC),
-            body=note_body.strip(),
-        )
-        return await self._repository.add_event(owner_id, application_id, event)
+        """Ajoute une note à l'historique (TASK-014-07)."""
+        await self._load(owner_id, application_id)
+        return await self._record(owner_id, application_id, EventKind.NOTE, note_body.strip())
 
     async def add_interview_event(
         self,
@@ -198,16 +249,12 @@ class ApplicationTrackingService:
         description: str,
         interview_time: datetime | None = None,
     ) -> TimelineEvent:
-        """Enregistre un événement d'entretien ou d'échange (TASK-014-08)."""
-        await self.get_application(owner_id=owner_id, application_id=application_id)
-        event = TimelineEvent(
-            id=uuid.uuid4(),
-            application_id=application_id,
-            kind=EventKind.INTERVIEW,
-            occurred_at=interview_time or datetime.now(UTC),
-            body=description.strip(),
+        """Enregistre un entretien ou un échange, daté (TASK-014-08)."""
+        await self._load(owner_id, application_id)
+        quand = _require_aware(interview_time, "Date de l'entretien") if interview_time else None
+        return await self._record(
+            owner_id, application_id, EventKind.INTERVIEW, description.strip(), occurred_at=quand
         )
-        return await self._repository.add_event(owner_id, application_id, event)
 
     async def schedule_follow_up(
         self,
@@ -217,68 +264,25 @@ class ApplicationTrackingService:
         follow_up_at: datetime | None,
         notes: str | None = None,
     ) -> ApplicationAggregate:
-        """Définit ou annule une date de relance (TASK-014-10)."""
-        await self.get_application(owner_id=owner_id, application_id=application_id)
-        updated_app = await self._repository.update_follow_up(
-            owner_id=owner_id,
-            application_id=application_id,
-            follow_up_at=follow_up_at,
-        )
+        """Planifie ou annule la relance d'une candidature envoyée (TASK-014-10)."""
+        app = await self._load(owner_id, application_id, for_update=True)
+        if follow_up_at is not None:
+            _require_aware(follow_up_at, "Date de relance")
+            if not app.is_sent:
+                raise InvalidDateError("On ne relance qu'une candidature déjà envoyée.")
+            if follow_up_at < self._clock() - _CLOCK_TOLERANCE:
+                raise InvalidDateError("La date de relance doit être dans le futur.")
 
-        event_text = (
-            f"Relance planifiée pour le {follow_up_at.isoformat()}."
+        await self._repository.update_follow_up(owner_id, application_id, follow_up_at)
+        texte = (
+            f"Relance planifiée le {follow_up_at.astimezone(UTC):%Y-%m-%d %H:%M} UTC."
             if follow_up_at
             else "Relance annulée."
         )
-        if notes:
-            event_text += f" Note : {notes}"
-
-        event = TimelineEvent(
-            id=uuid.uuid4(),
-            application_id=application_id,
-            kind=EventKind.FOLLOW_UP,
-            occurred_at=datetime.now(UTC),
-            body=event_text,
-        )
-        await self._repository.add_event(owner_id, application_id, event)
-        if event not in updated_app.events:
-            updated_app.events.append(event)
-        return updated_app
-
-    async def attach_documents(
-        self,
-        *,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        cv_version_id: uuid.UUID | None = None,
-        letter_version_id: uuid.UUID | None = None,
-    ) -> ApplicationAggregate:
-        """Associe les versions de CV et/ou lettre envoyées (TASK-014-09)."""
-        await self.get_application(owner_id=owner_id, application_id=application_id)
-        updated_app = await self._repository.attach_documents(
-            owner_id=owner_id,
-            application_id=application_id,
-            cv_version_id=cv_version_id,
-            letter_version_id=letter_version_id,
-        )
-
-        details = []
-        if cv_version_id:
-            details.append(f"CV v-{str(cv_version_id)[:8]}")
-        if letter_version_id:
-            details.append(f"Lettre v-{str(letter_version_id)[:8]}")
-
-        event = TimelineEvent(
-            id=uuid.uuid4(),
-            application_id=application_id,
-            kind=EventKind.OTHER,
-            occurred_at=datetime.now(UTC),
-            body=f"Documents associés : {', '.join(details) if details else 'aucun'}.",
-        )
-        await self._repository.add_event(owner_id, application_id, event)
-        if event not in updated_app.events:
-            updated_app.events.append(event)
-        return updated_app
+        if notes and notes.strip():
+            texte += f" Note : {notes.strip()}"
+        await self._record(owner_id, application_id, EventKind.FOLLOW_UP, texte)
+        return await self._load(owner_id, application_id)
 
     async def add_contact(
         self,
@@ -290,107 +294,163 @@ class ApplicationTrackingService:
         phone: str | None = None,
         role: str | None = None,
     ) -> ContactInfo:
-        """Enregistre les coordonnées d'un recruteur (TASK-014-05)."""
-        await self.get_application(owner_id=owner_id, application_id=application_id)
+        """Enregistre le recruteur ou un contact, lorsqu'il est connu (TASK-014-05)."""
+        await self._load(owner_id, application_id)
         contact = ContactInfo(
             id=uuid.uuid4(),
             application_id=application_id,
             name=name.strip(),
-            email=email.strip() if email else None,
-            phone=phone.strip() if phone else None,
-            role=role.strip() if role else None,
-            created_at=datetime.now(UTC),
+            email=(email or "").strip() or None,
+            phone=(phone or "").strip() or None,
+            role=(role or "").strip() or None,
+            created_at=self._clock(),
         )
         return await self._repository.add_contact(owner_id, application_id, contact)
+
+    # ------------------------------------------------------------------ documents et dossier
+
+    async def attach_documents(
+        self,
+        *,
+        owner_id: uuid.UUID,
+        application_id: uuid.UUID,
+        cv_version_id: uuid.UUID | None = None,
+        letter_version_id: uuid.UUID | None = None,
+    ) -> ApplicationAggregate:
+        """Associe les versions exactes de CV et de lettre (TASK-014-09).
+
+        Chaque version doit exister, appartenir à l'utilisateur et être du bon type. Une fois
+        l'envoi confirmé, un document déjà associé ne peut plus être remplacé : il atteste de
+        ce qui a réellement été envoyé.
+        """
+        if cv_version_id is None and letter_version_id is None:
+            raise NothingToAttachError("Aucune version de document à associer.")
+        app = await self._load(owner_id, application_id, for_update=True)
+
+        cv = await self._checked_version(owner_id, cv_version_id, _KIND_CV)
+        lettre = await self._checked_version(owner_id, letter_version_id, _KIND_LETTER)
+        if app.applied_at is not None:
+            for libelle, actuel, nouveau in (
+                ("CV", app.cv_version_id, cv_version_id),
+                ("lettre", app.letter_version_id, letter_version_id),
+            ):
+                if actuel is not None and nouveau is not None and actuel != nouveau:
+                    raise DocumentLockedError(
+                        f"La {libelle} envoyée ne peut plus être remplacée."
+                        if libelle == "lettre"
+                        else "Le CV envoyé ne peut plus être remplacé."
+                    )
+
+        await self._repository.attach_documents(
+            owner_id,
+            application_id,
+            cv_version_id=cv_version_id,
+            letter_version_id=letter_version_id,
+        )
+        details = [
+            f"{'CV' if info.kind == _KIND_CV else 'Lettre'} « {info.title} » v{info.version}"
+            for info in (cv, lettre)
+            if info is not None
+        ]
+        await self._record(
+            owner_id, application_id, EventKind.OTHER, f"Documents associés : {', '.join(details)}."
+        )
+        return await self._load(owner_id, application_id)
+
+    async def _checked_version(
+        self, owner_id: uuid.UUID, version_id: uuid.UUID | None, expected_kind: str
+    ) -> DocumentVersionInfo | None:
+        if version_id is None:
+            return None
+        info = await self._documents.get_info(owner_id, version_id)
+        if info is None:
+            raise DocumentVersionNotFoundError(f"Version de document {version_id} introuvable.")
+        if info.kind != expected_kind:
+            raise DocumentKindMismatchError(
+                "Cette version est une lettre de motivation, pas un CV."
+                if expected_kind == _KIND_CV
+                else "Cette version est un CV, pas une lettre de motivation."
+            )
+        return info
+
+    async def describe_documents(self, app: ApplicationAggregate) -> list[DocumentVersionInfo]:
+        """Type, titre, rang et qualité des versions associées, pour la fiche (TASK-014-09)."""
+        infos: list[DocumentVersionInfo] = []
+        for lien in app.documents:
+            info = await self._documents.get_info(app.owner_id, lien.document_version_id)
+            if info is not None:
+                infos.append(info)
+        return infos
+
+    async def prepare_dossier(
+        self, *, owner_id: uuid.UUID, application_id: uuid.UUID
+    ) -> ApplicationDossier:
+        """Dossier de candidature et contrôle de ses pièces (TASK-014-16, 17, 18)."""
+        return await self._dossier(await self._load(owner_id, application_id))
+
+    async def _dossier(self, app: ApplicationAggregate) -> ApplicationDossier:
+        offre = app.offer
+        url = offre.application_url if offre else None
+        manquants = missing_dossier_elements(
+            has_cv=app.cv_version_id is not None,
+            has_letter=app.letter_version_id is not None,
+            application_url=url,
+        )
+        alertes: list[str] = []
+        for libelle, version_id in (("CV", app.cv_version_id), ("Lettre", app.letter_version_id)):
+            if version_id is None:
+                continue
+            info = await self._documents.get_info(app.owner_id, version_id)
+            if info is not None and info.quality_passed is False:
+                note = (
+                    f" (score {info.quality_score}/100)" if info.quality_score is not None else ""
+                )
+                alertes.append(f"{libelle} : l'audit de qualité n'est pas conforme{note}.")
+        return ApplicationDossier(
+            application_id=app.id,
+            offer_id=app.offer_id,
+            job_title=offre.title if offre else "",
+            company_name=offre.company_name if offre else None,
+            application_url=url,
+            has_cv=app.cv_version_id is not None,
+            cv_version_id=app.cv_version_id,
+            has_letter=app.letter_version_id is not None,
+            letter_version_id=app.letter_version_id,
+            is_ready_to_send=not manquants,
+            missing_elements=manquants,
+            warnings=tuple(alertes),
+        )
+
+    async def get_application_url_action(
+        self, *, owner_id: uuid.UUID, application_id: uuid.UUID
+    ) -> str:
+        """URL vérifiée de l'annonce, à ouvrir par l'utilisateur lui-même (TASK-014-19)."""
+        app = await self._load(owner_id, application_id)
+        return safe_external_url(app.offer.application_url if app.offer else None)
+
+    # ------------------------------------------------------------------ vues et statistiques
 
     async def list_applications(
         self,
         *,
         owner_id: uuid.UUID,
-        status: ApplicationStatus | None = None,
-        company_query: str | None = None,
-        title_query: str | None = None,
-        has_follow_up_due: bool = False,
+        criteria: ApplicationFilter | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[ApplicationAggregate], int]:
-        """Vue tableau avec filtrage et pagination (TASK-014-11, 13)."""
+        """Vue tableau paginée et filtrée (TASK-014-11, 13)."""
         return await self._repository.list_applications(
-            owner_id=owner_id,
-            status=status,
-            company_query=company_query,
-            title_query=title_query,
-            has_follow_up_due=has_follow_up_due,
-            limit=limit,
-            offset=offset,
+            owner_id, criteria or ApplicationFilter(), limit, offset
         )
 
     async def get_kanban_view(
-        self,
-        *,
-        owner_id: uuid.UUID,
-    ) -> dict[ApplicationStatus, list[ApplicationAggregate]]:
-        """Vue Kanban regroupée par colonne de statut (TASK-014-12)."""
-        return await self._repository.list_for_kanban(owner_id)
+        self, *, owner_id: uuid.UUID, per_column_limit: int = 20
+    ) -> dict[ApplicationStatus, KanbanColumn]:
+        """Vue Kanban découpée par statut (TASK-014-12)."""
+        return await self._repository.list_for_kanban(owner_id, per_column_limit)
 
-    async def prepare_dossier(
-        self,
-        *,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        job_title: str,
-        company_name: str | None,
-        application_url: str | None,
-    ) -> ApplicationDossier:
-        """Prépare et vérifie le dossier de candidature (TASK-014-16, 17, 18)."""
-        app = await self.get_application(owner_id=owner_id, application_id=application_id)
-        manquants: list[str] = []
-
-        if not app.cv_version_id:
-            manquants.append("CV personnalisé manquant")
-        if not app.letter_version_id:
-            manquants.append("Lettre de motivation manquante")
-        if not application_url:
-            manquants.append("Lien de candidature externe manquant")
-
-        is_ready = len(manquants) == 0
-
-        return ApplicationDossier(
-            application_id=app.id,
-            offer_id=app.offer_id,
-            job_title=job_title,
-            company_name=company_name,
-            application_url=application_url,
-            has_cv=app.cv_version_id is not None,
-            cv_version_id=app.cv_version_id,
-            has_letter=app.letter_version_id is not None,
-            letter_version_id=app.letter_version_id,
-            is_ready_to_send=is_ready,
-            missing_elements=tuple(manquants),
+    async def get_stats(self, *, owner_id: uuid.UUID) -> ApplicationStats:
+        """Statistiques sur les seules données réelles (TASK-014-15, 22)."""
+        return compute_application_stats(
+            await self._repository.list_for_stats(owner_id), now=self._clock()
         )
-
-    async def get_application_url_action(
-        self,
-        *,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        offer_application_url: str | None,
-    ) -> str:
-        """Génère l'action sécurisée d'ouverture du site de candidature (TASK-014-19)."""
-        await self.get_application(owner_id=owner_id, application_id=application_id)
-        if not offer_application_url or not offer_application_url.strip():
-            raise ExternalOfferLinkMissingError(
-                "Cette offre ne dispose pas d'URL externe de candidature."
-            )
-        url = offer_application_url.strip()
-        if not url.startswith(("http://", "https://")):
-            raise ExternalOfferLinkMissingError("URL de candidature invalide.")
-        return url
-
-    async def get_stats(
-        self,
-        *,
-        owner_id: uuid.UUID,
-    ) -> ApplicationStats:
-        """Statistiques consolidées sur données réelles (TASK-014-15, 22)."""
-        return await self._repository.get_stats(owner_id)

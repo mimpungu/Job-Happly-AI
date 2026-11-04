@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.core.database.session import create_engine, create_session_factory
 from app.modules.ai_management.presentation.router import register_ai_errors
 from app.modules.ai_management.presentation.router import router as ai_router
+from app.modules.application_management.presentation.errors import register_application_errors
 from app.modules.application_management.presentation.router import (
     applications_router,
     dashboard_router,
@@ -76,6 +77,7 @@ def create_app() -> FastAPI:
     register_domain_errors(application)
     register_document_errors(application)
     register_generation_errors(application)
+    register_application_errors(application)
     register_matching_errors(application)
     register_company_errors(application)
     register_france_travail_errors(application)

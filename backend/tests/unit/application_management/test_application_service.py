@@ -1,315 +1,507 @@
-"""Tests unitaires du service applicatif ApplicationTrackingService (EPIC 014)."""
+"""Service du CRM : création, statuts, envoi confirmé, relances, documents, dossier."""
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
-from app.modules.application_management.application.service import (
-    ApplicationTrackingService,
-)
-from app.modules.application_management.domain.entities import (
-    ApplicationAggregate,
-    ApplicationStats,
-    ContactInfo,
-    TimelineEvent,
-)
-from app.modules.application_management.domain.enums import ApplicationStatus
+from app.modules.application_management.application.service import ApplicationTrackingService
+from app.modules.application_management.domain.entities import ApplicationAggregate
+from app.modules.application_management.domain.enums import ApplicationStatus as S
+from app.modules.application_management.domain.enums import EventKind
 from app.modules.application_management.domain.exceptions import (
+    AlreadySubmittedError,
+    ApplicationNotFoundError,
+    DocumentKindMismatchError,
+    DocumentLockedError,
+    DocumentVersionNotFoundError,
     DuplicateApplicationError,
     ExternalOfferLinkMissingError,
+    IncompleteDossierError,
+    InvalidDateError,
     InvalidStatusTransitionError,
+    NothingToAttachError,
+    OfferNotFoundError,
 )
-from app.modules.application_management.domain.ports import ApplicationRepositoryPort
-from app.modules.application_management.domain.rules import compute_application_stats
+from tests.unit.application_management.fakes import (
+    MAINTENANT,
+    OWNER,
+    FakeDocuments,
+    FakeOffers,
+    InMemoryApplicationRepository,
+)
 
 
-class InMemoryApplicationRepository(ApplicationRepositoryPort):
+class Contexte:
     def __init__(self) -> None:
-        self.apps: dict[uuid.UUID, ApplicationAggregate] = {}
-        self.events: list[TimelineEvent] = []
-        self.contacts: list[ContactInfo] = []
-
-    async def get_by_id(
-        self, owner_id: uuid.UUID, application_id: uuid.UUID
-    ) -> ApplicationAggregate | None:
-        app = self.apps.get(application_id)
-        if app and app.owner_id == owner_id:
-            app.events = [e for e in self.events if e.application_id == app.id]
-            app.contacts = [c for c in self.contacts if c.application_id == app.id]
-            return app
-        return None
-
-    async def get_by_offer_id(
-        self, owner_id: uuid.UUID, offer_id: uuid.UUID
-    ) -> ApplicationAggregate | None:
-        for app in self.apps.values():
-            if app.owner_id == owner_id and app.offer_id == offer_id:
-                app.events = [e for e in self.events if e.application_id == app.id]
-                app.contacts = [c for c in self.contacts if c.application_id == app.id]
-                return app
-        return None
-
-    async def create(
-        self,
-        owner_id: uuid.UUID,
-        offer_id: uuid.UUID,
-        status: ApplicationStatus = ApplicationStatus.NEW_OFFER,
-    ) -> ApplicationAggregate:
-        app = ApplicationAggregate(
-            id=uuid.uuid4(),
-            owner_id=owner_id,
-            offer_id=offer_id,
-            status=status,
-            created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC),
+        self.offers = FakeOffers()
+        self.documents = FakeDocuments()
+        self.repo = InMemoryApplicationRepository(self.offers)
+        self.service = ApplicationTrackingService(
+            self.repo, self.offers, self.documents, clock=lambda: MAINTENANT
         )
-        self.apps[app.id] = app
-        return app
 
-    async def update_status(
-        self,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        new_status: ApplicationStatus,
-        applied_at: datetime | None = None,
-        response_received_at: datetime | None = None,
-    ) -> ApplicationAggregate:
-        app = self.apps[application_id]
-        app.status = new_status
-        if applied_at:
-            app.applied_at = applied_at
-        if response_received_at:
-            app.response_received_at = response_received_at
-        app.updated_at = datetime.now(UTC)
-        app.events = [e for e in self.events if e.application_id == app.id]
-        return app
+    async def candidature(self, statut: S = S.TO_APPLY, **offre: object) -> ApplicationAggregate:
+        offre_id = self.offers.add(**offre)  # type: ignore[arg-type]
+        return await self.service.create_application(
+            owner_id=OWNER, offer_id=offre_id, initial_status=statut
+        )
 
-    async def update_follow_up(
-        self,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        follow_up_at: datetime | None,
-    ) -> ApplicationAggregate:
-        app = self.apps[application_id]
-        app.follow_up_at = follow_up_at
-        app.updated_at = datetime.now(UTC)
-        app.events = [e for e in self.events if e.application_id == app.id]
-        return app
-
-    async def attach_documents(
-        self,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        cv_version_id: uuid.UUID | None = None,
-        letter_version_id: uuid.UUID | None = None,
-    ) -> ApplicationAggregate:
-        app = self.apps[application_id]
-        if cv_version_id:
-            app.cv_version_id = cv_version_id
-        if letter_version_id:
-            app.letter_version_id = letter_version_id
-        app.events = [e for e in self.events if e.application_id == app.id]
-        return app
-
-    async def add_event(
-        self,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        event: TimelineEvent,
-    ) -> TimelineEvent:
-        self.events.append(event)
-        return event
-
-    async def add_contact(
-        self,
-        owner_id: uuid.UUID,
-        application_id: uuid.UUID,
-        contact: ContactInfo,
-    ) -> ContactInfo:
-        self.contacts.append(contact)
-        return contact
-
-    async def list_applications(
-        self,
-        owner_id: uuid.UUID,
-        status: ApplicationStatus | None = None,
-        company_query: str | None = None,
-        title_query: str | None = None,
-        has_follow_up_due: bool = False,
-        limit: int = 50,
-        offset: int = 0,
-    ) -> tuple[list[ApplicationAggregate], int]:
-        items = [a for a in self.apps.values() if a.owner_id == owner_id]
-        if status:
-            items = [a for a in items if a.status == status]
-        return items[offset : offset + limit], len(items)
-
-    async def list_for_kanban(
-        self,
-        owner_id: uuid.UUID,
-    ) -> dict[ApplicationStatus, list[ApplicationAggregate]]:
-        res: dict[ApplicationStatus, list[ApplicationAggregate]] = {
-            st: [] for st in ApplicationStatus
-        }
-        for a in self.apps.values():
-            if a.owner_id == owner_id:
-                res[a.status].append(a)
-        return res
-
-    async def get_stats(
-        self,
-        owner_id: uuid.UUID,
-    ) -> ApplicationStats:
-        items = [a for a in self.apps.values() if a.owner_id == owner_id]
-        return compute_application_stats(items)
+    async def prete(self) -> ApplicationAggregate:
+        """Candidature au statut « prête à envoyer », dossier complet."""
+        app = await self.candidature(S.DOCUMENTS_TO_PREPARE)
+        cv = self.documents.add("cv", title="CV Python", version=2)
+        lettre = self.documents.add("cover_letter", title="Lettre Acme")
+        await self.service.attach_documents(
+            owner_id=OWNER, application_id=app.id, cv_version_id=cv, letter_version_id=lettre
+        )
+        return await self.service.change_status(
+            owner_id=OWNER, application_id=app.id, target_status=S.READY_TO_SEND
+        )
 
 
 @pytest.fixture
-def service() -> ApplicationTrackingService:
-    repo = InMemoryApplicationRepository()
-    return ApplicationTrackingService(repo)
+def ctx() -> Contexte:
+    return Contexte()
 
 
-async def test_creation_candidature_et_doublon_interdit(
-    service: ApplicationTrackingService,
-) -> None:
-    owner = uuid.uuid4()
-    offer = uuid.uuid4()
+# ---------------------------------------------------------------------------- création
 
-    app = await service.create_application(owner_id=owner, offer_id=offer)
-    assert app.offer_id == offer
-    assert app.status == ApplicationStatus.NEW_OFFER
-    assert len(app.events) == 1
 
+async def test_creation_liee_a_l_offre_avec_premier_evenement(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.TO_APPLY)
+
+    assert app.status is S.TO_APPLY
+    assert app.offer is not None
+    assert app.offer.title == "Développeur Python"
+    assert [(e.kind, e.to_status) for e in app.events] == [(EventKind.STATUS_CHANGE, S.TO_APPLY)]
+
+
+async def test_doublon_refuse(ctx: Contexte) -> None:
+    app = await ctx.candidature()
     with pytest.raises(DuplicateApplicationError):
-        await service.create_application(owner_id=owner, offer_id=offer)
+        await ctx.service.create_application(owner_id=OWNER, offer_id=app.offer_id)
 
 
-async def test_changement_statut_avec_historisation(
-    service: ApplicationTrackingService,
-) -> None:
-    owner = uuid.uuid4()
-    app = await service.create_application(owner_id=owner, offer_id=uuid.uuid4())
-
-    updated = await service.change_status(
-        owner_id=owner,
-        application_id=app.id,
-        target_status=ApplicationStatus.TO_APPLY,
-        reason="Sélectionnée pour envoi",
-    )
-    assert updated.status == ApplicationStatus.TO_APPLY
-    assert len(updated.events) == 2
-    assert updated.events[-1].to_status == ApplicationStatus.TO_APPLY
+async def test_offre_inconnue_refusee(ctx: Contexte) -> None:
+    with pytest.raises(OfferNotFoundError):
+        await ctx.service.create_application(owner_id=OWNER, offer_id=uuid.uuid4())
 
 
-async def test_changement_statut_interdit_leve_erreur(
-    service: ApplicationTrackingService,
-) -> None:
-    owner = uuid.uuid4()
-    app = await service.create_application(owner_id=owner, offer_id=uuid.uuid4())
-
+@pytest.mark.parametrize("statut", [S.SENT, S.PENDING, S.INTERVIEW, S.OFFER_RECEIVED, S.REJECTED])
+async def test_creation_directement_envoyee_ou_repondue_refusee(ctx: Contexte, statut: S) -> None:
+    """Avant : on pouvait créer une candidature « envoyée » sans aucune confirmation."""
+    offre_id = ctx.offers.add()
     with pytest.raises(InvalidStatusTransitionError):
-        await service.change_status(
-            owner_id=owner,
-            application_id=app.id,
-            target_status=ApplicationStatus.OFFER_RECEIVED,
+        await ctx.service.create_application(
+            owner_id=OWNER, offer_id=offre_id, initial_status=statut
+        )
+    assert ctx.repo.apps == {}
+
+
+async def test_candidature_d_un_autre_utilisateur_introuvable(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    with pytest.raises(ApplicationNotFoundError):
+        await ctx.service.get_application(owner_id=uuid.uuid4(), application_id=app.id)
+
+
+# ---------------------------------------------------------------------------- statuts
+
+
+async def test_changement_de_statut_historise_et_verrouille(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.NEW_OFFER)
+
+    maj = await ctx.service.change_status(
+        owner_id=OWNER, application_id=app.id, target_status=S.TO_ANALYZE, reason="  À creuser  "
+    )
+
+    assert maj.status is S.TO_ANALYZE
+    dernier = maj.events[-1]
+    assert (dernier.from_status, dernier.to_status, dernier.body) == (
+        S.NEW_OFFER,
+        S.TO_ANALYZE,
+        "À creuser",
+    )
+    assert app.id in ctx.repo.locked  # deux changements simultanés ne s'écrasent pas
+
+
+async def test_meme_statut_ne_cree_pas_d_evenement(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.TO_APPLY)
+    avant = len(ctx.repo.events)
+
+    await ctx.service.change_status(owner_id=OWNER, application_id=app.id, target_status=S.TO_APPLY)
+    assert len(ctx.repo.events) == avant
+
+
+async def test_transition_interdite(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.NEW_OFFER)
+    with pytest.raises(InvalidStatusTransitionError):
+        await ctx.service.change_status(
+            owner_id=OWNER, application_id=app.id, target_status=S.OFFER_RECEIVED
         )
 
 
-async def test_confirmation_envoi_manuel(service: ApplicationTrackingService) -> None:
-    owner = uuid.uuid4()
-    app = await service.create_application(owner_id=owner, offer_id=uuid.uuid4())
+async def test_l_envoi_ne_se_deduit_pas_d_un_changement_de_statut(ctx: Contexte) -> None:
+    """L'envoi passe par la confirmation explicite, avec sa date réelle."""
+    app = await ctx.prete()
+    with pytest.raises(InvalidStatusTransitionError, match="confirme explicitement"):
+        await ctx.service.change_status(owner_id=OWNER, application_id=app.id, target_status=S.SENT)
+    assert ctx.repo.apps[app.id].applied_at is None
 
-    sent_app = await service.confirm_manual_submission(
-        owner_id=owner,
-        application_id=app.id,
-        notes="Postulé via formulaire ATS de l'entreprise",
+
+async def test_prete_a_envoyer_exige_un_dossier_complet(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.DOCUMENTS_TO_PREPARE)
+    with pytest.raises(IncompleteDossierError, match="CV personnalisé manquant"):
+        await ctx.service.change_status(
+            owner_id=OWNER, application_id=app.id, target_status=S.READY_TO_SEND
+        )
+    assert ctx.repo.apps[app.id].status is S.DOCUMENTS_TO_PREPARE
+
+
+async def test_reponse_horodatee_une_seule_fois(ctx: Contexte) -> None:
+    app = await ctx.prete()
+    await ctx.service.confirm_manual_submission(owner_id=OWNER, application_id=app.id)
+
+    entretien = await ctx.service.change_status(
+        owner_id=OWNER, application_id=app.id, target_status=S.INTERVIEW
     )
-    assert sent_app.status == ApplicationStatus.SENT
-    assert sent_app.applied_at is not None
-    assert sent_app.is_sent is True
+    assert entretien.response_received_at == MAINTENANT
 
-
-async def test_ajout_note_et_contact(service: ApplicationTrackingService) -> None:
-    owner = uuid.uuid4()
-    app = await service.create_application(owner_id=owner, offer_id=uuid.uuid4())
-
-    note = await service.add_note(
-        owner_id=owner,
-        application_id=app.id,
-        note_body="Contacté par la RH sur LinkedIn",
+    ctx.repo.apps[app.id].response_received_at = MAINTENANT - timedelta(days=2)
+    second = await ctx.service.change_status(
+        owner_id=OWNER, application_id=app.id, target_status=S.SECOND_INTERVIEW
     )
-    assert note.body == "Contacté par la RH sur LinkedIn"
+    assert second.response_received_at == MAINTENANT - timedelta(days=2)  # date d'origine gardée
 
-    contact = await service.add_contact(
-        owner_id=owner,
-        application_id=app.id,
-        name="Jean Dupont",
-        email="jean@rh.test",
-        role="Responsable Recrutement",
+
+# ---------------------------------------------------------------------------- envoi confirmé
+
+
+async def test_confirmation_d_envoi(ctx: Contexte) -> None:
+    app = await ctx.prete()
+
+    envoyee = await ctx.service.confirm_manual_submission(
+        owner_id=OWNER, application_id=app.id, notes="Envoyée via le portail"
     )
-    assert contact.name == "Jean Dupont"
 
-    detail = await service.get_application(owner_id=owner, application_id=app.id)
-    assert len(detail.contacts) == 1
-    assert any(e.body == "Contacté par la RH sur LinkedIn" for e in detail.events)
+    assert envoyee.status is S.SENT
+    assert envoyee.applied_at == MAINTENANT
+    dernier = envoyee.events[-1]
+    assert (dernier.from_status, dernier.to_status) == (S.READY_TO_SEND, S.SENT)
+    assert dernier.body is not None
+    assert dernier.body.startswith("Envoyée via le portail")
+    assert "2026-11-04 12:00 UTC" in dernier.body
 
 
-async def test_preparation_et_verification_dossier(
-    service: ApplicationTrackingService,
+async def test_confirmation_avec_la_vraie_date_d_envoi(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.TO_APPLY)
+    veille = MAINTENANT - timedelta(days=1)
+
+    envoyee = await ctx.service.confirm_manual_submission(
+        owner_id=OWNER, application_id=app.id, applied_at=veille
+    )
+    assert envoyee.applied_at == veille
+
+
+async def test_confirmation_avec_fuseau_non_utc_acceptee(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.TO_APPLY)
+    paris = timezone(timedelta(hours=1))
+    envoyee = await ctx.service.confirm_manual_submission(
+        owner_id=OWNER,
+        application_id=app.id,
+        applied_at=datetime(2026, 11, 3, 9, 0, tzinfo=paris),
+    )
+    assert envoyee.applied_at == datetime(2026, 11, 3, 8, 0, tzinfo=UTC)
+
+
+@pytest.mark.parametrize(
+    "date",
+    [
+        MAINTENANT + timedelta(days=1),  # dans le futur
+        datetime(2026, 11, 3, 9, 0),
+    ],
+)
+async def test_date_d_envoi_invalide(ctx: Contexte, date: datetime) -> None:
+    app = await ctx.candidature(S.TO_APPLY)
+    with pytest.raises(InvalidDateError):
+        await ctx.service.confirm_manual_submission(
+            owner_id=OWNER, application_id=app.id, applied_at=date
+        )
+    assert ctx.repo.apps[app.id].status is S.TO_APPLY
+
+
+async def test_double_confirmation_refusee_et_date_d_origine_conservee(ctx: Contexte) -> None:
+    """Avant : une seconde confirmation écrasait `applied_at`."""
+    app = await ctx.candidature(S.TO_APPLY)
+    premiere = MAINTENANT - timedelta(days=3)
+    await ctx.service.confirm_manual_submission(
+        owner_id=OWNER, application_id=app.id, applied_at=premiere
+    )
+
+    with pytest.raises(AlreadySubmittedError):
+        await ctx.service.confirm_manual_submission(owner_id=OWNER, application_id=app.id)
+    assert ctx.repo.apps[app.id].applied_at == premiere
+
+
+@pytest.mark.parametrize("statut", [S.NEW_OFFER, S.TO_ANALYZE, S.ABANDONED, S.REJECTED])
+async def test_confirmation_refusee_hors_preparation(ctx: Contexte, statut: S) -> None:
+    app = await ctx.candidature(S.NEW_OFFER)
+    ctx.repo.apps[app.id].status = statut
+    with pytest.raises(InvalidStatusTransitionError):
+        await ctx.service.confirm_manual_submission(owner_id=OWNER, application_id=app.id)
+
+
+# ---------------------------------------------------------------------------- historique
+
+
+async def test_note_et_entretien(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    entretien = datetime(2026, 11, 10, 14, 0, tzinfo=UTC)
+
+    note = await ctx.service.add_note(
+        owner_id=OWNER, application_id=app.id, note_body="  Bon contact  "
+    )
+    rdv = await ctx.service.add_interview_event(
+        owner_id=OWNER, application_id=app.id, description="Entretien RH", interview_time=entretien
+    )
+
+    assert (note.kind, note.body) == (EventKind.NOTE, "Bon contact")
+    assert (rdv.kind, rdv.occurred_at) == (EventKind.INTERVIEW, entretien)
+
+
+async def test_entretien_sans_fuseau_refuse(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    with pytest.raises(InvalidDateError):
+        await ctx.service.add_interview_event(
+            owner_id=OWNER,
+            application_id=app.id,
+            description="x",
+            interview_time=datetime(2026, 11, 10, 14, 0),
+        )
+
+
+async def test_contact_du_recruteur(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    contact = await ctx.service.add_contact(
+        owner_id=OWNER,
+        application_id=app.id,
+        name="  Marc Lemoine ",
+        email=" marc@acme.test ",
+        phone="",
+        role="Hiring Manager",
+    )
+    assert (contact.name, contact.email, contact.phone) == ("Marc Lemoine", "marc@acme.test", None)
+
+
+# ---------------------------------------------------------------------------- relances
+
+
+async def test_relance_planifiee_puis_annulee(ctx: Contexte) -> None:
+    app = await ctx.prete()
+    await ctx.service.confirm_manual_submission(owner_id=OWNER, application_id=app.id)
+    dans_une_semaine = MAINTENANT + timedelta(days=7)
+
+    planifiee = await ctx.service.schedule_follow_up(
+        owner_id=OWNER, application_id=app.id, follow_up_at=dans_une_semaine, notes="Relancer RH"
+    )
+    assert planifiee.follow_up_at == dans_une_semaine
+    assert planifiee.events[-1].kind is EventKind.FOLLOW_UP
+    assert "2026-11-11 12:00 UTC" in (planifiee.events[-1].body or "")
+
+    annulee = await ctx.service.schedule_follow_up(
+        owner_id=OWNER, application_id=app.id, follow_up_at=None
+    )
+    assert annulee.follow_up_at is None
+    assert annulee.events[-1].body == "Relance annulée."
+
+
+async def test_on_ne_relance_pas_une_candidature_non_envoyee(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.TO_APPLY)
+    with pytest.raises(InvalidDateError, match="déjà envoyée"):
+        await ctx.service.schedule_follow_up(
+            owner_id=OWNER, application_id=app.id, follow_up_at=MAINTENANT + timedelta(days=2)
+        )
+
+
+async def test_relance_dans_le_passe_ou_sans_fuseau_refusee(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.TO_APPLY)
+    await ctx.service.confirm_manual_submission(owner_id=OWNER, application_id=app.id)
+
+    with pytest.raises(InvalidDateError, match="futur"):
+        await ctx.service.schedule_follow_up(
+            owner_id=OWNER, application_id=app.id, follow_up_at=MAINTENANT - timedelta(days=1)
+        )
+    with pytest.raises(InvalidDateError, match="fuseau"):
+        await ctx.service.schedule_follow_up(
+            owner_id=OWNER,
+            application_id=app.id,
+            follow_up_at=datetime(2030, 1, 1),
+        )
+
+
+# ---------------------------------------------------------------------------- documents
+
+
+async def test_association_de_versions_exactes_tracee(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    cv = ctx.documents.add("cv", title="CV Python", version=3)
+    lettre = ctx.documents.add("cover_letter", title="Lettre Acme", version=1)
+
+    maj = await ctx.service.attach_documents(
+        owner_id=OWNER, application_id=app.id, cv_version_id=cv, letter_version_id=lettre
+    )
+
+    assert (maj.cv_version_id, maj.letter_version_id) == (cv, lettre)
+    assert (
+        maj.events[-1].body
+        == "Documents associés : CV « CV Python » v3, Lettre « Lettre Acme » v1."
+    )
+
+
+async def test_association_exige_au_moins_une_version(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    with pytest.raises(NothingToAttachError):
+        await ctx.service.attach_documents(owner_id=OWNER, application_id=app.id)
+
+
+async def test_version_inconnue_ou_d_un_autre_utilisateur_refusee(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    with pytest.raises(DocumentVersionNotFoundError):
+        await ctx.service.attach_documents(
+            owner_id=OWNER, application_id=app.id, cv_version_id=uuid.uuid4()
+        )
+    assert ctx.repo.apps[app.id].cv_version_id is None
+
+
+async def test_un_cv_n_est_pas_une_lettre(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    cv = ctx.documents.add("cv")
+    lettre = ctx.documents.add("cover_letter")
+
+    with pytest.raises(DocumentKindMismatchError):
+        await ctx.service.attach_documents(
+            owner_id=OWNER, application_id=app.id, letter_version_id=cv
+        )
+    with pytest.raises(DocumentKindMismatchError):
+        await ctx.service.attach_documents(
+            owner_id=OWNER, application_id=app.id, cv_version_id=lettre
+        )
+
+
+async def test_document_envoye_ne_peut_plus_etre_remplace(ctx: Contexte) -> None:
+    """La version associée atteste de ce qui a réellement été envoyé."""
+    app = await ctx.prete()
+    await ctx.service.confirm_manual_submission(owner_id=OWNER, application_id=app.id)
+    autre_cv = ctx.documents.add("cv", title="Autre CV")
+
+    with pytest.raises(DocumentLockedError):
+        await ctx.service.attach_documents(
+            owner_id=OWNER, application_id=app.id, cv_version_id=autre_cv
+        )
+
+
+async def test_apres_envoi_on_peut_completer_un_emplacement_vide_ou_reassocier_le_meme(
+    ctx: Contexte,
 ) -> None:
-    owner = uuid.uuid4()
-    app = await service.create_application(owner_id=owner, offer_id=uuid.uuid4())
+    app = await ctx.candidature(S.TO_APPLY)
+    cv = ctx.documents.add("cv")
+    await ctx.service.attach_documents(owner_id=OWNER, application_id=app.id, cv_version_id=cv)
+    await ctx.service.confirm_manual_submission(owner_id=OWNER, application_id=app.id)
 
-    # Dossier incomplet au départ
-    dossier = await service.prepare_dossier(
-        owner_id=owner,
-        application_id=app.id,
-        job_title="Lead Tech",
-        company_name="Tesla",
-        application_url=None,
+    lettre = ctx.documents.add("cover_letter")
+    maj = await ctx.service.attach_documents(
+        owner_id=OWNER, application_id=app.id, cv_version_id=cv, letter_version_id=lettre
     )
+    assert maj.letter_version_id == lettre
+
+
+async def test_description_des_documents_associes(ctx: Contexte) -> None:
+    app = await ctx.prete()
+    app = await ctx.service.get_application(owner_id=OWNER, application_id=app.id)
+    from app.modules.application_management.domain.entities import AssociatedDocument
+
+    app.documents = [
+        AssociatedDocument(uuid.uuid4(), app.id, app.cv_version_id or uuid.uuid4(), MAINTENANT)
+    ]
+    infos = await ctx.service.describe_documents(app)
+    assert [(i.kind, i.title, i.version) for i in infos] == [("cv", "CV Python", 2)]
+
+
+# ---------------------------------------------------------------------------- dossier
+
+
+async def test_dossier_incomplet_liste_ce_qui_manque(ctx: Contexte) -> None:
+    app = await ctx.candidature()
+    dossier = await ctx.service.prepare_dossier(owner_id=OWNER, application_id=app.id)
+
     assert dossier.is_ready_to_send is False
-    assert len(dossier.missing_elements) == 3
+    assert dossier.missing_elements == (
+        "CV personnalisé manquant",
+        "Lettre de motivation manquante",
+    )
+    assert dossier.application_url == "https://careers.example.test/apply"
+    assert dossier.job_title == "Développeur Python"
 
-    # Association des documents
-    cv_id = uuid.uuid4()
-    letter_id = uuid.uuid4()
-    await service.attach_documents(
-        owner_id=owner,
-        application_id=app.id,
-        cv_version_id=cv_id,
-        letter_version_id=letter_id,
+
+async def test_dossier_complet(ctx: Contexte) -> None:
+    app = await ctx.prete()
+    dossier = await ctx.service.prepare_dossier(owner_id=OWNER, application_id=app.id)
+
+    assert dossier.is_ready_to_send is True
+    assert dossier.missing_elements == ()
+    assert dossier.warnings == ()
+
+
+async def test_dossier_signale_un_audit_de_qualite_insuffisant(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.DOCUMENTS_TO_PREPARE)
+    cv = ctx.documents.add("cv", passed=False, score=55)
+    lettre = ctx.documents.add("cover_letter", passed=None)  # jamais audité : pas d'alerte
+    await ctx.service.attach_documents(
+        owner_id=OWNER, application_id=app.id, cv_version_id=cv, letter_version_id=lettre
     )
 
-    dossier_pret = await service.prepare_dossier(
-        owner_id=owner,
-        application_id=app.id,
-        job_title="Lead Tech",
-        company_name="Tesla",
-        application_url="https://tesla.com/careers/lead-tech",
-    )
-    assert dossier_pret.is_ready_to_send is True
-    assert dossier_pret.has_cv is True
-    assert dossier_pret.has_letter is True
-    assert len(dossier_pret.missing_elements) == 0
+    dossier = await ctx.service.prepare_dossier(owner_id=OWNER, application_id=app.id)
+
+    assert dossier.is_ready_to_send is True  # un avertissement ne bloque pas
+    assert dossier.warnings == ("CV : l'audit de qualité n'est pas conforme (score 55/100).",)
 
 
-async def test_action_lien_externe_securisee(service: ApplicationTrackingService) -> None:
-    owner = uuid.uuid4()
-    app = await service.create_application(owner_id=owner, offer_id=uuid.uuid4())
+# ---------------------------------------------------------------------------- lien externe
 
-    url = await service.get_application_url_action(
-        owner_id=owner,
-        application_id=app.id,
-        offer_application_url="https://jobs.apple.com/fr-fr/details/123",
-    )
-    assert url == "https://jobs.apple.com/fr-fr/details/123"
 
+async def test_lien_externe_verifie(ctx: Contexte) -> None:
+    app = await ctx.candidature(url="https://careers.example.test/jobs/1")
+    url = await ctx.service.get_application_url_action(owner_id=OWNER, application_id=app.id)
+    assert url == "https://careers.example.test/jobs/1"
+
+
+@pytest.mark.parametrize("url", ["javascript:alert(1)", "https://u:p@example.test/", ""])
+async def test_lien_externe_dangereux_refuse(ctx: Contexte, url: str) -> None:
+    app = await ctx.candidature(url=url)
     with pytest.raises(ExternalOfferLinkMissingError):
-        await service.get_application_url_action(
-            owner_id=owner,
-            application_id=app.id,
-            offer_application_url=None,
-        )
+        await ctx.service.get_application_url_action(owner_id=OWNER, application_id=app.id)
+
+
+# ---------------------------------------------------------------------------- vues
+
+
+async def test_statistiques_avec_horloge_injectee(ctx: Contexte) -> None:
+    app = await ctx.candidature(S.TO_APPLY)
+    await ctx.service.confirm_manual_submission(owner_id=OWNER, application_id=app.id)
+    await ctx.candidature(S.NEW_OFFER)
+
+    stats = await ctx.service.get_stats(owner_id=OWNER)
+
+    assert (stats.total_applications, stats.sent_applications) == (2, 1)
+    assert stats.response_rate == 0.0  # 1 envoi, 0 réponse : un vrai 0 %, pas une absence de donnée
+
+
+async def test_kanban_total_reel_et_colonnes_limitees(ctx: Contexte) -> None:
+    for _ in range(3):
+        await ctx.candidature(S.TO_APPLY)
+
+    colonnes = await ctx.service.get_kanban_view(owner_id=OWNER, per_column_limit=2)
+
+    assert colonnes[S.TO_APPLY].count == 3
+    assert len(colonnes[S.TO_APPLY].items) == 2
+    assert set(colonnes) == set(S)

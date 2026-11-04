@@ -1,72 +1,83 @@
-"""Schémas Pydantic pour l'API REST de suivi des candidatures et dashboard (EPIC 014)."""
+"""Schémas de l'API de suivi des candidatures et du tableau de bord (EPIC 014)."""
 
 from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, StringConstraints
 
 from app.modules.application_management.domain.enums import ApplicationStatus, EventKind
 
+Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
+ShortText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+# Les dates sans fuseau sont refusées : « 9 h » ne veut rien dire sans lui.
+
 
 class CreateApplicationRequest(BaseModel):
-    """Requête de création d'une candidature liée à une offre (TASK-014-01, 02)."""
-
     offer_id: uuid.UUID
     initial_status: ApplicationStatus = ApplicationStatus.NEW_OFFER
 
 
 class ChangeStatusRequest(BaseModel):
-    """Requête de mise à jour du statut d'une candidature (TASK-014-03)."""
-
     target_status: ApplicationStatus
-    reason: str | None = None
+    reason: ShortText | None = None
 
 
 class ConfirmSubmissionRequest(BaseModel):
-    """Confirmation manuelle de soumission externe par le candidat (TASK-014-04, 20)."""
+    """Trace d'un envoi fait par l'utilisateur lui-même ; rien n'est envoyé par l'application."""
 
-    notes: str | None = None
+    notes: ShortText | None = None
+    applied_at: AwareDatetime | None = None
+    """Date réelle d'envoi si elle précède l'enregistrement (défaut : maintenant)."""
 
 
 class AddNoteRequest(BaseModel):
-    """Ajout d'une note personnelle dans l'historique (TASK-014-07)."""
-
-    body: str = Field(min_length=1, max_length=5000)
+    body: Text
 
 
 class AddInterviewRequest(BaseModel):
-    """Ajout d'un événement d'entretien ou d'échange (TASK-014-08)."""
-
-    description: str = Field(min_length=1, max_length=5000)
-    interview_time: datetime | None = None
+    description: Text
+    interview_time: AwareDatetime | None = None
 
 
 class ScheduleFollowUpRequest(BaseModel):
-    """Programmation ou annulation d'une relance (TASK-014-10)."""
-
-    follow_up_at: datetime | None = None
-    notes: str | None = None
+    follow_up_at: AwareDatetime | None = None
+    notes: ShortText | None = None
 
 
 class AttachDocumentsRequest(BaseModel):
-    """Association de versions de CV et/ou lettre (TASK-014-09)."""
-
     cv_version_id: uuid.UUID | None = None
     letter_version_id: uuid.UUID | None = None
 
 
 class AddContactRequest(BaseModel):
-    """Enregistrement d'un recruteur ou contact (TASK-014-05)."""
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+    email: Annotated[
+        str | None,
+        StringConstraints(
+            strip_whitespace=True, max_length=320, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+        ),
+    ] = None
+    phone: Annotated[
+        str | None,
+        StringConstraints(strip_whitespace=True, max_length=40, pattern=r"^[0-9+().\-\s]{3,40}$"),
+    ] = None
+    role: Annotated[str | None, StringConstraints(strip_whitespace=True, max_length=200)] = None
 
-    name: str = Field(min_length=1, max_length=200)
-    email: str | None = Field(default=None, max_length=320)
-    phone: str | None = Field(default=None, max_length=40)
-    role: str | None = Field(default=None, max_length=200)
+
+# ------------------------------------------------------------------ réponses
 
 
-# Réponses
+class OfferSummaryResponse(BaseModel):
+    offer_id: uuid.UUID
+    title: str
+    company_name: str | None
+    location: str | None
+    country_code: str | None
+    application_url: str
 
 
 class ContactResponse(BaseModel):
@@ -90,17 +101,23 @@ class TimelineEventResponse(BaseModel):
 
 
 class AssociatedDocumentResponse(BaseModel):
-    id: uuid.UUID
-    application_id: uuid.UUID
     document_version_id: uuid.UUID
-    created_at: datetime | None
+    document_id: uuid.UUID
+    kind: str
+    title: str
+    version: int
+    quality_passed: bool | None
+    quality_score: int | None
+    is_current: bool
+    """Vrai pour la version actuellement retenue pour cette candidature."""
 
 
 class ApplicationResponse(BaseModel):
-    """Représentation synthétique d'une candidature (pour liste et cartes)."""
+    """Candidature pour les listes et les cartes : l'offre liée permet de la reconnaître."""
 
     id: uuid.UUID
     offer_id: uuid.UUID
+    offer: OfferSummaryResponse | None
     status: ApplicationStatus
     created_at: datetime
     updated_at: datetime
@@ -112,16 +129,17 @@ class ApplicationResponse(BaseModel):
 
 
 class ApplicationDetailResponse(ApplicationResponse):
-    """Fiche complète d'une candidature avec contacts, historique et documents (TASK-014-14)."""
+    """Fiche complète (TASK-014-14)."""
 
     contacts: list[ContactResponse]
     events: list[TimelineEventResponse]
     documents: list[AssociatedDocumentResponse]
+    allowed_transitions: list[ApplicationStatus]
+    """Statuts atteignables depuis le statut courant (hors envoi, qui se confirme à part)."""
+    can_confirm_submission: bool
 
 
 class ApplicationListResponse(BaseModel):
-    """Réponse paginée pour la vue tableau (TASK-014-11)."""
-
     items: list[ApplicationResponse]
     total: int
     limit: int
@@ -131,18 +149,16 @@ class ApplicationListResponse(BaseModel):
 class KanbanColumnResponse(BaseModel):
     status: ApplicationStatus
     count: int
+    """Total réel de la colonne, même quand `items` n'en montre qu'une partie."""
     items: list[ApplicationResponse]
+    has_more: bool
 
 
 class KanbanViewResponse(BaseModel):
-    """Vue Kanban découpée par colonne de statut (TASK-014-12)."""
-
     columns: list[KanbanColumnResponse]
 
 
 class ApplicationDossierResponse(BaseModel):
-    """Dossier de candidature assemblé et contrôlé (TASK-014-16, 17, 18)."""
-
     application_id: uuid.UUID
     offer_id: uuid.UUID
     job_title: str
@@ -154,29 +170,103 @@ class ApplicationDossierResponse(BaseModel):
     letter_version_id: uuid.UUID | None
     is_ready_to_send: bool
     missing_elements: list[str]
+    warnings: list[str]
+
+
+class OpenUrlResponse(BaseModel):
+    application_url: str
 
 
 class ApplicationStatsResponse(BaseModel):
-    """Statistiques calculées sur les données réelles de l'utilisateur (TASK-014-15, 22)."""
-
+    responses_count: int
     total_applications: int
     sent_applications: int
     interviews_count: int
     offers_received_count: int
     rejections_count: int
-    response_rate: float
+    response_rate: float | None
+    """None tant qu'aucune candidature n'est envoyée : pas de taux sans donnée."""
     active_applications: int
     pending_follow_ups_count: int
+    due_follow_ups_count: int
+
+
+class AIBudgetResponse(BaseModel):
+    spent: Decimal
+    limit: Decimal | None
+    currency: str | None
+    period: str = "monthly"
+
+
+class RecentSearchResponse(BaseModel):
+    id: uuid.UUID
+    started_at: datetime
+    status: str
+    result_count: int | None
+    label: str
+
+
+class RecentActivityResponse(BaseModel):
+    application_id: uuid.UUID
+    kind: EventKind
+    occurred_at: datetime
+    body: str | None
+    job_title: str
+    company_name: str | None
+
+
+class MonthlyTrendResponse(BaseModel):
+    current: int
+    previous: int
+    percent: float | None
+    """Variation en % ; `None` sans mois précédent."""
+
+
+class TopMatchResponse(BaseModel):
+    offer_id: uuid.UUID
+    title: str
+    company_name: str | None
+    score: float
+    """Score de compatibilité sur 100 calculé par le moteur de correspondance."""
+
+
+class InterviewEventResponse(BaseModel):
+    application_id: uuid.UUID
+    occurred_at: datetime
+    job_title: str
+    company_name: str | None
+    description: str | None
+
+
+class FunnelResponse(BaseModel):
+    """Chaque étape est un sous-ensemble de la précédente."""
+
+    offers: int
+    tracked: int
+    sent: int
+    responses: int
+    offers_received: int
 
 
 class DashboardMetricsResponse(BaseModel):
-    """Synthèse des indicateurs clés pour le tableau de bord (TASK-014-21)."""
+    """Chaque `None` signifie « pas de donnée », et non zéro (TASK-014-22)."""
 
+    display_name: str | None
     total_offers_found: int
+    active_offers_count: int
+    active_offers_trend: MonthlyTrendResponse
     new_offers_count: int
-    relevant_offers_count: int
+    relevant_offers_count: int | None
+    relevance_threshold: int
+    top_matches: list[TopMatchResponse]
+    active_applications_count: int
+    applications_trend: MonthlyTrendResponse
     applications_sent_count: int
     interviews_count: int
-    response_rate: float
-    ai_budget_consumed_cents: int
-    ai_budget_limit_cents: int
+    response_rate: float | None
+    funnel: FunnelResponse
+    applications_by_status: dict[ApplicationStatus, int]
+    interviews: list[InterviewEventResponse]
+    ai_budget: AIBudgetResponse
+    recent_searches: list[RecentSearchResponse]
+    recent_activities: list[RecentActivityResponse]

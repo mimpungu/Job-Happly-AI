@@ -1,12 +1,10 @@
-"""Service applicatif du tableau de bord (TASK-014-21, 22).
-
-Agrège les métriques globales de l'application sur des données 100% réelles :
-offres trouvées, candidatures envoyées, taux de réponse réel, budget IA consommé.
-"""
+"""Tableau de bord (TASK-014-21, 22) : indicateurs sur données réelles, `None` sinon."""
 
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -15,11 +13,14 @@ if TYPE_CHECKING:
 
 
 class DashboardService:
-    """Service d'agrégation des KPIs pour le tableau de bord de pilotage."""
-
-    def __init__(self, repository: DashboardRepositoryPort) -> None:
+    def __init__(
+        self,
+        repository: DashboardRepositoryPort,
+        *,
+        clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+    ) -> None:
         self._repository = repository
+        self._clock = clock
 
     async def get_dashboard(self, *, owner_id: uuid.UUID) -> DashboardMetrics:
-        """Calcule et retourne les métriques globales pour l'utilisateur."""
-        return await self._repository.get_dashboard_metrics(owner_id)
+        return await self._repository.get_dashboard_metrics(owner_id, now=self._clock())
