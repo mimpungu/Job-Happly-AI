@@ -60,6 +60,7 @@ function simulerApi(
     "fetch",
     vi.fn(async (url: string, init?: RequestInit) => {
       appels.push({ url, methode: init?.method ?? "GET", corps: init?.body as string | undefined });
+      if (url.includes("/preferences")) return json(preferencesSimulees);
       if (url.includes("/saved-searches")) return json([]);
       if (url.includes("/search-runs")) return json([]);
       if (url.includes("/state")) return etat();
@@ -68,6 +69,8 @@ function simulerApi(
   );
   return appels;
 }
+
+let preferencesSimulees: Record<string, unknown> = { currency: null };
 
 function afficher(props: { savedOnly?: boolean } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -80,6 +83,7 @@ function afficher(props: { savedOnly?: boolean } = {}) {
 }
 
 beforeEach(() => {
+  preferencesSimulees = { currency: null };
   push.mockClear();
   recherche = "";
 });
@@ -201,6 +205,17 @@ describe("JobsExplorer", () => {
     afficher();
 
     expect(await screen.findByRole("button", { name: /Tous les filtres/ })).toHaveTextContent("2");
+  });
+
+  it("pré-remplit la devise du salaire avec celle des préférences", async () => {
+    preferencesSimulees = { currency: "CHF" };
+    simulerApi(() => json(page([])));
+    afficher();
+    await screen.findByText("Aucune offre ne correspond");
+
+    await userEvent.click(screen.getByRole("button", { name: "Tous les filtres" }));
+
+    await waitFor(() => expect(screen.getByLabelText("Devise")).toHaveValue("CHF"));
   });
 
   it("filtre par nom d'entreprise et par ville", async () => {
@@ -358,6 +373,7 @@ describe("JobsExplorer", () => {
       vi.fn((url: string) => {
         if (url.includes("/saved-searches") || url.includes("/search-runs"))
           return Promise.resolve(json([]));
+        if (url.includes("/preferences")) return Promise.resolve(json({ currency: null }));
         appel += 1;
         if (appel === 1) return Promise.resolve(json(page([offre()], { page_count: 2 })));
         return new Promise<Response>((resolve) => {

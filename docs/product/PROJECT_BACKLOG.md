@@ -32,7 +32,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [✅] | 014 — APPLICATION TRACKING & CANDIDATE CRM | P1 | 5 | 22 | 22 | EPIC 004, EPIC 008, EPIC 012, EPIC 013 |
 | [✅] | 015 — SCHEDULER, AUTOMATION & NOTIFICATIONS | P1 | 4 | 19 | 19 | EPIC 008, EPIC 009, EPIC 010 |
 | [✅] | 016 — INTERVIEW PREPARATION & CAREER ASSISTANT | P2 | 3 | 14 | 14 | EPIC 014 |
-| [➖] | 017 — INTERNATIONALIZATION & GLOBAL JOB SEARCH | P1 | 5 | 24 | 0 | EPIC 006, EPIC 007, EPIC 008 |
+| [➖] | 017 — INTERNATIONALIZATION & GLOBAL JOB SEARCH | P1 | 5 | 24 | 15 | EPIC 006, EPIC 007, EPIC 008 |
 | [➖] | 018 — SECURITY, PRIVACY & OPERATIONAL EXCELLENCE | P0 | 6 | 37 | 35 | EPIC 002 |
 | [➖] | 019 — QA, RELEASE & PRODUCTION READINESS | P0 | 5 | 30 | 29 | EPIC 002 |
 
@@ -922,40 +922,40 @@ Total : 404 tâches.
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-017-01 | Définir les langues de l'interface | P1 | BACKLOG | à estimer |
+| [✅] | TASK-017-01 | Définir les langues de l'interface | P1 | DONE | à estimer |
 | [➖] | TASK-017-02 | Ajouter les traductions | P1 | BACKLOG | à estimer |
 | [➖] | TASK-017-03 | Gérer les formats de date | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-04 | Gérer les devises | P1 | BACKLOG | à estimer |
+| [✅] | TASK-017-04 | Gérer les devises | P1 | DONE | à estimer |
 | [➖] | TASK-017-05 | Gérer les fuseaux horaires | P1 | BACKLOG | à estimer |
 
 ### [➖] FEATURE 017.2 — Référentiel géographique
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-017-06 | Définir Country Entity | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-07 | Gérer les codes ISO | P1 | BACKLOG | à estimer |
+| [✅] | TASK-017-06 | Définir Country Entity | P1 | DONE | à estimer |
+| [✅] | TASK-017-07 | Gérer les codes ISO | P1 | DONE | à estimer |
 | [➖] | TASK-017-08 | Gérer les villes et régions | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-09 | Gérer les langues officielles | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-10 | Gérer les devises | P1 | BACKLOG | à estimer |
+| [✅] | TASK-017-09 | Gérer les langues officielles | P1 | DONE | à estimer |
+| [✅] | TASK-017-10 | Gérer les devises | P1 | DONE | à estimer |
 
-### [➖] FEATURE 017.3 — Recherche internationale
-
-| Statut | ID | Titre | Priorité | État | Estimation |
-|---|---|---|---|---|---|
-| [➖] | TASK-017-11 | Implémenter les filtres par pays | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-12 | Gérer les intitulés de postes multilingues | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-13 | Gérer les compétences multilingues | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-14 | Gérer les sources par pays | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-15 | Gérer les recherches multi-pays | P1 | BACKLOG | à estimer |
-
-### [➖] FEATURE 017.4 — Mobilité internationale
+### [✅] FEATURE 017.3 — Recherche internationale
 
 | Statut | ID | Titre | Priorité | État | Estimation |
 |---|---|---|---|---|---|
-| [➖] | TASK-017-16 | Ajouter les préférences de mobilité | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-17 | Ajouter les exigences de permis de travail lorsqu'elles sont disponibles | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-18 | Identifier les annonces mentionnant le sponsoring | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-19 | Afficher les limites et informations manquantes | P1 | BACKLOG | à estimer |
+| [✅] | TASK-017-11 | Implémenter les filtres par pays | P1 | DONE | à estimer |
+| [✅] | TASK-017-12 | Gérer les intitulés de postes multilingues | P1 | DONE | à estimer |
+| [✅] | TASK-017-13 | Gérer les compétences multilingues | P1 | DONE | à estimer |
+| [✅] | TASK-017-14 | Gérer les sources par pays | P1 | DONE | à estimer |
+| [✅] | TASK-017-15 | Gérer les recherches multi-pays | P1 | DONE | à estimer |
+
+### [✅] FEATURE 017.4 — Mobilité internationale
+
+| Statut | ID | Titre | Priorité | État | Estimation |
+|---|---|---|---|---|---|
+| [✅] | TASK-017-16 | Ajouter les préférences de mobilité | P1 | DONE | à estimer |
+| [✅] | TASK-017-17 | Ajouter les exigences de permis de travail lorsqu'elles sont disponibles | P1 | DONE | à estimer |
+| [✅] | TASK-017-18 | Identifier les annonces mentionnant le sponsoring | P1 | DONE | à estimer |
+| [✅] | TASK-017-19 | Afficher les limites et informations manquantes | P1 | DONE | à estimer |
 
 ### [➖] FEATURE 017.5 — Connecteurs internationaux
 

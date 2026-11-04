@@ -116,6 +116,46 @@ describe("QueriedSources", () => {
     expect(screen.getByText(/accès refusé/)).toBeInTheDocument();
   });
 
+  it("affiche la couverture géographique sans rien affirmer de plus", () => {
+    render(
+      <QueriedSources
+        result={{
+          ...base,
+          coverage: {
+            requested: ["FR", "CA"],
+            declared: ["FR"],
+            undeclared: ["CA"],
+            sources_without_declared_countries: ["greenhouse:a"],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText(/Pays couverts par une source interrogée : FR/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Aucune source interrogée ne déclare couvrir : CA/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/couverture n'est pas déclarée/)).toBeInTheDocument();
+  });
+
+  it("n'affiche aucune couverture quand aucun pays n'est demandé", () => {
+    render(
+      <QueriedSources
+        result={{
+          ...base,
+          coverage: {
+            requested: [],
+            declared: [],
+            undeclared: [],
+            sources_without_declared_countries: [],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.queryByText(/Pays couverts/)).toBeNull();
+  });
+
   it("dit clairement qu'aucune source n'a été interrogée", () => {
     render(<QueriedSources result={{ ...base, queried: false, status: null, sources: [] }} />);
 

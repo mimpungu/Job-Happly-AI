@@ -313,6 +313,8 @@ class SqlOfferQueryRepository:
             first_seen_at=offre.first_seen_at,
             last_seen_at=offre.last_seen_at,
             sources=vues,
+            visa_sponsorship=offre.visa_sponsorship,
+            work_authorization_required=offre.work_authorization_required,
         )
 
     async def set_state(

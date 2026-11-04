@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/table";
 import { toast } from "@/components/ui/toaster";
 import { useRecompute } from "@/features/matching/use-matching";
+import { usePreferences } from "@/features/localization/use-localization";
 import { QueriedSources } from "@/features/sources/queried-sources";
 import { useSearchSources } from "@/features/sources/use-sources";
 import { ApiError } from "@/services/api-client";
@@ -39,7 +40,15 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
   const params = useSearchParams();
   const [aSauvegarder, setASauvegarder] = useState<OfferFilters | null>(null);
 
-  const brut = filtersFromParams(new URLSearchParams(params.toString()));
+  const preferences = usePreferences();
+  const devisePreferee = preferences.data?.currency ?? null;
+  const brutUrl = filtersFromParams(new URLSearchParams(params.toString()));
+  // Devise par défaut du filtre de salaire : celle des préférences, sauf choix explicite dans
+  // l'URL. Aucune conversion n'est faite : c'est seulement la valeur pré-remplie.
+  const brut =
+    devisePreferee && !params.has("currency")
+      ? { ...brutUrl, salaryCurrency: devisePreferee }
+      : brutUrl;
   const filters: OfferFilters = savedOnly ? { ...brut, state: "saved" } : brut;
 
   // L'URL est la source de vérité : recherche reproductible, partageable, bouton retour fonctionnel.
@@ -76,7 +85,7 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
 
       {savedOnly ? null : (
         <SearchForm
-          key={params.toString()}
+          key={`${params.toString()}|${devisePreferee ?? ""}`}
           filters={filters}
           onSubmit={appliquer}
           onSaveSearch={setASauvegarder}

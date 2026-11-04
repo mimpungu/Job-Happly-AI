@@ -16,7 +16,17 @@ export interface QueriedSource {
   error_type: string | null;
 }
 
+export interface GeographicCoverage {
+  requested: string[];
+  /** Pays demandés qu'au moins une source interrogée déclare couvrir. */
+  declared: string[];
+  /** Pays demandés qu'aucune source interrogée ne déclare couvrir. */
+  undeclared: string[];
+  sources_without_declared_countries: string[];
+}
+
 export interface SourceSearchResult {
+  coverage?: GeographicCoverage;
   /** Au moins une source interrogée ; sinon les résultats viennent de la base locale seule. */
   queried: boolean;
   status: "succeeded" | "partial" | "failed" | null;
@@ -29,6 +39,8 @@ export interface DataSource {
   name: string;
   kind: string;
   countries: string[];
+  /** Faux : la source ne déclare aucun pays, sa couverture n'est pas affirmée. */
+  coverage_declared?: boolean;
   enabled: boolean;
   requires_configuration: boolean;
   configured: boolean;

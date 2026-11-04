@@ -16,6 +16,7 @@ dependencies = [
   "defusedxml>=0.7.1",
   "python-multipart>=0.0.33",
   "pyspellchecker>=0.9.1",
+  "babel>=2.16",
 ]
 
 [dependency-groups]

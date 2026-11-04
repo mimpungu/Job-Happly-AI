@@ -157,12 +157,12 @@ export function SearchForm({ filters, onSubmit, onSaveSearch }: SearchFormProps)
                     />
                   )}
                 </Field>
-                <Field label="Pays" hint="Code ISO, ex. FR">
+                <Field label="Pays" hint="Codes ISO séparés par des virgules, ex. FR, CA">
                   {(champ) => (
                     <Input
                       {...champ}
                       value={draft.country}
-                      maxLength={2}
+                      maxLength={100}
                       onChange={(e) => maj("country", e.target.value.toUpperCase())}
                     />
                   )}

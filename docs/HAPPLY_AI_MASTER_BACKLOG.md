@@ -1541,57 +1541,79 @@ Méthodes :
 
 ### [➖] FEATURE 017.1 — Internationalisation de l'application
 
-[➖] **TASK-017-01 — Définir les langues de l'interface**
+[✅] **TASK-017-01 — Définir les langues de l'interface**
 
 [➖] **TASK-017-02 — Ajouter les traductions**
 
+> Partiel : next-intl en place (français, anglais), navigation et paramètres généraux traduits, test des clés manquantes. Les autres écrans restent en français (traduction progressive, ADR-0021).
+
 [➖] **TASK-017-03 — Gérer les formats de date**
 
-[➖] **TASK-017-04 — Gérer les devises**
+> Non fait : les dates s'affichent encore selon les réglages du navigateur.
+
+[✅] **TASK-017-04 — Gérer les devises**
 
 [➖] **TASK-017-05 — Gérer les fuseaux horaires**
 
+> Partiel : le fuseau est enregistré et validé (zoneinfo) mais pas encore utilisé pour l'affichage des dates ; les notifications gardent leur propre fuseau.
+
 ### [➖] FEATURE 017.2 — Référentiel géographique
 
-[➖] **TASK-017-06 — Définir Country Entity**
+[✅] **TASK-017-06 — Définir Country Entity**
 
-[➖] **TASK-017-07 — Gérer les codes ISO**
+[✅] **TASK-017-07 — Gérer les codes ISO**
 
 [➖] **TASK-017-08 — Gérer les villes et régions**
 
-[➖] **TASK-017-09 — Gérer les langues officielles**
+> Non fait : aucun référentiel de villes et régions (le CLDR n'en fournit pas) ; décision requise (source de données).
 
-[➖] **TASK-017-10 — Gérer les devises**
+[✅] **TASK-017-09 — Gérer les langues officielles**
 
-### [➖] FEATURE 017.3 — Recherche internationale
+[✅] **TASK-017-10 — Gérer les devises**
 
-[➖] **TASK-017-11 — Implémenter les filtres par pays**
+### [✅] FEATURE 017.3 — Recherche internationale
 
-[➖] **TASK-017-12 — Gérer les intitulés de postes multilingues**
+[✅] **TASK-017-11 — Implémenter les filtres par pays**
 
-[➖] **TASK-017-13 — Gérer les compétences multilingues**
+[✅] **TASK-017-12 — Gérer les intitulés de postes multilingues**
 
-[➖] **TASK-017-14 — Gérer les sources par pays**
+> Vérifié : lexique fermé français ↔ anglais (008-10), appliqué à la recherche locale et à la collecte.
 
-[➖] **TASK-017-15 — Gérer les recherches multi-pays**
+[✅] **TASK-017-13 — Gérer les compétences multilingues**
 
-### [➖] FEATURE 017.4 — Mobilité internationale
+> Vérifié : équivalents FR↔EN d'un lexique fermé de compétences non techniques ; un nom technique inconnu n'est pas traduit.
 
-[➖] **TASK-017-16 — Ajouter les préférences de mobilité**
+[✅] **TASK-017-14 — Gérer les sources par pays**
 
-[➖] **TASK-017-17 — Ajouter les exigences de permis de travail lorsqu'elles sont disponibles**
+> Vérifié : pays déclarés par source, filtre `GET /sources?country=`, couverture affichée ; une source sans pays déclaré n'est jamais comptée comme couvrante.
 
-[➖] **TASK-017-18 — Identifier les annonces mentionnant le sponsoring**
+[✅] **TASK-017-15 — Gérer les recherches multi-pays**
 
-[➖] **TASK-017-19 — Afficher les limites et informations manquantes**
+### [✅] FEATURE 017.4 — Mobilité internationale
+
+[✅] **TASK-017-16 — Ajouter les préférences de mobilité**
+
+> Les préférences sont enregistrées et modifiables (paramètres généraux) ; elles ne pèsent pas encore dans le score de compatibilité.
+
+[✅] **TASK-017-17 — Ajouter les exigences de permis de travail lorsqu'elles sont disponibles**
+
+[✅] **TASK-017-18 — Identifier les annonces mentionnant le sponsoring**
+
+> Vérifié : règles FR/EN ; annonce muette ou contradictoire = inconnu. Dette : unifier avec `mobility.visa` de l'analyse d'offre (EPIC 011).
+
+[✅] **TASK-017-19 — Afficher les limites et informations manquantes**
 
 ### [➖] FEATURE 017.5 — Connecteurs internationaux
 
 [➖] **TASK-017-20 — Étudier EURES**
 
+> Bloqué : lecture de la documentation et des conditions d'EURES impossible (réseau de la session).
+
 [➖] **TASK-017-21 — Intégrer une première source européenne réelle**
 
 [➖] **TASK-017-22 — Étudier une source nord-américaine**
+
+> Bloqué : même cause que 017-20.
 
 [➖] **TASK-017-23 — Ajouter progressivement les autres fournisseurs**
 
@@ -2080,7 +2102,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 22 | 0.4 |
 | [✅] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 19 | 0.5 |
 | [✅] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 14 | 0.5 |
-| [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 0 | 1.0 |
+| [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 15 | 1.0 |
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 35 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 29 | 0.1 → 1.0 |
 

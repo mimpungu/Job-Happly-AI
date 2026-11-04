@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "main": "Navigation principale",
+    "dashboard": "Tableau de bord",
+    "jobs": "Recherche d'emploi",
+    "savedJobs": "Offres sauvegardées",
+    "cvStudio": "Espace CV",
+    "coverLetters": "Lettres de motivation",
+    "applications": "Candidatures",
+    "interviews": "Préparation d'entretien",
+    "aiCenter": "Centre IA",
+    "settings": "Paramètres"
+  },
+  "general": {
+    "title": "Paramètres généraux",
+    "intro": "Langue, pays, devise et fuseau horaire. Ces choix servent de valeurs par défaut ; rien n'est converti ni deviné.",
+    "language": "Langue de l'interface",
+    "languageNames": { "fr": "Français", "en": "English" },
+    "country": "Pays de recherche principal",
+    "currency": "Devise",
+    "timezone": "Fuseau horaire",
+    "notSet": "Non renseigné",
+    "mobilityTitle": "Mobilité internationale",
+    "relocate": "Prêt à déménager",
+    "relocateYes": "Oui",
+    "relocateNo": "Non",
+    "targetCountries": "Pays où je pourrais travailler",
+    "targetCountriesHint": "Codes ISO séparés par des virgules, ex. FR, CA, DE.",
+    "workPermit": "Pays où j'ai le droit de travailler",
+    "needsSponsorship": "Besoin d'un parrainage de visa",
+    "sponsorshipYes": "Oui, j'ai besoin d'un parrainage",
+    "sponsorshipNo": "Non",
+    "save": "Enregistrer",
+    "saved": "Préférences enregistrées.",
+    "loadError": "Impossible de charger vos préférences : {message}",
+    "loading": "Chargement des préférences"
+  }
+}

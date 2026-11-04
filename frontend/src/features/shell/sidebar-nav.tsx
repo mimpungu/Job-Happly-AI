@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/cn";
@@ -15,10 +16,11 @@ export interface SidebarNavProps {
 /** Entrées en pastilles ; l'entrée « bottom » (Paramètres) est rejetée en bas de la colonne. */
 export function SidebarNav({ onNavigate }: SidebarNavProps) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
   return (
-    <nav aria-label="Navigation principale" className="flex min-h-0 flex-1 flex-col">
+    <nav aria-label={t("main")} className="flex min-h-0 flex-1 flex-col">
       <ul className="flex flex-1 flex-col gap-1.5">
-        {NAVIGATION_ITEMS.map(({ label, href, icon: Icon, bottom }) => {
+        {NAVIGATION_ITEMS.map(({ messageKey, href, icon: Icon, bottom }) => {
           const active = isActive(pathname, href);
           return (
             <li key={href} className={cn(bottom && "mt-auto")}>
@@ -35,7 +37,7 @@ export function SidebarNav({ onNavigate }: SidebarNavProps) {
                 )}
               >
                 <Icon className="size-5 shrink-0" aria-hidden="true" />
-                {label}
+                {t(messageKey)}
               </Link>
             </li>
           );

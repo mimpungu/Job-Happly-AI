@@ -225,3 +225,24 @@ class TestBruitDesAnnoncesReelles:
             "Docker",
             "AWS",
         ]
+
+
+@pytest.mark.parametrize(
+    ("francais", "anglais"),
+    [
+        ("Gestion de projet", "Project management"),
+        ("Travail d'équipe", "Teamwork"),
+        ("Apprentissage automatique", "Machine learning"),
+        ("Analyse de données", "Data analysis"),
+        ("Cybersécurité", "Cybersecurity"),
+        ("Marketing digital", "Digital marketing"),
+    ],
+)
+def test_les_competences_francaises_et_anglaises_se_rencontrent(
+    francais: str, anglais: str
+) -> None:
+    assert canonique(francais) == canonique(anglais)
+
+
+def test_un_nom_technique_inconnu_n_est_pas_traduit() -> None:
+    assert canonique("Terraform") == "terraform"

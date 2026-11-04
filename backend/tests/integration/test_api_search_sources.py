@@ -188,3 +188,56 @@ async def test_une_source_hors_couverture_n_est_pas_interrogee(
     ).json()
 
     assert {s["source_key"] for s in corps["sources"]} == {"greenhouse:bonne"}
+
+
+async def test_la_couverture_geographique_est_affichee_sans_rien_affirmer_de_plus(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("HAPPLY_FRANCE_TRAVAIL_CLIENT_ID", "id")
+    monkeypatch.setenv("HAPPLY_FRANCE_TRAVAIL_CLIENT_SECRET", "secret")
+    get_settings.cache_clear()
+    _reseau(monkeypatch)
+    await _suivre(client, "Bonne", "bonne")
+
+    corps = (
+        await client.post(
+            "/api/v1/search",
+            json={"filter": {"text": "analyst", "country_codes": ["FR", "CA"]}},
+        )
+    ).json()
+
+    couverture = corps["coverage"]
+    assert couverture["requested"] == ["FR", "CA"]
+    # France Travail déclare la France ; aucune source interrogée ne déclare le Canada.
+    assert couverture["declared"] == ["FR"] and couverture["undeclared"] == ["CA"]
+    # Le job board d'entreprise ne déclare aucun pays : signalé, jamais compté comme couvrant.
+    assert couverture["sources_without_declared_countries"] == ["greenhouse:bonne"]
+
+
+async def test_sans_pays_demande_la_couverture_est_vide(
+    client: httpx.AsyncClient,
+) -> None:
+    corps = (await client.post("/api/v1/search", json={"filter": {"text": "python"}})).json()
+
+    assert corps["coverage"] == {
+        "requested": [],
+        "declared": [],
+        "undeclared": [],
+        "sources_without_declared_countries": [],
+    }
+
+
+async def test_le_catalogue_des_sources_se_filtre_par_pays(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _reseau(monkeypatch)
+    await _suivre(client, "Bonne", "bonne")
+    await client.post("/api/v1/search", json={"filter": {"text": "analyst"}})
+
+    france = {s["key"]: s for s in (await client.get("/api/v1/sources?country=fr")).json()}
+    canada = {s["key"]: s for s in (await client.get("/api/v1/sources?country=CA")).json()}
+
+    assert france["france_travail"]["coverage_declared"] is True
+    assert "france_travail" not in canada  # déclare la France seulement
+    # Une source à couverture non déclarée reste listée, mais signalée comme telle.
+    assert canada["greenhouse:bonne"]["coverage_declared"] is False

@@ -8,6 +8,7 @@ from app.modules.document_generation.infrastructure import models as _documents
 from app.modules.interview_preparation.infrastructure import models as _interviews
 from app.modules.job_discovery.infrastructure import models as _discovery
 from app.modules.job_intelligence.infrastructure import models as _intelligence
+from app.modules.localization.infrastructure import models as _localization
 from app.modules.notifications.infrastructure import models as _notifications
 from app.modules.platform.infrastructure import models as _platform
 
@@ -19,6 +20,7 @@ MODELS_LOADED = (
     _interviews,
     _discovery,
     _intelligence,
+    _localization,
     _notifications,
     _platform,
 )

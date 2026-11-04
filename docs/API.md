@@ -74,8 +74,9 @@ Aucune liste fermée d'entreprises : l'utilisateur tape un nom, l'application ch
 | `GET /target-companies` | Entreprises suivies, avec état de la dernière collecte. |
 | `PATCH /target-companies/{id}` `{enabled}` | Active ou désactive (404 `company_not_found`). |
 | `POST /collection/run` | Collecte en parallèle les entreprises activées ; bilan par source. 409 `no_company_enabled` si aucune. |
-| `POST /search` `{filter?, titles?, refresh?}` | Recherche multi-sources : interroge **en parallèle** les entreprises activées et les sources officielles configurées dont la couverture (pays) correspond, enregistre les offres sans doublon, puis renvoie `{queried, status, sources[], results}` (offres agrégées paginées, bilan par source, erreurs nommées). `titles` : intitulés visés. `refresh:false` lit la base locale seule. Sans source activée : `queried:false`, jamais une erreur. Refusé en mode démonstration. |
+| `POST /search` `{filter?, titles?, refresh?}` | Recherche multi-sources : interroge **en parallèle** les entreprises activées et les sources officielles configurées dont la couverture (pays) correspond, enregistre les offres sans doublon, puis renvoie `{queried, status, sources[], results}` (offres agrégées paginées, bilan par source, erreurs nommées). `titles` : intitulés visés. `refresh:false` lit la base locale seule. Sans source activée : `queried:false`, jamais une erreur. `coverage` : `{requested, declared, undeclared, sources_without_declared_countries}`, la couverture géographique réelle des sources interrogées par rapport aux `country_codes` demandés. Refusé en mode démonstration. |
 | `GET /sources` | Sources de données : clé, nom, pays, activation, `configured`/`requires_configuration`, `status` (`ok`, `error`, `unsupported`, `not_configured`, `never_checked`), dernier accès/succès/erreur, nombre d'offres. Une source officielle sans identifiants est listée « non configurée ». |
+| `GET /sources?country=FR` | Ne garde que les sources qui déclarent ce pays **ou** dont la couverture n'est pas déclarée (`coverage_declared: false`, jamais présentée comme couvrante). |
 
 Une source en échec n'affecte pas les autres (statut `partial`). Un refus d'accès (401/403) rend l'entreprise « non supportée » : jamais contourné. La découverte propose un résultat à confirmer : deux sociétés peuvent partager un jeton.
 
@@ -214,3 +215,16 @@ payload_too_large`.
 - Ces routes lisent les offres **déjà présentes en base**. Le déclenchement d'une collecte auprès des sources (ingestion) n'est pas encore exposé : il viendra avec les connecteurs réels et l'EPIC 015.
 - L'import de CV fonctionne par règles (aucune IA) sur des CV aux sections titrées en français ou en anglais ; une mise en page très inhabituelle (colonnes entremêlées, tableaux) donnera davantage de `low` et d'avertissements. Pas de reconnaissance de caractères pour les scans.
 - Filtres par rayon (`radius_km`) et par niveau d'expérience : non disponibles, car l'offre ne stocke ni coordonnées ni expérience requise.
+
+
+## Préférences et référentiel géographique (`/api/v1`)
+
+| Route | Rôle |
+|---|---|
+| `GET /preferences` | Langue d'interface, pays, devise, fuseau IANA, mobilité (`willing_to_relocate`, `target_countries`, `work_permit_countries`, `needs_sponsorship`) et `supported_ui_languages`. `null` = non renseigné. |
+| `PUT /preferences` | Remplace les préférences ; chaque valeur est vérifiée contre le référentiel. 422 `preferences_invalid` avec un message explicite (langue, pays, devise ou fuseau inconnu). |
+| `GET /reference/countries?locale=fr\|en` | Pays ISO 3166-1 avec langues officielles et devises, triés par nom. |
+| `GET /reference/currencies?locale=fr\|en` | Devises ISO 4217 (code, nom, symbole). |
+| `GET /reference/timezones` | Fuseaux IANA reconnus par le serveur. |
+
+`GET /offers/{id}` expose aussi `visa_sponsorship` (`offered`, `not_offered`, `null`) et `work_authorization_required` (`true` ou `null`), déduits de l'annonce ; `null` signifie que l'annonce n'en parle pas.

@@ -105,6 +105,29 @@ class TestJobOfferRepository:
 
         assert modele.required_experience_years == 4
 
+    async def test_le_sponsoring_et_l_autorisation_de_travail_sont_deduits_de_l_annonce(
+        self, session: AsyncSession, user_id: uuid.UUID
+    ) -> None:
+        source = await _source(session, user_id)
+        texte = "We do not sponsor visas.\nYou must be legally authorized to work in the US."
+        offre = replace(_offre(), description=texte)
+        resultat = await _observer(session, user_id, source, offre, MAINTENANT)
+        modele = await session.get(JobOfferModel, resultat.offer_id)
+        assert modele is not None
+        assert modele.visa_sponsorship == "not_offered"
+        assert modele.work_authorization_required is True
+
+        # Annonce muette : inconnu (NULL), jamais « refusé » par défaut.
+        muette = replace(
+            _offre("b" * 64),
+            description="Développeur Python",
+            application_url="https://exemple.test/2",
+        )
+        autre = await _observer(session, user_id, source, muette, MAINTENANT, external_id="E2")
+        inconnue = await session.get(JobOfferModel, autre.offer_id)
+        assert inconnue is not None
+        assert inconnue.visa_sponsorship is None and inconnue.work_authorization_required is None
+
     async def test_rejouer_la_meme_observation_ne_cree_aucun_doublon(
         self, session: AsyncSession, user_id: uuid.UUID
     ) -> None:

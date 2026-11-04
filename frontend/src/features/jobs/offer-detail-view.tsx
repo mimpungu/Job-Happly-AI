@@ -29,6 +29,40 @@ export function safeHttpUrl(valeur: string | null): string | null {
   }
 }
 
+const SPONSORING = {
+  offered: { texte: "Sponsoring de visa : proposé par l'annonce", variante: "success" },
+  not_offered: { texte: "Sponsoring de visa : non proposé par l'annonce", variante: "warning" },
+} as const;
+
+/** Mobilité internationale : ce que l'annonce dit, et ce qu'elle ne dit pas (jamais deviné). */
+function Mobilite({
+  sponsoring,
+  autorisation,
+}: {
+  sponsoring: "offered" | "not_offered" | null;
+  autorisation: boolean | null;
+}) {
+  const sponsoringVue = sponsoring ? SPONSORING[sponsoring] : null;
+  return (
+    <ul aria-label="Mobilité internationale" className="flex flex-wrap gap-2">
+      <li>
+        {sponsoringVue ? (
+          <Badge variant={sponsoringVue.variante}>{sponsoringVue.texte}</Badge>
+        ) : (
+          <Badge>Sponsoring de visa : non précisé</Badge>
+        )}
+      </li>
+      <li>
+        {autorisation ? (
+          <Badge variant="warning">Droit de travailler exigé</Badge>
+        ) : (
+          <Badge>Droit de travailler : non précisé</Badge>
+        )}
+      </li>
+    </ul>
+  );
+}
+
 export function OfferDetailView({ id }: { id: string }) {
   const offre = useOffer(id);
   const changerEtat = useChangeOfferState();
@@ -100,6 +134,10 @@ export function OfferDetailView({ id }: { id: string }) {
           {summary.state === "saved" ? <Badge variant="accent">Sauvegardée</Badge> : null}
           {summary.state === "ignored" ? <Badge>Ignorée</Badge> : null}
         </div>
+        <Mobilite
+          sponsoring={offre.data.visa_sponsorship ?? null}
+          autorisation={offre.data.work_authorization_required ?? null}
+        />
         <div className="flex flex-wrap gap-3 pt-2">
           {lienCandidature ? (
             <a

@@ -135,6 +135,8 @@ class CompanyCollection:
     company_name: str
     source_key: str
     outcome: SourceOutcome
+    countries: tuple[str, ...] = ()
+    """Pays que la source déclare couvrir ; vide = couverture non déclarée (jamais « tous »)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -212,7 +214,11 @@ class CollectionService:
         par_cle = {o.source_key: o for o in rapport.outcomes}
         resultats = tuple(
             CompanyCollection(
-                c.company_id, c.company_name, c.connector.key, par_cle[c.connector.key]
+                c.company_id,
+                c.company_name,
+                c.connector.key,
+                par_cle[c.connector.key],
+                tuple(sorted(c.connector.get_capabilities().countries)),
             )
             for c in cibles
         )

@@ -51,6 +51,10 @@ export interface OfferDetail {
   first_seen_at: string;
   last_seen_at: string;
   sources: OfferSourceView[];
+  /** `offered`, `not_offered`, ou `null` si l'annonce n'en parle pas. */
+  visa_sponsorship?: "offered" | "not_offered" | null;
+  /** `true` si l'annonce exige un droit de travailler ; `null` si elle ne le précise pas. */
+  work_authorization_required?: boolean | null;
 }
 
 export interface OfferPage {

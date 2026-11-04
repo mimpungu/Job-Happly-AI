@@ -71,6 +71,7 @@ CATEGORY_TABLES: dict[DataCategory, tuple[str, ...]] = {
         "ai_budgets",
         "ai_task_budgets",
         "matching_settings",
+        "user_preferences",
         "notification_preferences",
     ),
 }

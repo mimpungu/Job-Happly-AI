@@ -192,6 +192,10 @@ class OfferDetail:
     first_seen_at: datetime
     last_seen_at: datetime
     sources: tuple[OfferSourceView, ...]
+    visa_sponsorship: str | None = None
+    """`offered`, `not_offered` ou `None` si l'annonce n'en parle pas."""
+    work_authorization_required: bool | None = None
+    """`True` si l'annonce exige un droit de travailler ; `None` si elle ne le précise pas."""
 
 
 @dataclass(frozen=True, slots=True)

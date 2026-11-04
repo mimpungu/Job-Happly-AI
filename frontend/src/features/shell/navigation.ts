@@ -12,7 +12,10 @@ import {
 } from "lucide-react";
 
 export interface NavigationItem {
+  /** Libellé français : repli et nom des tests ; l'affichage passe par `messageKey`. */
   label: string;
+  /** Clé de traduction sous `nav` (fichiers `i18n/messages`). */
+  messageKey: string;
   href: string;
   icon: LucideIcon;
   /** Entrée rangée en bas de la barre latérale, séparée des sections de travail. */
@@ -21,15 +24,30 @@ export interface NavigationItem {
 
 /** Navigation principale (spécification §16). L'ordre est celui de la barre latérale. */
 export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
-  { label: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Recherche d'emploi", href: "/jobs", icon: Search },
-  { label: "Offres sauvegardées", href: "/saved-jobs", icon: Bookmark },
-  { label: "Espace CV", href: "/cv-studio", icon: FileText },
-  { label: "Lettres de motivation", href: "/cover-letters", icon: Mail },
-  { label: "Candidatures", href: "/applications", icon: BriefcaseBusiness },
-  { label: "Préparation d'entretien", href: "/interview-preparation", icon: MessagesSquare },
-  { label: "Centre IA", href: "/ai-center", icon: Bot },
-  { label: "Paramètres", href: "/settings", icon: Settings, bottom: true },
+  { label: "Tableau de bord", messageKey: "dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Recherche d'emploi", messageKey: "jobs", href: "/jobs", icon: Search },
+  { label: "Offres sauvegardées", messageKey: "savedJobs", href: "/saved-jobs", icon: Bookmark },
+  { label: "Espace CV", messageKey: "cvStudio", href: "/cv-studio", icon: FileText },
+  {
+    label: "Lettres de motivation",
+    messageKey: "coverLetters",
+    href: "/cover-letters",
+    icon: Mail,
+  },
+  {
+    label: "Candidatures",
+    messageKey: "applications",
+    href: "/applications",
+    icon: BriefcaseBusiness,
+  },
+  {
+    label: "Préparation d'entretien",
+    messageKey: "interviews",
+    href: "/interview-preparation",
+    icon: MessagesSquare,
+  },
+  { label: "Centre IA", messageKey: "aiCenter", href: "/ai-center", icon: Bot },
+  { label: "Paramètres", messageKey: "settings", href: "/settings", icon: Settings, bottom: true },
 ];
 
 /** Une entrée est active pour sa route exacte et pour ses sous-routes. */

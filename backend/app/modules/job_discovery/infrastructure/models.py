@@ -103,6 +103,10 @@ class JobOfferModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
             "required_experience_years IS NULL OR required_experience_years BETWEEN 0 AND 40",
             name="required_experience_valid",
         ),
+        CheckConstraint(
+            "visa_sponsorship IS NULL OR visa_sponsorship IN ('offered', 'not_offered')",
+            name="visa_sponsorship_valid",
+        ),
         CheckConstraint("char_length(content_hash) = 64", name="content_hash_sha256"),
         CheckConstraint("last_seen_at >= first_seen_at", name="seen_dates_valid"),
         Index("ix_job_offers_owner_id_country_code", "owner_id", "country_code"),
@@ -142,6 +146,9 @@ class JobOfferModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
     language: Mapped[str | None] = mapped_column(String(10))
     # Années d'expérience exigées, déduites de l'annonce ; NULL = inconnu (jamais 0 par défaut).
     required_experience_years: Mapped[int | None] = mapped_column(SmallInteger)
+    # Mobilité (TASK-017-17/18), déduite de l'annonce ; NULL = l'annonce n'en parle pas.
+    visa_sponsorship: Mapped[str | None] = mapped_column(String(12))
+    work_authorization_required: Mapped[bool | None] = mapped_column(Boolean)
     # Offre fictive du mode démonstration (TASK-002-10) : jamais mêlée aux données réelles.
     is_demo: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     content_hash: Mapped[str] = mapped_column(String(64))

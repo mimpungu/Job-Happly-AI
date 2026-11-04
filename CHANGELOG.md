@@ -23,6 +23,7 @@ Couvre les jalons 0.1 à 0.5 du plan de releases. La version **1.0** (stable) n'
 - **Budget IA** : plafond journalier par fournisseur appliqué avant chaque appel, alertes de seuil affichées dans le Centre IA, estimation du coût maximal d'une opération sans appel de modèle.
 - **Budget IA (suite)** : plafonds journaliers par tâche (migration 0013), coût maximal affiché avant chaque opération IA (résumé d'offre, entretien, reformulation du CV), reformulation des réalisations regroupée par lots bornés.
 - **Consommation IA** : en mode économique, le fournisseur le moins cher est essayé en premier ; garde-fous CI (repli sans IA, schéma JSON strict et sortie bornée pour chaque tâche).
+- **International (EPIC 017, première partie)** : référentiel géographique (pays, langues officielles, devises) adossé à Babel, préférences générales et de mobilité (migration 0014), page « Paramètres généraux », interface française et anglaise (next-intl, navigation et paramètres), couverture géographique des sources affichée, recherche multi-pays, sponsoring de visa et droit de travailler déduits des annonces (migration 0015), équivalents FR↔EN des compétences. ADR-0021.
 - **Qualité** : suite de tests backend et frontend, parcours E2E complets (vraie API, vraie base, vrai pdfLaTeX), accessibilité vérifiée (deux thèmes, trois tailles), tests de volume, de pagination et de concurrence, mesure de couverture.
 
 ### Corrigé

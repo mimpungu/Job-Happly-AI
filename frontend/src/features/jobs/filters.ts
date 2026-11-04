@@ -56,6 +56,16 @@ function scoreValide(valeur: string): string {
   return valeur !== "" && Number.isInteger(nombre) && nombre >= 0 && nombre <= 100 ? valeur : "";
 }
 
+/** Pays saisis séparés par des virgules (« FR, CA ») : codes ISO sans doublon, bornés. */
+export function parseCountries(saisie: string): string[] {
+  const vus = new Set<string>();
+  for (const brut of saisie.split(/[\s,;]+/)) {
+    const code = brut.trim().toUpperCase();
+    if (/^[A-Z]{2}$/.test(code)) vus.add(code);
+  }
+  return [...vus].slice(0, 30);
+}
+
 /** Entier de 0 à `max` ; sinon pas de filtre. */
 function entierBorne(valeur: string, max: number): string {
   const nombre = Number(valeur);
@@ -136,7 +146,7 @@ export function filtersToApiQuery(filters: OfferFilters, pageSize: number): URLS
   ecrire("text", filters.text.trim());
   ecrire("company", filters.company.trim());
   ecrire("city", filters.city.trim());
-  ecrire("country_codes", filters.country.trim().toUpperCase());
+  for (const code of parseCountries(filters.country)) params.append("country_codes", code);
   ecrire("employment_types", filters.employmentType);
   ecrire("remote_types", filters.remoteType);
   if (filters.salaryMin.trim()) {
@@ -161,7 +171,8 @@ export function filtersToSavedCriteria(filters: OfferFilters): Record<string, un
   if (filters.text.trim()) criteres.text = filters.text.trim();
   if (filters.company.trim()) criteres.company = filters.company.trim();
   if (filters.city.trim()) criteres.city = filters.city.trim();
-  if (filters.country.trim()) criteres.country_codes = [filters.country.trim().toUpperCase()];
+  const pays = parseCountries(filters.country);
+  if (pays.length > 0) criteres.country_codes = pays;
   if (filters.employmentType) criteres.employment_types = [filters.employmentType];
   if (filters.remoteType) criteres.remote_types = [filters.remoteType];
   if (filters.salaryMin.trim()) {
@@ -194,7 +205,9 @@ export function filtersFromSavedCriteria(criteres: Record<string, unknown>): Off
     text: texte("text"),
     company: texte("company"),
     city: texte("city"),
-    country: premier("country_codes"),
+    country: Array.isArray(criteres.country_codes)
+      ? criteres.country_codes.filter((c): c is string => typeof c === "string").join(", ")
+      : "",
     employmentType: premier("employment_types"),
     remoteType: premier("remote_types"),
     salaryMin: texte("salary_min"),

@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from app.core.api.dependencies import SessionDep as Session
@@ -19,6 +19,7 @@ from app.modules.job_discovery.application.saved_searches import SearchService
 from app.modules.job_discovery.application.source_search import (
     SourceSearchReport,
     SourceSearchService,
+    coverage_of,
 )
 from app.modules.job_discovery.domain.enums import SearchRunStatus
 from app.modules.job_discovery.domain.search import OfferFilter
@@ -73,7 +74,16 @@ class QueriedSourceResponse(BaseModel):
     error_type: str | None
 
 
+class CoverageResponse(BaseModel):
+    requested: list[str]
+    declared: list[str]
+    undeclared: list[str]
+    sources_without_declared_countries: list[str]
+
+
 class SourceSearchResponse(BaseModel):
+    coverage: CoverageResponse
+    """Couverture géographique des sources interrogées, par rapport aux pays demandés."""
     queried: bool
     """Au moins une source a été interrogée (sinon : résultats de la base locale seulement)."""
     status: SearchRunStatus | None
@@ -81,8 +91,19 @@ class SourceSearchResponse(BaseModel):
     results: OfferPageResponse
 
     @classmethod
-    def build(cls, rapport: SourceSearchReport, page: OfferPageResponse) -> SourceSearchResponse:
+    def build(
+        cls, rapport: SourceSearchReport, page: OfferPageResponse, pays: tuple[str, ...]
+    ) -> SourceSearchResponse:
+        couverture = coverage_of(pays, rapport.sources)
         return cls(
+            coverage=CoverageResponse(
+                requested=list(couverture.requested),
+                declared=list(couverture.declared),
+                undeclared=list(couverture.undeclared),
+                sources_without_declared_countries=list(
+                    couverture.sources_without_declared_countries
+                ),
+            ),
             queried=bool(rapport.sources),
             status=rapport.status,
             sources=[
@@ -126,7 +147,9 @@ async def search_sources(
         page, _ = await SearchService(
             SqlOfferQueryRepository(session), SqlSavedSearchRepository(session)
         ).run(owner_id=owner_id, offer_filter=body.filter, score_context=contexte)
-    return SourceSearchResponse.build(rapport, OfferPageResponse.from_page(page))
+    return SourceSearchResponse.build(
+        rapport, OfferPageResponse.from_page(page), tuple(body.filter.country_codes)
+    )
 
 
 class DataSourceStatus(StrEnum):
@@ -142,6 +165,8 @@ class DataSourceResponse(BaseModel):
     name: str
     kind: str
     countries: list[str]
+    coverage_declared: bool
+    """Faux : la source ne déclare aucun pays, sa couverture n'est pas affirmée."""
     enabled: bool
     requires_configuration: bool
     configured: bool
@@ -166,9 +191,16 @@ def _statut(ligne: JobSourceModel | None, *, configuree: bool) -> DataSourceStat
 
 @router.get("/sources", response_model=list[DataSourceResponse])
 async def list_sources(
-    session: Session, owner_id: Owner, settings: Config
+    session: Session,
+    owner_id: Owner,
+    settings: Config,
+    country: Annotated[str | None, Query(pattern=r"^[A-Za-z]{2}$")] = None,
 ) -> list[DataSourceResponse]:
-    """Sources de données : état, dernier accès, dernière erreur et nombre d'offres."""
+    """Sources de données : état, dernier accès, dernière erreur et nombre d'offres.
+
+    `country` ne garde que les sources qui déclarent ce pays **ou** dont la couverture n'est pas
+    déclarée (signalée par `coverage_declared: false`, jamais présentée comme couvrante).
+    """
     depot = SqlJobSourceRepository(session)
     lignes = await depot.list_by_owner(owner_id)
     totaux = await depot.offer_counts(owner_id)
@@ -181,6 +213,7 @@ async def list_sources(
                 name=ligne.name,
                 kind=ligne.kind,
                 countries=list(ligne.countries),
+                coverage_declared=bool(ligne.countries),
                 enabled=ligne.enabled,
                 requires_configuration=ligne.requires_api_key,
                 configured=configuree,
@@ -200,6 +233,7 @@ async def list_sources(
                 name=FranceTravailConnector.name,
                 kind=FranceTravailConnector.kind.value,
                 countries=["FR"],
+                coverage_declared=True,
                 enabled=False,
                 requires_configuration=True,
                 configured=configuree,
@@ -210,4 +244,7 @@ async def list_sources(
                 offer_count=0,
             )
         )
+    if country:
+        voulu = country.upper()
+        vues = [v for v in vues if not v.coverage_declared or voulu in v.countries]
     return vues

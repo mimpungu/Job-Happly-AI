@@ -52,6 +52,10 @@ from app.modules.job_intelligence.presentation.router import (
     register_matching_errors,
 )
 from app.modules.job_intelligence.presentation.router import router as matching_router
+from app.modules.localization.presentation.router import (
+    register_localization_errors,
+)
+from app.modules.localization.presentation.router import router as localization_router
 from app.modules.notifications.application.runtime import AutomationRuntime
 from app.modules.notifications.presentation.router import (
     notifications_router,
@@ -121,6 +125,7 @@ def create_app() -> FastAPI:
     register_interview_errors(application)
     register_privacy_errors(application)
     register_demo_errors(application)
+    register_localization_errors(application)
 
     @application.get("/api/v1/health", tags=["platform"])
     async def health() -> dict[str, str]:
@@ -145,6 +150,7 @@ def create_app() -> FastAPI:
     application.include_router(interview_router)
     application.include_router(privacy_router)
     application.include_router(demo_router)
+    application.include_router(localization_router)
     return application
 
 

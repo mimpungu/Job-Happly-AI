@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "main": "Main navigation",
+    "dashboard": "Dashboard",
+    "jobs": "Job search",
+    "savedJobs": "Saved jobs",
+    "cvStudio": "CV studio",
+    "coverLetters": "Cover letters",
+    "applications": "Applications",
+    "interviews": "Interview preparation",
+    "aiCenter": "AI center",
+    "settings": "Settings"
+  },
+  "general": {
+    "title": "General settings",
+    "intro": "Language, country, currency and time zone. These are defaults only; nothing is converted or guessed.",
+    "language": "Interface language",
+    "languageNames": { "fr": "Français", "en": "English" },
+    "country": "Main search country",
+    "currency": "Currency",
+    "timezone": "Time zone",
+    "notSet": "Not set",
+    "mobilityTitle": "International mobility",
+    "relocate": "Willing to relocate",
+    "relocateYes": "Yes",
+    "relocateNo": "No",
+    "targetCountries": "Countries where I could work",
+    "targetCountriesHint": "ISO codes separated by commas, e.g. FR, CA, DE.",
+    "workPermit": "Countries where I have the right to work",
+    "needsSponsorship": "Need visa sponsorship",
+    "sponsorshipYes": "Yes, I need sponsorship",
+    "sponsorshipNo": "No",
+    "save": "Save",
+    "saved": "Preferences saved.",
+    "loadError": "Could not load your preferences: {message}",
+    "loading": "Loading preferences"
+  }
+}

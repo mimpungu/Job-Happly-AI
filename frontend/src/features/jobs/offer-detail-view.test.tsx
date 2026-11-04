@@ -75,6 +75,39 @@ describe("safeHttpUrl", () => {
   });
 });
 
+describe("OfferDetailView : mobilité internationale", () => {
+  it("dit ce que l'annonce précise, sans deviner ce qu'elle ne précise pas", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify(
+              detail({ visa_sponsorship: "not_offered", work_authorization_required: true }),
+            ),
+          ),
+        ),
+    );
+    afficher();
+
+    const liste = await screen.findByRole("list", { name: "Mobilité internationale" });
+
+    expect(liste).toHaveTextContent("Sponsoring de visa : non proposé par l'annonce");
+    expect(liste).toHaveTextContent("Droit de travailler exigé");
+  });
+
+  it("affiche « non précisé » pour une annonce muette", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(detail()))));
+    afficher();
+
+    const liste = await screen.findByRole("list", { name: "Mobilité internationale" });
+
+    expect(liste).toHaveTextContent("Sponsoring de visa : non précisé");
+    expect(liste).toHaveTextContent("Droit de travailler : non précisé");
+  });
+});
+
 describe("OfferDetailView", () => {
   it("affiche la description comme du texte, jamais comme du HTML", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(detail()))));

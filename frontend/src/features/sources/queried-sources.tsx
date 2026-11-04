@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { SourceSearchResult } from "@/types/sources";
+import type { GeographicCoverage, SourceSearchResult } from "@/types/sources";
 
 const ERREURS: Record<string, string> = {
   SourceUnavailableError: "source indisponible",
@@ -11,6 +11,30 @@ const ERREURS: Record<string, string> = {
   InvalidResponseError: "réponse illisible",
   CircuitOpenError: "source écartée temporairement",
 };
+
+/** Couverture géographique : ce que les sources déclarent, sans rien affirmer de plus. */
+function Couverture({ couverture }: { couverture: GeographicCoverage }) {
+  if (couverture.requested.length === 0) return null;
+  return (
+    <div role="note" className="flex flex-col gap-1 text-foreground-muted">
+      {couverture.declared.length > 0 ? (
+        <p>Pays couverts par une source interrogée : {couverture.declared.join(", ")}.</p>
+      ) : null}
+      {couverture.undeclared.length > 0 ? (
+        <p>
+          <strong className="text-foreground">
+            Aucune source interrogée ne déclare couvrir : {couverture.undeclared.join(", ")}.
+          </strong>{" "}
+          Les résultats pour ces pays viennent seulement des offres déjà collectées
+          {couverture.sources_without_declared_countries.length > 0
+            ? " et des entreprises suivies, dont la couverture n'est pas déclarée"
+            : ""}
+          .
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 /** Sources interrogées par la dernière recherche : chaque échec est nommé, jamais masqué. */
 export function QueriedSources({ result }: { result: SourceSearchResult }) {
@@ -46,6 +70,7 @@ export function QueriedSources({ result }: { result: SourceSearchResult }) {
           </li>
         ))}
       </ul>
+      {result.coverage ? <Couverture couverture={result.coverage} /> : null}
     </section>
   );
 }

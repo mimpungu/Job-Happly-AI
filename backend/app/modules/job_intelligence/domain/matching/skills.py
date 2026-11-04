@@ -39,6 +39,31 @@ _SYNONYMES = {
     "scikitlearn": "sklearn", "tf": "tensorflow", "dotnet": "net", "csharp": "c#",
 }  # fmt: skip
 
+# Équivalents français → anglais de compétences non techniques courantes (TASK-017-13) : un profil
+# en français et une offre en anglais (ou l'inverse) doivent se rencontrer. Les noms techniques
+# (Python, SQL, Docker…) sont les mêmes dans toutes les langues et n'en ont pas besoin.
+_SYNONYMES_MULTILINGUES = {
+    "gestiondeprojet": "projectmanagement", "gestiondeprojets": "projectmanagement",
+    "conduitedeprojet": "projectmanagement", "travaildequipe": "teamwork",
+    "travailenequipe": "teamwork", "espritdequipe": "teamwork",
+    "analysededonnees": "dataanalysis",
+    "visualisationdedonnees": "datavisualization", "entrepotdedonnees": "datawarehouse",
+    "basededonnees": "database", "basesdedonnees": "database",
+    "apprentissageautomatique": "machinelearning", "apprentissageprofond": "deeplearning",
+    "intelligenceartificielle": "artificialintelligence", "ia": "artificialintelligence",
+    "ai": "artificialintelligence", "traitementdulanguagenaturel": "nlp", "tal": "nlp",
+    "integrationcontinue": "cicd", "deploiementcontinu": "cicd",
+    "methodeagile": "agile", "methodesagiles": "agile", "gestiondeproduit": "productmanagement",
+    "relationclient": "customerservice", "serviceclient": "customerservice",
+    "negociation": "negotiation", "redaction": "writing", "communicationorale": "communication",
+    "gestiondutemps": "timemanagement", "resolutiondeproblemes": "problemsolving",
+    "espritdanalyse": "analyticalthinking",
+    "cybersecurite": "cybersecurity", "securiteinformatique": "cybersecurity",
+    "comptabilite": "accounting", "gestionbudgetaire": "budgeting", "ressourceshumaines": "hr",
+    "marketingdigital": "digitalmarketing", "referencementnaturel": "seo",
+}  # fmt: skip
+_SYNONYMES = {**_SYNONYMES, **_SYNONYMES_MULTILINGUES}
+
 # Familles : une compétence proche, sans être la même, vaut une correspondance partielle.
 _FAMILLES: tuple[frozenset[str], ...] = (
     frozenset({"sql", "postgresql", "mysql", "mariadb", "sqlserver", "oracle", "sqlite"}),

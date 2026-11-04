@@ -18,6 +18,7 @@ from app.core.domain.value_objects import CountryCode, EmploymentType, RemoteTyp
 from app.modules.application_management.infrastructure.models import ApplicationModel
 from app.modules.job_discovery.domain.deduplication import assess_duplicate, canonicalize_url
 from app.modules.job_discovery.domain.enums import OfferState, OfferStatus
+from app.modules.job_discovery.domain.mobility import extract_mobility
 from app.modules.job_discovery.domain.offers import NormalizedOffer, UpsertResult
 from app.modules.job_discovery.infrastructure.models import (
     JobOfferModel,
@@ -36,8 +37,18 @@ def _annees_requises(description: str) -> int | None:
     return exigence.years if exigence else None
 
 
+def _mobilite(description: str) -> dict[str, Any]:
+    """Sponsoring de visa et autorisation de travail déduits de l'annonce (NULL = inconnu)."""
+    info = extract_mobility(description)
+    return {
+        "visa_sponsorship": info.visa_sponsorship.value if info.visa_sponsorship else None,
+        "work_authorization_required": info.work_authorization_required,
+    }
+
+
 def _champs_offre(offre: NormalizedOffer) -> dict[str, Any]:
     return {
+        **_mobilite(offre.description),
         "required_experience_years": _annees_requises(offre.description),
         "title": offre.title,
         "description": offre.description,
@@ -291,6 +302,8 @@ class SqlJobOfferRepository:
         if modele.required_experience_years is None:
             # Offre antérieure à la colonne (ou sans exigence) : on (re)déduit, sans effet de bord.
             valeurs["required_experience_years"] = _annees_requises(modele.description)
+        if modele.visa_sponsorship is None and modele.work_authorization_required is None:
+            valeurs.update(_mobilite(modele.description))
         if changed:
             self._session.add(
                 JobOfferRevisionModel(

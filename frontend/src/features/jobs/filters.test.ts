@@ -7,6 +7,7 @@ import {
   filtersToApiQuery,
   filtersToParams,
   filtersToSavedCriteria,
+  parseCountries,
   parseTitles,
 } from "./filters";
 
@@ -153,5 +154,21 @@ describe("filtres de la recherche multilingue, de l'expérience et des intitulé
 
   it("nettoie la liste d'intitulés", () => {
     expect(parseTitles(" Dev ,, Dev, Analyste ")).toEqual(["Dev", "Analyste"]);
+  });
+});
+
+describe("recherche multi-pays", () => {
+  it("accepte plusieurs codes ISO et les envoie en paramètres répétés", () => {
+    const filtres = filtersFromParams(new URLSearchParams("country=fr, ca;de"));
+
+    expect(parseCountries(filtres.country)).toEqual(["FR", "CA", "DE"]);
+    expect(filtersToApiQuery(filtres, 25).getAll("country_codes")).toEqual(["FR", "CA", "DE"]);
+    const criteres = filtersToSavedCriteria(filtres);
+    expect(criteres.country_codes).toEqual(["FR", "CA", "DE"]);
+    expect(filtersFromSavedCriteria(criteres).country).toBe("FR, CA, DE");
+  });
+
+  it("ignore les codes invalides et les doublons", () => {
+    expect(parseCountries("FR, fra, 1, FR, , C")).toEqual(["FR"]);
   });
 });

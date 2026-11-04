@@ -25,6 +25,33 @@ from app.modules.job_discovery.domain.search import OfferFilter
 
 
 @dataclass(frozen=True, slots=True)
+class GeographicCoverage:
+    """Ce que les sources interrogées couvrent réellement, à afficher tel quel (TASK-017-19)."""
+
+    requested: tuple[str, ...]
+    """Pays demandés par la recherche."""
+    declared: tuple[str, ...]
+    """Pays demandés qu'au moins une source interrogée déclare couvrir."""
+    undeclared: tuple[str, ...]
+    """Pays demandés qu'aucune source interrogée ne déclare couvrir."""
+    sources_without_declared_countries: tuple[str, ...]
+    """Sources interrogées sans couverture déclarée : elles peuvent avoir des offres dans ces
+    pays, mais on ne l'affirme pas."""
+
+
+def coverage_of(
+    requested: tuple[str, ...], sources: tuple[CompanyCollection, ...]
+) -> GeographicCoverage:
+    couverts = {pays for s in sources for pays in s.countries}
+    return GeographicCoverage(
+        requested=requested,
+        declared=tuple(p for p in requested if p in couverts),
+        undeclared=tuple(p for p in requested if p not in couverts),
+        sources_without_declared_countries=tuple(s.source_key for s in sources if not s.countries),
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class SourceSearchReport:
     status: SearchRunStatus | None
     """`None` : aucune source n'a été interrogée (rien d'activé), pas un échec."""

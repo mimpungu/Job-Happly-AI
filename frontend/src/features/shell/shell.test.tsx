@@ -11,6 +11,8 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
+import { IntlWrapper } from "@/i18n/test-utils";
+
 import { GlobalSearch } from "./global-search";
 import { Header } from "./header";
 import { PageHeading } from "./page-heading";
@@ -36,7 +38,7 @@ afterEach(() => {
 
 describe("SidebarNav", () => {
   it("affiche toutes les entrées et marque la page courante", () => {
-    render(<SidebarNav />);
+    render(<SidebarNav />, { wrapper: IntlWrapper });
     const nav = screen.getByRole("navigation", { name: "Navigation principale" });
 
     expect(within(nav).getAllByRole("link")).toHaveLength(9);
@@ -50,7 +52,7 @@ describe("SidebarNav", () => {
   });
 
   it("conserve toutes les sections de la barre latérale, dans leur ordre", () => {
-    render(<SidebarNav />);
+    render(<SidebarNav />, { wrapper: IntlWrapper });
     const libelles = within(screen.getByRole("navigation"))
       .getAllByRole("link")
       .map((l) => l.textContent);
@@ -69,7 +71,7 @@ describe("SidebarNav", () => {
   });
 
   it("range Paramètres en bas de la colonne", () => {
-    render(<SidebarNav />);
+    render(<SidebarNav />, { wrapper: IntlWrapper });
     const parametres = screen.getByRole("link", { name: "Paramètres" }).closest("li");
     const recherche = screen.getByRole("link", { name: "Recherche d'emploi" }).closest("li");
 
@@ -79,7 +81,7 @@ describe("SidebarNav", () => {
 
   it("notifie la navigation (fermeture du tiroir mobile)", async () => {
     const onNavigate = vi.fn();
-    render(<SidebarNav onNavigate={onNavigate} />);
+    render(<SidebarNav onNavigate={onNavigate} />, { wrapper: IntlWrapper });
 
     await userEvent.click(screen.getByRole("link", { name: "Paramètres" }));
 
@@ -243,5 +245,32 @@ describe("ThemeToggle", () => {
 
     expect(document.documentElement.dataset.theme).toBe("light");
     vi.restoreAllMocks();
+  });
+});
+
+describe("SidebarNav : langue de l'interface", () => {
+  it("traduit les entrées en anglais, sans changer les routes", () => {
+    render(<SidebarNav />, {
+      wrapper: ({ children }) => <IntlWrapper locale="en">{children}</IntlWrapper>,
+    });
+
+    const nav = screen.getByRole("navigation", { name: "Main navigation" });
+    expect(within(nav).getByRole("link", { name: "Job search" })).toHaveAttribute("href", "/jobs");
+    expect(within(nav).getByRole("link", { name: "Settings" })).toHaveAttribute(
+      "href",
+      "/settings",
+    );
+    expect(within(nav).queryByText("Recherche d'emploi")).toBeNull();
+  });
+
+  it("fournit une traduction pour chaque entrée dans chaque langue", async () => {
+    const { NAVIGATION_ITEMS } = await import("./navigation");
+    const fr = (await import("@/i18n/messages/fr.json")).default.nav as Record<string, string>;
+    const en = (await import("@/i18n/messages/en.json")).default.nav as Record<string, string>;
+
+    for (const { messageKey, label } of NAVIGATION_ITEMS) {
+      expect(en[messageKey], `traduction anglaise manquante : ${messageKey}`).toBeTruthy();
+      expect(fr[messageKey]).toBe(label);
+    }
   });
 });
