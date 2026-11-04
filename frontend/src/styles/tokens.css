@@ -3,7 +3,12 @@
  * rayons, ombres, conteneurs et états. Aucune valeur de style ne doit être codée en dur
  * dans les composants : utiliser ces tokens (utilitaires Tailwind générés ci-dessous).
  *
- * Règles : thème sombre, couleurs unies, aucun dégradé (texte, bouton, décor).
+ * Règles : deux thèmes (sombre par défaut, clair), couleurs unies, aucun dégradé (texte, bouton,
+ * décor). Seule dérogation validée par le propriétaire (ADR-0017) : le graphique d'entonnoir de la
+ * page d'accueil (dégradé et hachures, via les jetons --color-chart-*).
+ *
+ * Thème : l'attribut `data-theme` de <html> (« dark » ou « light ») redéfinit les jetons de
+ * couleur et d'ombre ci-dessous ; aucun composant ne dépend du thème.
  *
  * Contrastes mesurés (WCAG, sur --color-background) :
  *   foreground 18,1:1 · foreground-muted 7,7:1 · accent 5,4:1 · success 9,7:1
@@ -21,6 +26,8 @@
   --color-surface-elevated: #202026;
   --color-border: #303036;
   --color-border-strong: #44444c;
+  /* Conteneur principal de la page (carte arrondie qui porte le contenu) */
+  --color-shell: #101013;
 
   /* Couleurs — texte */
   --color-foreground: #f5f5f7;
@@ -37,6 +44,31 @@
   --color-danger: #ff453a;
   --color-danger-hover: #ff6961;
   --color-on-danger: #0b0b0d;
+
+  /* Teintes douces (puces, encarts) et leur texte, assez contrastés l'un sur l'autre */
+  --color-accent-soft: #0c2b52;
+  --color-on-accent-soft: #8fc2ff;
+  --color-success-soft: #12331c;
+  --color-on-success-soft: #7fe39a;
+  --color-warning-soft: #3d2a08;
+  --color-on-warning-soft: #ffc266;
+  --color-danger-soft: #3d1613;
+  --color-on-danger-soft: #ff9a92;
+  /* Mise en avant ponctuelle (jour sélectionné de l'agenda) */
+  --color-highlight: #e879e8;
+  --color-on-highlight: #1a0a1a;
+
+  /* Catégories de graphiques et avatars (quatre teintes distinctes) */
+  --color-chart-1: #0a84ff;
+  --color-chart-2: #30d158;
+  --color-chart-3: #e879e8;
+  --color-chart-4: #ff9f0a;
+  --color-on-chart: #0b0b0d;
+  /* Graphique d'entonnoir : colonne active en dégradé, autres en hachures (ADR-0017) */
+  --color-chart-active-start: #0a84ff;
+  --color-chart-active-end: #0a3d7a;
+  --color-chart-hatch-line: #2a5fa8;
+  --color-chart-hatch-fill: #0c2342;
 
   /* Typographie */
   --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -65,6 +97,9 @@
   --radius-sm: 0.375rem;
   --radius-md: 0.625rem;
   --radius-lg: 0.875rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 2.5rem;
   --radius-full: 9999px;
 
   /* Ombres (discrètes, jamais lumineuses) */
@@ -98,6 +133,63 @@
   --focus-ring-offset: 2px;
   --focus-ring-color: var(--color-accent);
   --disabled-opacity: 0.45;
+}
+
+/*
+ * Thème clair. Contrastes mesurés sur --color-background (#ffffff) : foreground 17,6:1 ·
+ * foreground-muted 6,0:1 · accent 5,1:1 · success 5,0:1 · warning 5,6:1 · danger 5,4:1 ·
+ * foreground-subtle 4,0:1 (placeholders et indications non essentielles uniquement). Le texte
+ * blanc sur accent (5,1:1) et sur danger (5,4:1) respecte WCAG AA.
+ */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-background: #ffffff;
+  --color-background-secondary: #f6f8fb;
+  --color-surface: #f3f5f9;
+  --color-surface-elevated: #ffffff;
+  --color-border: #e5e8ee;
+  --color-border-strong: #c9cfda;
+  --color-shell: #ffffff;
+
+  --color-foreground: #14161a;
+  --color-foreground-muted: #596070;
+  --color-foreground-subtle: #78808f;
+
+  --color-accent: #0a66e8;
+  --color-accent-hover: #0856c4;
+  --color-accent-pressed: #0748a3;
+  --color-on-accent: #ffffff;
+  --color-success: #1a7f37;
+  --color-warning: #8f5400;
+  --color-danger: #c8302a;
+  --color-danger-hover: #a8241f;
+  --color-on-danger: #ffffff;
+
+  --color-accent-soft: #e4efff;
+  --color-on-accent-soft: #0847a8;
+  --color-success-soft: #d3f5da;
+  --color-on-success-soft: #0f5a24;
+  --color-warning-soft: #ffe9c7;
+  --color-on-warning-soft: #7a4500;
+  --color-danger-soft: #ffd9d1;
+  --color-on-danger-soft: #8a1d17;
+  --color-highlight: #f58cf5;
+  --color-on-highlight: #3b0a3b;
+
+  --color-chart-1: #0a66e8;
+  --color-chart-2: #8ee6a4;
+  --color-chart-3: #f2a8f2;
+  --color-chart-4: #ffae82;
+  --color-on-chart: #14161a;
+  --color-chart-active-start: #0a58d6;
+  --color-chart-active-end: #7db4ff;
+  --color-chart-hatch-line: #a9c9fb;
+  --color-chart-hatch-fill: #eaf2ff;
+
+  --shadow-sm: 0 1px 2px rgb(20 22 26 / 0.06);
+  --shadow-md: 0 6px 16px rgb(20 22 26 / 0.08);
+  --shadow-lg: 0 16px 40px rgb(20 22 26 / 0.14);
 }
 
 @media (prefers-reduced-motion: reduce) {

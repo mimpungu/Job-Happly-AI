@@ -27,6 +27,8 @@ export interface OfferSummary {
   status: string;
   state: OfferState | null;
   source_keys: string[];
+  /** Offre fictive du mode démonstration. */
+  is_demo?: boolean;
   /** Score de compatibilité (0-100, indicatif) ; `null` = pas encore évalué. */
   match_score: string | null;
   match_reliability: "high" | "medium" | "low" | null;
@@ -62,6 +64,7 @@ export interface OfferPage {
 /** Filtres de la liste, tels que l'utilisateur les saisit (tout est facultatif). */
 export interface OfferFilters {
   text: string;
+  company: string;
   city: string;
   country: string;
   employmentType: string;
@@ -72,6 +75,14 @@ export interface OfferFilters {
   publishedSince: string;
   /** Compatibilité minimale (0-100) ; vide = pas de filtre. */
   minScore: string;
+  /** Langue de l'annonce (code ISO 639-1, ex. `fr`) ; vide = toutes. */
+  language: string;
+  /** Expérience exigée au plus N ans ; les offres à exigence inconnue restent affichées. */
+  maxExperience: string;
+  /** Cherche aussi les équivalents français/anglais des termes. */
+  multilingual: boolean;
+  /** Intitulés visés, séparés par des virgules : sert à interroger les sources (TASK-006-21). */
+  titles: string;
   sort: OfferSort;
   state: StateFilter;
   page: number;
@@ -98,4 +109,21 @@ export interface SearchRun {
 
 export interface ApiErrorBody {
   error: { code: string; message: string; details?: { field: string; message: string }[] };
+}
+
+/** Offre saisie à la main (copiée depuis un site). */
+export interface ManualOfferInput {
+  title: string;
+  company_name: string | null;
+  location: string | null;
+  application_url: string;
+  description: string;
+}
+
+export interface ManualOfferResult {
+  offer_id: string;
+  created: boolean;
+  merged: boolean;
+  changed: boolean;
+  already_known: boolean;
 }

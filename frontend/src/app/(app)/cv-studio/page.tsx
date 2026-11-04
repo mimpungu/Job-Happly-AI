@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { ProfileEditor } from "@/features/profile/profile-editor";
+import { CvStudio } from "@/features/documents/cv-studio";
 
 export const metadata: Metadata = { title: "Espace CV — Happly AI" };
 
 export default function Page() {
-  return <ProfileEditor />;
+  return <CvStudio />;
 }

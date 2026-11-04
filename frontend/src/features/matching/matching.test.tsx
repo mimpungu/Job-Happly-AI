@@ -98,7 +98,7 @@ describe("SkillMatchPanel", () => {
 
     for (const [titre, competence] of [
       ["Présente (1)", "SQL"],
-      ["Partielle (1)", "MySQL"],
+      ["Transférable (1)", "MySQL"],
       ["Absente de votre profil (1)", "Docker"],
       ["À évaluer vous-même (1)", "Esprit d'équipe"],
     ] as const) {

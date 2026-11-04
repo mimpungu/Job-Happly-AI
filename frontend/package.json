@@ -1,6 +1,6 @@
 {
   "name": "@happly/web",
-  "version": "0.1.0",
+  "version": "0.5.0-rc.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:fullstack": "playwright test -c playwright.fullstack.config.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.105.2",

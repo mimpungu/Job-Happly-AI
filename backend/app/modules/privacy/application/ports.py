@@ -1,0 +1,29 @@
+from __future__ import annotations
+
+import uuid
+from datetime import datetime
+from typing import Any, Protocol
+
+from app.modules.privacy.domain.categories import RetentionRule
+
+
+class PersonalDataStore(Protocol):
+    async def count(self, owner_id: uuid.UUID, tables: tuple[str, ...]) -> dict[str, int]: ...
+
+    async def rows(self, owner_id: uuid.UUID, table: str) -> list[dict[str, Any]]: ...
+
+    async def delete(self, owner_id: uuid.UUID, tables: tuple[str, ...]) -> dict[str, int]: ...
+
+    async def document_file_keys(self, owner_id: uuid.UUID) -> list[str]: ...
+
+    async def schema_revision(self) -> str | None: ...
+
+    async def purge(self, owner_id: uuid.UUID, rule: RetentionRule, now: datetime) -> int: ...
+
+
+class FileStore(Protocol):
+    async def size(self, key: str) -> int | None: ...
+
+    async def read(self, key: str) -> bytes: ...
+
+    async def delete(self, key: str) -> None: ...

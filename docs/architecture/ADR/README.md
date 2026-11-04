@@ -23,5 +23,15 @@ Un ADR documente une décision d'architecture importante : contexte, décision, 
 | [0008](0008-authentification-differee.md) | Authentification différée, exécution locale | Accepté |
 | [0009](0009-taches-de-fond-postgresql.md) | Tâches de fond adossées à PostgreSQL | Accepté |
 | [0010](0010-contrastes-boutons-pleins.md) | Texte sombre sur les boutons pleins (contraste) | Accepté |
+| [0011](0011-ia-hybride-local-et-api.md) | IA hybride local et API | Accepté |
+| [0012](0012-fournisseurs-ia-de-demarrage.md) | Fournisseurs IA de démarrage (Gemini + Ollama) | Accepté |
+| [0013](0013-generateur-cv-latex.md) | Architecture du générateur de CV LaTeX et contrôle ATS | Accepté |
+| [0014](0014-generateur-lettres-de-motivation.md) | Architecture du générateur de lettres de motivation et audit qualité | Accepté |
+| [0015](0015-suivi-des-candidatures-et-crm.md) | Architecture du suivi des candidatures (CRM) et tableau de bord | Accepté |
+| [0016](0016-planification-automatisation-et-notifications.md) | Planification, automatisation des recherches et centre de notifications | Accepté |
+| [0017](0017-page-d-accueil-themes-et-derogation-graphique.md) | Page d'accueil, thèmes clair et sombre, dérogation du graphique d'entonnoir | Accepté |
+| [0018](0018-preparation-aux-entretiens.md) | Préparation aux entretiens et suivi des entretiens | Accepté |
+| [0019](0019-securite-confidentialite-et-exploitation.md) | Sécurité, confidentialité et exploitation (EPIC 018) | Accepté |
+| [0020](0020-qualite-parcours-complets-et-livraison.md) | Qualité, parcours complets et préparation de la livraison (EPIC 019) | Accepté |
 
 Modèle : [TEMPLATE.md](TEMPLATE.md)

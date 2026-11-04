@@ -9,7 +9,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, StrictFloat, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
 from starlette.types import ExceptionHandler
 
 from app.core.api.dependencies import SessionDep, get_owner_id
@@ -65,7 +65,7 @@ class WeightsBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     # Nombres stricts : « beaucoup » ou `true` ne sont pas des poids.
-    weights: dict[str, StrictInt | StrictFloat]
+    weights: dict[str, StrictInt | StrictFloat] = Field(max_length=50)
 
 
 class MatchResponse(BaseModel):

@@ -21,7 +21,7 @@ export interface DiscoveredBoard {
 }
 
 export interface SourceOutcome {
-  company_id: string;
+  company_id: string | null;
   company_name: string;
   source_key: string;
   succeeded: boolean;
@@ -41,4 +41,25 @@ export interface CollectionReport {
   finished_at: string;
   status: "succeeded" | "partial" | "failed";
   sources: SourceOutcome[];
+}
+
+export interface FranceTravailSearch {
+  title: string | null;
+  company: string | null;
+  keywords: string[];
+  city: string | null;
+  department: string | null;
+}
+
+export interface FranceTravailResult {
+  succeeded: boolean;
+  complete: boolean;
+  pages: number;
+  fetched: number;
+  created: number;
+  merged: number;
+  changed: number;
+  unchanged: number;
+  rejected: number;
+  error_type: string | null;
 }

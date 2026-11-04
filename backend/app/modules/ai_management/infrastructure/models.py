@@ -29,6 +29,7 @@ from app.core.database.base import (
     enum_check,
 )
 from app.modules.ai_management.domain.enums import BudgetPeriod, CallOutcome
+from app.modules.ai_management.domain.models import AIMode, BackendPreference, PersonalDataPolicy
 
 _DEVISE = "currency ~ '^[A-Z]{3}$'"
 
@@ -92,6 +93,22 @@ class AIBudgetModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
     )
 
 
+class AITaskBudgetModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
+    """Plafond journalier d'un type de tâche IA (TASK-010-12), en plus des plafonds globaux."""
+
+    __tablename__ = "ai_task_budgets"
+    __table_args__ = (
+        CheckConstraint("daily_amount > 0", name="daily_amount_positive"),
+        CheckConstraint(_DEVISE, name="currency_format"),
+        CheckConstraint("task_type ~ '^[a-z][a-z0-9_]{1,59}$'", name="task_type_format"),
+        UniqueConstraint("owner_id", "task_type", name="uq_ai_task_budgets_owner_task"),
+    )
+
+    task_type: Mapped[str] = mapped_column(String(60))
+    daily_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    currency: Mapped[str] = mapped_column(String(3))
+
+
 class AICacheEntryModel(PrimaryKeyMixin, CreatedAtMixin, OwnedMixin, Base):
     __tablename__ = "ai_cache_entries"
     __table_args__ = (
@@ -112,3 +129,32 @@ class AICacheEntryModel(PrimaryKeyMixin, CreatedAtMixin, OwnedMixin, Base):
     result: Mapped[dict[str, Any]] = mapped_column(JSONB)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     hit_count: Mapped[int] = mapped_column(Integer, server_default="0")
+
+
+class AISettingsModel(PrimaryKeyMixin, TimestampMixin, OwnedMixin, Base):
+    """Réglages IA d'un propriétaire. Aucune ligne = IA en mode économique, hybride, sans
+    plafond défini (donc aucun appel payant) et sans consentement."""
+
+    __tablename__ = "ai_settings"
+    __table_args__ = (
+        enum_check("mode_valid", "mode", AIMode),
+        enum_check("backend_preference_valid", "backend_preference", BackendPreference),
+        enum_check("personal_data_policy_valid", "personal_data_policy", PersonalDataPolicy),
+        CheckConstraint(
+            "per_operation_level1 > 0 AND per_operation_level2 > 0", name="per_operation_positive"
+        ),
+        CheckConstraint(_DEVISE, name="currency_format"),
+        Index("uq_ai_settings_owner_id", "owner_id", unique=True),
+    )
+
+    mode: Mapped[str] = mapped_column(String(20), server_default="economy")
+    backend_preference: Mapped[str] = mapped_column(String(20), server_default="hybrid")
+    per_operation_level1: Mapped[Decimal] = mapped_column(Numeric(12, 4), server_default="0.02")
+    per_operation_level2: Mapped[Decimal] = mapped_column(Numeric(12, 4), server_default="0.30")
+    currency: Mapped[str] = mapped_column(String(3), server_default="EUR")
+    # Date à laquelle l'utilisateur a accepté l'envoi de données à une API payante.
+    api_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Politique de confidentialité (TASK-018-22) : jamais plus permissif que le consentement.
+    personal_data_policy: Mapped[str] = mapped_column(
+        String(20), server_default=PersonalDataPolicy.ALLOWED.value
+    )

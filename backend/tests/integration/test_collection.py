@@ -12,6 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.job_discovery.application.collection import (
+    CollectionFilter,
     CollectionService,
     NoEnabledCompanyError,
 )
@@ -110,4 +111,37 @@ async def test_relancer_la_collecte_ne_cree_aucun_doublon(
     assert premiere.companies[0].outcome.created == 3
     assert seconde.companies[0].outcome.created == 0
     assert seconde.companies[0].outcome.unchanged == 3
+    assert await session.scalar(select(func.count()).select_from(JobOfferModel)) == 3
+
+
+async def test_le_filtre_ne_garde_que_l_informatique_a_paris_et_n_expire_rien(
+    session: AsyncSession, user_id: uuid.UUID
+) -> None:
+    await _suivre(session, user_id, "Bonne", "https://boards.greenhouse.io/bonne")
+
+    def poste(identifiant: int, titre: str, lieu: str) -> dict[str, object]:
+        return {
+            "id": identifiant,
+            "title": titre,
+            "absolute_url": f"https://boards.greenhouse.io/bonne/jobs/{identifiant}",
+            "location": {"name": lieu},
+            "content": "<p>" + "Description détaillée du poste. " * 10 + "</p>",
+            "updated_at": "2026-11-01T10:00:00Z",
+        }
+
+    contenu = {
+        "jobs": [
+            poste(1, "Développeur Python", "Paris, France"),
+            poste(2, "Développeur Java", "Lyon, France"),
+            poste(3, "Chargé de clientèle", "Paris, France"),
+        ]
+    }
+    service = _service(session, lambda _: httpx.Response(200, json=contenu))
+    await service.run(owner_id=user_id)  # catalogue complet : 3 offres connues
+
+    rapport = await service.run(owner_id=user_id, keep=CollectionFilter(it_only=True, city="paris"))
+
+    sortie = rapport.companies[0].outcome
+    assert sortie.fetched == 1  # seule « Développeur Python / Paris » passe le filtre
+    assert sortie.expired == 0  # les deux autres ne sont pas déclarées disparues
     assert await session.scalar(select(func.count()).select_from(JobOfferModel)) == 3

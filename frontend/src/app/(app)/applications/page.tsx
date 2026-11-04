@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
-import { BriefcaseBusiness } from "lucide-react";
+import { Suspense } from "react";
 
-import { SectionPage } from "@/features/shell/section-page";
+import { ApplicationsExplorer } from "@/features/applications/applications-explorer";
 
 export const metadata: Metadata = { title: "Candidatures — Happly AI" };
 
 export default function Page() {
+  // `useSearchParams` exige une frontière Suspense (rendu statique de la coquille).
   return (
-    <SectionPage
-      title="Candidatures"
-      icon={BriefcaseBusiness}
-      emptyTitle="Aucune candidature"
-      emptyDescription="Suivez ici l'avancement de vos candidatures, en tableau ou en Kanban."
-    />
+    <Suspense>
+      <ApplicationsExplorer />
+    </Suspense>
   );
 }

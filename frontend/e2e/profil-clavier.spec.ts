@@ -88,7 +88,8 @@ async function simulerApi(page: Page) {
 }
 
 /** Avance au clavier jusqu'à l'élément voulu ; échoue si on ne l'atteint pas (piège à focus). */
-async function tabJusqua(page: Page, nom: RegExp | string, max = 60) {
+// Garde-fou contre une boucle infinie : un tour complet de la page (coque comprise) doit tenir.
+async function tabJusqua(page: Page, nom: RegExp | string, max = 120) {
   for (let i = 0; i < max; i++) {
     await page.keyboard.press("Tab");
     const actif = await page.evaluate(() => {
@@ -111,6 +112,21 @@ async function tabJusqua(page: Page, nom: RegExp | string, max = 60) {
     if (typeof nom === "string" ? actif === nom : nom.test(actif)) return;
   }
   throw new Error(`Élément « ${String(nom)} » inaccessible au clavier`);
+}
+
+/**
+ * Entrée au clavier sur le bouton d'import, jusqu'à ce que le sélecteur de fichier s'ouvre.
+ * En mode développement, la page peut être visible avant d'être hydratée : une touche pressée
+ * trop tôt est perdue. On réessaie la touche, jamais un clic (le parcours reste au clavier).
+ */
+async function entrerPourChoisirUnFichier(page: Page) {
+  for (let essai = 0; essai < 6; essai++) {
+    const attente = page.waitForEvent("filechooser", { timeout: 4000 }).catch(() => null);
+    await page.keyboard.press("Enter");
+    const selecteur = await attente;
+    if (selecteur) return selecteur;
+  }
+  throw new Error("Le sélecteur de fichier ne s'ouvre pas au clavier");
 }
 
 test.beforeEach(async ({ page }) => {
@@ -153,10 +169,7 @@ test("importer, relire, compléter et confirmer un élément sans souris", async
 
   // Le bouton d'import s'active au clavier et ouvre le sélecteur de fichier du système.
   await tabJusqua(page, "Importer un CV");
-  const [selecteur] = await Promise.all([
-    page.waitForEvent("filechooser"),
-    page.keyboard.press("Enter"),
-  ]);
+  const selecteur = await entrerPourChoisirUnFichier(page);
   await selecteur.setFiles({ name: "cv.txt", mimeType: "text/plain", buffer: Buffer.from("x") });
   await expect(page.getByText("1 élément à confirmer")).toBeVisible();
 
@@ -186,10 +199,7 @@ test("l'extrait source se déplie au clavier", async ({ page }) => {
   await page.goto("/cv-studio");
   await expect(page.getByText("Aucun CV maître")).toBeVisible();
   await tabJusqua(page, "Importer un CV");
-  const [selecteur] = await Promise.all([
-    page.waitForEvent("filechooser"),
-    page.keyboard.press("Enter"),
-  ]);
+  const selecteur = await entrerPourChoisirUnFichier(page);
   await selecteur.setFiles({ name: "cv.txt", mimeType: "text/plain", buffer: Buffer.from("x") });
   await expect(page.getByText("1 élément à confirmer")).toBeVisible();
   await page.getByRole("tab", { name: /Expériences/ }).click();
@@ -204,16 +214,13 @@ test("la fenêtre de confirmation piège le focus et se ferme avec Échap", asyn
   await page.goto("/cv-studio");
   await expect(page.getByText("Aucun CV maître")).toBeVisible();
   await tabJusqua(page, "Importer un CV");
-  let [selecteur] = await Promise.all([
-    page.waitForEvent("filechooser"),
-    page.keyboard.press("Enter"),
-  ]);
+  let selecteur = await entrerPourChoisirUnFichier(page);
   await selecteur.setFiles({ name: "cv.txt", mimeType: "text/plain", buffer: Buffer.from("x") });
   await expect(page.getByText("1 élément à confirmer")).toBeVisible();
 
   // Un second import, alors que le brouillon a du contenu, demande confirmation.
   await tabJusqua(page, "Importer un CV");
-  [selecteur] = await Promise.all([page.waitForEvent("filechooser"), page.keyboard.press("Enter")]);
+  selecteur = await entrerPourChoisirUnFichier(page);
   await selecteur.setFiles({ name: "cv.txt", mimeType: "text/plain", buffer: Buffer.from("x") });
   const dialogue = page.getByRole("dialog", { name: "Remplacer le brouillon par ce CV ?" });
   await expect(dialogue).toBeVisible();

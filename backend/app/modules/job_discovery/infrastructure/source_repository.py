@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.job_discovery.domain.connector import (
@@ -13,7 +13,10 @@ from app.modules.job_discovery.domain.connector import (
     HealthStatus,
     JobSourceConnector,
 )
-from app.modules.job_discovery.infrastructure.models import JobSourceModel
+from app.modules.job_discovery.domain.enums import SourceKind
+from app.modules.job_discovery.infrastructure.models import JobOfferSourceModel, JobSourceModel
+
+MANUAL_SOURCE_KEY = "manual"
 
 
 class SqlJobSourceRepository:
@@ -36,6 +39,21 @@ class SqlJobSourceRepository:
         await self._session.flush()
         return modele
 
+    async def ensure_manual(self, owner_id: uuid.UUID) -> JobSourceModel:
+        """Source des offres saisies à la main : créée une fois, toujours active."""
+        modele = await self._by_key(owner_id, MANUAL_SOURCE_KEY)
+        if modele is None:
+            modele = JobSourceModel(
+                owner_id=owner_id,
+                key=MANUAL_SOURCE_KEY,
+                name="Saisie manuelle",
+                kind=SourceKind.MANUAL.value,
+                enabled=True,
+            )
+            self._session.add(modele)
+            await self._session.flush()
+        return modele
+
     async def set_enabled(self, owner_id: uuid.UUID, key: str, enabled: bool) -> None:
         modele = await self._require(owner_id, key)
         modele.enabled = enabled
@@ -50,6 +68,25 @@ class SqlJobSourceRepository:
         else:
             modele.last_error = f"{status.state.value}: {status.detail or 'sans détail'}"
         await self._session.flush()
+
+    async def list_by_owner(self, owner_id: uuid.UUID) -> dict[str, JobSourceModel]:
+        """Sources de l'utilisateur, indexées par clé."""
+        lignes = await self._session.scalars(
+            select(JobSourceModel).where(JobSourceModel.owner_id == owner_id)
+        )
+        return {s.key: s for s in lignes}
+
+    async def offer_counts(self, owner_id: uuid.UUID) -> dict[uuid.UUID, int]:
+        """Nombre d'offres distinctes vues par source (une offre peut figurer sur plusieurs)."""
+        lignes = await self._session.execute(
+            select(
+                JobOfferSourceModel.source_id,
+                func.count(JobOfferSourceModel.offer_id.distinct()),
+            )
+            .where(JobOfferSourceModel.owner_id == owner_id)
+            .group_by(JobOfferSourceModel.source_id)
+        )
+        return {source_id: total for source_id, total in lignes}  # noqa: C416 - lignes est un Row
 
     async def last_checked_at(self, owner_id: uuid.UUID, key: str) -> datetime | None:
         return (await self._require(owner_id, key)).last_checked_at

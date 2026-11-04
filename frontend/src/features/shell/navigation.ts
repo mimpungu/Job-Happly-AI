@@ -15,6 +15,8 @@ export interface NavigationItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  /** Entrée rangée en bas de la barre latérale, séparée des sections de travail. */
+  bottom?: boolean;
 }
 
 /** Navigation principale (spécification §16). L'ordre est celui de la barre latérale. */
@@ -27,7 +29,7 @@ export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
   { label: "Candidatures", href: "/applications", icon: BriefcaseBusiness },
   { label: "Préparation d'entretien", href: "/interview-preparation", icon: MessagesSquare },
   { label: "Centre IA", href: "/ai-center", icon: Bot },
-  { label: "Paramètres", href: "/settings", icon: Settings },
+  { label: "Paramètres", href: "/settings", icon: Settings, bottom: true },
 ];
 
 /** Une entrée est active pour sa route exacte et pour ses sous-routes. */

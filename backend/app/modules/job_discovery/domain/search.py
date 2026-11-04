@@ -11,9 +11,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Protocol, Self
+from typing import Annotated, Protocol, Self
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    field_validator,
+    model_validator,
+)
 
 from app.core.domain.value_objects import (
     CountryCode,
@@ -64,16 +71,24 @@ class OfferFilter(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     text: str | None = Field(default=None, max_length=200)
-    keywords: tuple[str, ...] = Field(default=(), max_length=20)
+    keywords: tuple[Annotated[str, StringConstraints(max_length=100)], ...] = Field(
+        default=(), max_length=20
+    )
     company: str | None = Field(default=None, max_length=200)
     city: str | None = Field(default=None, max_length=200)
     country_codes: tuple[str, ...] = Field(default=(), max_length=30)
     remote_types: tuple[RemoteType, ...] = ()
     employment_types: tuple[EmploymentType, ...] = ()
-    salary_min: Decimal | None = Field(default=None, ge=0)
+    salary_min: Decimal | None = Field(default=None, ge=0, le=Decimal("100000000"))
     salary_currency: str | None = None
     published_since: datetime | None = None
     language: str | None = None
+    # Expérience exigée au plus de N ans. Une offre dont l'exigence est inconnue reste incluse :
+    # l'absence d'information n'est pas une exigence.
+    max_experience_years: int | None = Field(default=None, ge=0, le=40)
+    # Cherche aussi les équivalents français/anglais des termes (lexique fermé, voir
+    # `domain/multilingual.py`).
+    multilingual: bool = False
     # Score de correspondance minimal (0-100). Les offres sans score sont exclues : une offre
     # non évaluée n'est pas une offre « mauvaise ».
     min_score: Decimal | None = Field(default=None, ge=0, le=100)
@@ -152,6 +167,8 @@ class OfferSummary:
     # Dernier score calculé pour le profil validé courant ; `None` = pas encore évalué.
     match_score: Decimal | None = None
     match_reliability: str | None = None
+    is_demo: bool = False
+    """Offre fictive du mode démonstration, à signaler comme telle dans l'interface."""
 
 
 @dataclass(frozen=True, slots=True)

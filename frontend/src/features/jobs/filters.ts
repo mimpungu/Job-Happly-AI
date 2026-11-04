@@ -29,6 +29,7 @@ export const REMOTE_TYPES = [
 
 export const DEFAULT_FILTERS: OfferFilters = {
   text: "",
+  company: "",
   city: "",
   country: "",
   employmentType: "",
@@ -37,6 +38,10 @@ export const DEFAULT_FILTERS: OfferFilters = {
   salaryCurrency: "EUR",
   publishedSince: "",
   minScore: "",
+  language: "",
+  maxExperience: "",
+  multilingual: false,
+  titles: "",
   sort: "published_desc",
   state: "visible",
   page: 1,
@@ -51,6 +56,22 @@ function scoreValide(valeur: string): string {
   return valeur !== "" && Number.isInteger(nombre) && nombre >= 0 && nombre <= 100 ? valeur : "";
 }
 
+/** Entier de 0 à `max` ; sinon pas de filtre. */
+function entierBorne(valeur: string, max: number): string {
+  const nombre = Number(valeur);
+  return valeur !== "" && Number.isInteger(nombre) && nombre >= 0 && nombre <= max ? valeur : "";
+}
+
+/** Liste d'intitulés saisie à la virgule : valeurs nettoyées, sans doublon, bornées. */
+export function parseTitles(saisie: string): string[] {
+  const vus = new Set<string>();
+  for (const brut of saisie.split(",")) {
+    const titre = brut.trim().slice(0, 100);
+    if (titre) vus.add(titre);
+  }
+  return [...vus].slice(0, 10);
+}
+
 /** Une valeur d'URL est une entrée non fiable : toute valeur inattendue retombe sur le défaut. */
 export function filtersFromParams(params: URLSearchParams): OfferFilters {
   const lire = (cle: string) => (params.get(cle) ?? "").trim();
@@ -59,6 +80,7 @@ export function filtersFromParams(params: URLSearchParams): OfferFilters {
   const page = Number.parseInt(lire("page"), 10);
   return {
     text: lire("text"),
+    company: lire("company"),
     city: lire("city"),
     country: lire("country").toUpperCase(),
     employmentType: lire("employment"),
@@ -67,6 +89,10 @@ export function filtersFromParams(params: URLSearchParams): OfferFilters {
     salaryCurrency: lire("currency").toUpperCase() || DEFAULT_FILTERS.salaryCurrency,
     publishedSince: lire("since"),
     minScore: scoreValide(lire("min_score")),
+    language: /^[a-z]{2}$/i.test(lire("language")) ? lire("language").toLowerCase() : "",
+    maxExperience: entierBorne(lire("max_experience"), 40),
+    multilingual: lire("multilingual") === "1",
+    titles: lire("titles"),
     sort: SORT_VALUES.has(tri) ? (tri as OfferSort) : DEFAULT_FILTERS.sort,
     state: STATE_VALUES.has(etat) ? (etat as StateFilter) : DEFAULT_FILTERS.state,
     page: Number.isInteger(page) && page >= 1 ? page : 1,
@@ -80,6 +106,7 @@ export function filtersToParams(filters: OfferFilters): URLSearchParams {
     if (valeur) params.set(cle, valeur);
   };
   ecrire("text", filters.text.trim());
+  ecrire("company", filters.company.trim());
   ecrire("city", filters.city.trim());
   ecrire("country", filters.country.trim().toUpperCase());
   ecrire("employment", filters.employmentType);
@@ -90,6 +117,10 @@ export function filtersToParams(filters: OfferFilters): URLSearchParams {
   }
   ecrire("since", filters.publishedSince);
   ecrire("min_score", filters.minScore);
+  ecrire("language", filters.language);
+  ecrire("max_experience", filters.maxExperience);
+  if (filters.multilingual) params.set("multilingual", "1");
+  ecrire("titles", filters.titles.trim());
   if (filters.sort !== DEFAULT_FILTERS.sort) params.set("sort", filters.sort);
   if (filters.state !== DEFAULT_FILTERS.state) params.set("state", filters.state);
   if (filters.page > 1) params.set("page", String(filters.page));
@@ -103,6 +134,7 @@ export function filtersToApiQuery(filters: OfferFilters, pageSize: number): URLS
     if (valeur) params.set(cle, valeur);
   };
   ecrire("text", filters.text.trim());
+  ecrire("company", filters.company.trim());
   ecrire("city", filters.city.trim());
   ecrire("country_codes", filters.country.trim().toUpperCase());
   ecrire("employment_types", filters.employmentType);
@@ -113,6 +145,9 @@ export function filtersToApiQuery(filters: OfferFilters, pageSize: number): URLS
   }
   if (filters.publishedSince) params.set("published_since", `${filters.publishedSince}T00:00:00Z`);
   if (filters.minScore) params.set("min_score", filters.minScore);
+  ecrire("language", filters.language);
+  ecrire("max_experience_years", filters.maxExperience);
+  if (filters.multilingual) params.set("multilingual", "true");
   params.set("sort", filters.sort);
   params.set("state", filters.state);
   params.set("page", String(filters.page));
@@ -124,6 +159,7 @@ export function filtersToApiQuery(filters: OfferFilters, pageSize: number): URLS
 export function filtersToSavedCriteria(filters: OfferFilters): Record<string, unknown> {
   const criteres: Record<string, unknown> = { sort: filters.sort, state: filters.state };
   if (filters.text.trim()) criteres.text = filters.text.trim();
+  if (filters.company.trim()) criteres.company = filters.company.trim();
   if (filters.city.trim()) criteres.city = filters.city.trim();
   if (filters.country.trim()) criteres.country_codes = [filters.country.trim().toUpperCase()];
   if (filters.employmentType) criteres.employment_types = [filters.employmentType];
@@ -134,6 +170,9 @@ export function filtersToSavedCriteria(filters: OfferFilters): Record<string, un
   }
   if (filters.publishedSince) criteres.published_since = `${filters.publishedSince}T00:00:00Z`;
   if (filters.minScore) criteres.min_score = filters.minScore;
+  if (filters.language) criteres.language = filters.language;
+  if (filters.maxExperience) criteres.max_experience_years = Number(filters.maxExperience);
+  if (filters.multilingual) criteres.multilingual = true;
   return criteres;
 }
 
@@ -153,6 +192,7 @@ export function filtersFromSavedCriteria(criteres: Record<string, unknown>): Off
   return {
     ...base,
     text: texte("text"),
+    company: texte("company"),
     city: texte("city"),
     country: premier("country_codes"),
     employmentType: premier("employment_types"),
@@ -163,6 +203,12 @@ export function filtersFromSavedCriteria(criteres: Record<string, unknown>): Off
     minScore:
       texte("min_score") ||
       (typeof criteres.min_score === "number" ? String(criteres.min_score) : ""),
+    language: texte("language"),
+    maxExperience:
+      typeof criteres.max_experience_years === "number"
+        ? String(criteres.max_experience_years)
+        : "",
+    multilingual: criteres.multilingual === true,
     page: 1,
   };
 }

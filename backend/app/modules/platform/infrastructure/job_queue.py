@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import select, text, update
 from sqlalchemy.dialects.postgresql import insert
 
 from app.core.database.session import UnitOfWork
@@ -79,9 +79,10 @@ class PostgresJobQueue:
                 )
                 .on_conflict_do_nothing(
                     index_elements=["kind", "idempotency_key"],
-                    index_where=JobModel.status.in_(
-                        [JobStatus.QUEUED.value, JobStatus.RUNNING.value]
-                    ),
+                    # Prédicat LITTÉRAL : avec des paramètres liés, PostgreSQL ne retrouve plus
+                    # l'index partiel dès que le plan devient générique (6e exécution d'une
+                    # même connexion) et l'enqueue échoue.
+                    index_where=text("status IN ('queued', 'running')"),
                 )
                 .returning(JobModel.id)
             )

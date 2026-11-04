@@ -25,12 +25,20 @@ from app.modules.job_discovery.infrastructure.models import (
     JobOfferSourceModel,
     JobOfferStateModel,
 )
+from app.modules.job_intelligence.domain.matching.offer_requirements import extraire_annees
 
 MAX_CANDIDATS_DOUBLON = 50
 
 
+def _annees_requises(description: str) -> int | None:
+    """Expérience exigée déduite de l'annonce ; `None` si l'annonce n'en parle pas."""
+    exigence = extraire_annees(description)
+    return exigence.years if exigence else None
+
+
 def _champs_offre(offre: NormalizedOffer) -> dict[str, Any]:
     return {
+        "required_experience_years": _annees_requises(offre.description),
         "title": offre.title,
         "description": offre.description,
         "application_url": offre.application_url,
@@ -280,6 +288,9 @@ class SqlJobOfferRepository:
         est_principale = modele.primary_source_id in (None, observation.source_id)
         changed = est_principale and modele.content_hash != offer.content_hash
         valeurs: dict[str, Any] = {"last_seen_at": observed_at, "status": OfferStatus.ACTIVE.value}
+        if modele.required_experience_years is None:
+            # Offre antérieure à la colonne (ou sans exigence) : on (re)déduit, sans effet de bord.
+            valeurs["required_experience_years"] = _annees_requises(modele.description)
         if changed:
             self._session.add(
                 JobOfferRevisionModel(

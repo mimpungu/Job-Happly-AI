@@ -6,6 +6,8 @@ import { cn } from "@/lib/cn";
 export interface SelectOption {
   value: string;
   label: string;
+  /** Option visible mais non sélectionnable (ex. fournisseur non configuré). */
+  disabled?: boolean;
 }
 
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "children"> {
@@ -37,7 +39,7 @@ export function Select({
       >
         {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} disabled={option.disabled}>
             {option.label}
           </option>
         ))}

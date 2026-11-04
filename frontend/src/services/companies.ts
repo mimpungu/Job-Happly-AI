@@ -1,4 +1,10 @@
-import type { CollectionReport, Company, DiscoveredBoard } from "@/types/companies";
+import type {
+  CollectionReport,
+  Company,
+  DiscoveredBoard,
+  FranceTravailResult,
+  FranceTravailSearch,
+} from "@/types/companies";
 
 import { apiFetch } from "./api-client";
 
@@ -19,5 +25,22 @@ export const setCompanyEnabled = (id: string, enabled: boolean) =>
     body: JSON.stringify({ enabled }),
   });
 
-export const runCollection = () =>
-  apiFetch<CollectionReport>("/api/v1/collection/run", { method: "POST" });
+export interface CollectionFilter {
+  it_only: boolean;
+  city: string | null;
+}
+
+export const runCollection = (filtre: CollectionFilter) =>
+  apiFetch<CollectionReport>("/api/v1/collection/run", {
+    method: "POST",
+    body: JSON.stringify(filtre),
+  });
+
+export const getFranceTravailStatus = () =>
+  apiFetch<{ configured: boolean }>("/api/v1/france-travail/status");
+
+export const searchFranceTravail = (recherche: FranceTravailSearch) =>
+  apiFetch<FranceTravailResult>("/api/v1/france-travail/search", {
+    method: "POST",
+    body: JSON.stringify(recherche),
+  });

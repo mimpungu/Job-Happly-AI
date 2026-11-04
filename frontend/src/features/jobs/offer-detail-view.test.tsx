@@ -1,7 +1,14 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+const push = vi.fn();
+
+// La fiche propose « Suivre cette candidature », qui navigue vers la fiche créée.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+
+import { Toaster } from "@/components/ui/toaster";
 import type { OfferDetail } from "@/types/jobs";
 
 import { OfferDetailView, safeHttpUrl } from "./offer-detail-view";
@@ -48,11 +55,15 @@ function afficher(id = "o1") {
   return render(
     <QueryClientProvider client={client}>
       <OfferDetailView id={id} />
+      <Toaster />
     </QueryClientProvider>,
   );
 }
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  push.mockClear();
+});
 
 describe("safeHttpUrl", () => {
   it("n'accepte que http et https", () => {
@@ -103,5 +114,56 @@ describe("OfferDetailView", () => {
 
     expect(await screen.findByText("Offre introuvable", { selector: "h2" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Réessayer" })).toBeNull();
+  });
+
+  it("crée la candidature de l'offre puis ouvre sa fiche", async () => {
+    const appels: { url: string; methode: string; corps?: string }[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        appels.push({ url, methode: init?.method ?? "GET", corps: init?.body as string });
+        if (url.endsWith("/api/v1/applications"))
+          return new Response(JSON.stringify({ id: "c1" }), { status: 201 });
+        if (url.includes("/match") || url.includes("/analysis"))
+          return new Response(JSON.stringify({ error: { code: "x", message: "indisponible" } }), {
+            status: 503,
+          });
+        return new Response(JSON.stringify(detail()));
+      }),
+    );
+    afficher();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Suivre cette candidature" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/applications/c1"));
+    const creation = appels.find((a) => a.methode === "POST" && a.url.endsWith("/applications"));
+    expect(JSON.parse(creation?.corps ?? "{}")).toEqual({
+      offer_id: "o1",
+      initial_status: "to_apply",
+    });
+  });
+
+  it("signale une offre déjà suivie au lieu de créer un doublon", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (init?.method === "POST")
+          return new Response(
+            JSON.stringify({ error: { code: "duplicate_application", message: "déjà" } }),
+            { status: 409 },
+          );
+        if (url.includes("/match") || url.includes("/analysis"))
+          return new Response(JSON.stringify({ error: { code: "x", message: "indisponible" } }), {
+            status: 503,
+          });
+        return new Response(JSON.stringify(detail()));
+      }),
+    );
+    afficher();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Suivre cette candidature" }));
+
+    expect(await screen.findByText(/déjà suivie/)).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
   });
 });

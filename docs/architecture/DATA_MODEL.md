@@ -12,7 +12,7 @@ Source de vérité : les migrations Alembic (`backend/migrations/versions/`), v�
 
 ## Tables (31)
 
-`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `profile_changes` · `matching_settings` · `job_sources` · `target_companies` · `job_offers` · `job_offer_revisions` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications` · `jobs`
+`users` · `candidates` · `candidate_profiles` · `experiences` · `educations` · `certifications` · `skills` · `profile_languages` · `profile_changes` · `matching_settings` · `ai_settings` · `job_sources` · `target_companies` · `job_offers` · `job_offer_revisions` · `job_offer_sources` · `job_offer_states` · `saved_searches` · `search_runs` · `job_analyses` · `job_match_scores` · `ai_usages` · `ai_budgets` · `ai_cache_entries` · `generated_documents` · `document_versions` · `applications` · `application_events` · `application_contacts` · `application_documents` · `notifications` · `jobs`
 
 À venir avec leur EPIC : préférences de notification (EPIC 015), préparation d'entretien (EPIC 016).
 

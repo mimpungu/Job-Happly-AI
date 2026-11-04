@@ -62,7 +62,13 @@ _SIGLES_IGNORES = {
     "cdi", "cdd", "rh", "pme", "tpe", "usa", "uk", "eu", "tva", "bac", "bts", "dut", "mba", "cv",
     "etp", "rtt", "faq", "pdf", "ok", "ca", "bu", "sas", "sarl", "gmbh", "ltd", "inc", "llc", "ceo",
     "cto", "cfo", "coo", "cio", "ue", "no", "id", "ii", "iii", "iv",
+    # Zones géographiques (constatées dans de vraies annonces) : pas des compétences.
+    "us", "emea", "apac", "amer", "latam", "dach", "nyc", "sf", "eur", "usd",
 }  # fmt: skip
+
+# Abréviations de ponctuation écrites avec un point (« e.g », « i.e ») : le point les ferait
+# passer pour des jetons techniques comme `Node.js`.
+_ABREVIATIONS = {"e.g", "i.e", "etc", "vs", "approx", "cf", "ex", "n.b", "p.s"}
 _MOTS_IGNORES = {
     "vous", "nous", "une", "des", "les", "bac", "master", "licence", "bachelor", "experience",
     "connaissance", "connaissances", "maitrise", "notions", "bonne", "bon", "tres", "esprit",
@@ -72,6 +78,12 @@ _MOTS_IGNORES = {
     "octobre", "novembre", "decembre", "lundi", "mardi", "mercredi", "jeudi", "vendredi",
     "monday", "tuesday", "wednesday", "thursday", "friday", "the", "and", "our", "your",
     "senior", "junior", "bonnes", "capacite", "capacites", "autonome", "rigueur", "curiosite",
+    # Mots anglais courants en tête de phrase (constatés dans de vraies annonces).
+    "this", "that", "these", "those", "there", "their", "they", "you", "we", "it",
+    "with", "from", "have", "will", "can", "about", "also", "must", "should", "would", "who",
+    "what", "when", "where", "why", "how", "for", "are", "was", "were", "has", "had", "not",
+    "all", "any", "each", "both", "such", "some", "more", "most", "other", "own", "new", "if",
+    "as", "at", "by", "in", "of", "on", "to", "an", "or", "so", "but", "be", "do", "is",
 }  # fmt: skip
 
 _CONNECTEURS = {"et", "ou", "and", "or", "avec", "with"}
@@ -134,6 +146,8 @@ def extract_terms(ligne: str, *, strict: bool = False) -> list[str]:
         plie = fold(jeton)
         if _NON_COMPETENCE.match(plie):
             return False  # « Bac+5 », « M2 » : des diplômes, pas des compétences
+        if plie in _ABREVIATIONS:
+            return False
         if _est_technique(jeton):
             return True
         if jeton.isupper() and 2 <= len(jeton) <= 8 and jeton.isalpha():
@@ -327,7 +341,10 @@ def evaluate_skills(
             a.label,
             {
                 MatchKind.PRESENT: f"Dans votre profil : {a.profile_skill}",
-                MatchKind.PARTIAL: f"Proche de « {a.profile_skill} » dans votre profil",
+                MatchKind.PARTIAL: (
+                    f"Compétence transférable : vous maîtrisez « {a.profile_skill} » (même famille). "
+                    "À valoriser sans prétendre maîtriser celle de l'offre."
+                ),
                 MatchKind.ABSENT: f"Compétence {_LIBELLE_IMPORTANCE[a.importance]}, non trouvée dans votre profil",
             }[a.kind],
         )
@@ -345,6 +362,11 @@ def evaluate_skills(
         f"{comptes[MatchKind.PRESENT]} compétence(s) présente(s), {comptes[MatchKind.PARTIAL]} partielle(s), "
         f"{comptes[MatchKind.ABSENT]} absente(s) de votre profil sur {len(analyses)} repérée(s) dans l'offre."
     )
+    if comptes[MatchKind.PARTIAL]:
+        transferables = ", ".join(
+            f"{a.label} (via {a.profile_skill})" for a in analyses if a.kind is MatchKind.PARTIAL
+        )
+        explication += f" Compétence(s) transférable(s) à valoriser : {transferables}."
     if comptes[MatchKind.ABSENT]:
         explication += " Une compétence « absente » n'est pas forcément absente chez vous : complétez votre profil si besoin."
     return SkillAnalysis(

@@ -272,7 +272,7 @@ ADR obligatoires :
 
 **Objectif :** mettre en place un environnement de développement propre, reproductible et maintenable.
 
-### [➖] FEATURE 002.1 — Initialisation du projet
+### [✅] FEATURE 002.1 — Initialisation du projet
 
 [✅] **TASK-002-01 — Initialiser le repository**
 
@@ -297,7 +297,9 @@ ADR obligatoires :
 - Configuration des dépendances.
 - Structure Clean Architecture.
 
-[➖] **TASK-002-04 — Configurer les outils qualité**
+[✅] **TASK-002-04 — Configurer les outils qualité**
+
+> Vérifié : Ruff, mypy, ESLint, Prettier, `tsc` et hooks pre-commit (`.pre-commit-config.yaml`) sont en place et passent.
 
 - Ruff.
 - Mypy ou Pyright.
@@ -323,7 +325,9 @@ Prévoir les services nécessaires au démarrage :
 - PostgreSQL.
 - Services complémentaires uniquement si justifiés.
 
-[➖] **TASK-002-07 — Scripts de développement**
+[✅] **TASK-002-07 — Scripts de développement**
+
+> Vérifié : `infrastructure/scripts/` (start, stop, reset-test, migrate, test, lint, build, backup, restore) ; syntaxe contrôlée.
 
 - Start.
 - Stop.
@@ -333,7 +337,7 @@ Prévoir les services nécessaires au démarrage :
 - Lint.
 - Build.
 
-[➖] **TASK-002-10 — Mode démonstration**
+[✅] **TASK-002-10 — Mode démonstration**
 
 - Données fictives clairement identifiées comme telles dans l'interface.
 - Activable et désactivable explicitement ; jamais mélangées aux données réelles.
@@ -346,7 +350,9 @@ Prévoir les services nécessaires au démarrage :
 
 ### [➖] FEATURE 002.3 — CI/CD
 
-[➖] **TASK-002-08 — Pipeline CI**
+[✅] **TASK-002-08 — Pipeline CI**
+
+> Vérifié : `.github/workflows/ci.yml` (installation, types, lint, tests, build, secrets) ; dernier push de `dev` vert sur GitHub (run 15).
 
 - Installation.
 - Vérification des types.
@@ -362,18 +368,18 @@ Prévoir les services nécessaires au démarrage :
 
 ### Critères d'acceptation
 
-- [➖] Le projet démarre depuis une installation propre.
-- [➖] Frontend et backend communiquent.
-- [➖] Les migrations fonctionnent.
-- [➖] Les contrôles qualité passent.
-- [➖] La CI détecte les régressions.
-- [➖] Aucun secret réel n'est versionné.
+- [✅] Le projet démarre depuis une installation propre.
+- [✅] Frontend et backend communiquent.
+- [✅] Les migrations fonctionnent.
+- [✅] Les contrôles qualité passent.
+- [✅] La CI détecte les régressions.
+- [✅] Aucun secret réel n'est versionné.
 
 **Livrable :** socle technique exécutable.
 
 ---
 
-# [➖] EPIC 003 — DESIGN SYSTEM & APPLICATION SHELL
+# [✅] EPIC 003 — DESIGN SYSTEM & APPLICATION SHELL
 
 **Priorité : P0 — Fondamental**
 
@@ -464,7 +470,7 @@ Navigation :
 
 ### Critères d'acceptation
 
-- [➖] Design sombre cohérent.
+- [✅] Design sombre cohérent.
 - [✅] Aucun dégradé sur les textes ou boutons.
 - [✅] Couleurs centralisées.
 - [✅] Composants réutilisables.
@@ -477,7 +483,7 @@ Navigation :
 
 ---
 
-# [➖] EPIC 004 — DATABASE & DOMAIN FOUNDATION
+# [✅] EPIC 004 — DATABASE & DOMAIN FOUNDATION
 
 **Priorité : P0 — Fondamental**
 
@@ -531,13 +537,13 @@ Navigation :
 - Champs obligatoires.
 - Historisation.
 
-### [➖] FEATURE 004.2 — Persistence Layer
+### [✅] FEATURE 004.2 — Persistence Layer
 
 [✅] **TASK-004-05 — Configurer SQLAlchemy**
 
 [✅] **TASK-004-06 — Créer les migrations Alembic**
 
-[➖] **TASK-004-07 — Créer les repositories**
+[✅] **TASK-004-07 — Créer les repositories**
 
 [✅] **TASK-004-08 — Ajouter les index**
 
@@ -569,10 +575,10 @@ Optimiser notamment :
 
 - [✅] Modèle cohérent.
 - [✅] Migrations reproductibles.
-- [➖] Repositories testés.
+- [✅] Repositories testés.
 - [✅] Contraintes SQL fonctionnelles.
 - [✅] Sauvegarde et restauration documentées.
-- [➖] Aucun accès direct à la base depuis la logique métier.
+- [✅] Aucun accès direct à la base depuis la logique métier.
 
 **Livrable :** fondations de persistance.
 
@@ -715,9 +721,9 @@ Méthodes :
 
 [➖] **TASK-006-19 — Écrire les tests avec fixtures et réponses anonymisées**
 
-### [➖] FEATURE 006.5 — Page Sources de données
+### [✅] FEATURE 006.5 — Page Sources de données
 
-[➖] **TASK-006-20 — Créer la page Sources de données**
+[✅] **TASK-006-20 — Créer la page Sources de données**
 
 - Nom du fournisseur, pays couverts, statut, dernier accès, dernière erreur.
 - Nombre d'annonces récupérées et configuration requise.
@@ -727,7 +733,7 @@ Méthodes :
 
 **Périmètre strict :** seules les informations publiquement accessibles sont consultées. Aucun contournement de CAPTCHA, d'authentification, de restriction d'accès, de limite technique ou de mesure anti-bot, ni des conditions d'utilisation. Une entreprise dont les pages ne peuvent pas être consultées légitimement est marquée « non supportée » et jamais simulée.
 
-[➖] **TASK-006-21 — Gérer la liste des entreprises ciblées**
+[✅] **TASK-006-21 — Gérer la liste des entreprises ciblées**
 
 - L'utilisateur fournit les entreprises à surveiller et le(s) intitulé(s) de poste recherché(s).
 
@@ -863,23 +869,23 @@ Méthodes :
 
 [✅] **TASK-008-07 — Recherche par télétravail**
 
-[➖] **TASK-008-08 — Recherche par expérience**
+[✅] **TASK-008-08 — Recherche par expérience**
 
 [✅] **TASK-008-09 — Recherche par date de publication**
 
-[➖] **TASK-008-10 — Recherche multilingue**
+[✅] **TASK-008-10 — Recherche multilingue**
 
-### [➖] FEATURE 008.2 — Orchestration multi-sources
+### [✅] FEATURE 008.2 — Orchestration multi-sources
 
-[➖] **TASK-008-11 — Sélectionner les connecteurs compatibles**
+[✅] **TASK-008-11 — Sélectionner les connecteurs compatibles**
 
-[➖] **TASK-008-12 — Lancer les recherches en parallèle**
+[✅] **TASK-008-12 — Lancer les recherches en parallèle**
 
-[➖] **TASK-008-13 — Agréger les résultats**
+[✅] **TASK-008-13 — Agréger les résultats**
 
-[➖] **TASK-008-14 — Gérer les erreurs partielles**
+[✅] **TASK-008-14 — Gérer les erreurs partielles**
 
-[➖] **TASK-008-15 — Afficher les sources interrogées**
+[✅] **TASK-008-15 — Afficher les sources interrogées**
 
 ### [✅] FEATURE 008.3 — Résultats
 
@@ -912,6 +918,8 @@ Méthodes :
 [✅] **TASK-008-27 — Ignorer une offre**
 
 [➖] **TASK-008-28 — Recherche par entreprise, secteur et langue de l'annonce**
+
+> Partiel : filtres entreprise et langue de l'annonce réalisés (API et interface). Le **secteur** n'est fourni par aucune source collectée : il n'est pas filtrable sans le deviner (décision requise : référentiel de secteurs ou enrichissement).
 
 ### Critères d'acceptation
 
@@ -990,71 +998,81 @@ Méthodes :
 
 **Objectif :** centraliser les fournisseurs IA et contrôler rigoureusement les coûts.
 
-### [➖] FEATURE 010.1 — Abstraction IA
+### [✅] FEATURE 010.1 — Abstraction IA
 
-[➖] **TASK-010-01 — Définir AIProvider**
+[✅] **TASK-010-01 — Définir AIProvider**
 
-[➖] **TASK-010-02 — Implémenter le premier fournisseur IA**
+[✅] **TASK-010-02 — Implémenter le premier fournisseur IA**
 
-[➖] **TASK-010-03 — Ajouter le système de configuration**
+> Vérifié : Gemini et Ollama implémentés derrière `AIProvider` (ADR-0012), testés sur transport simulé ; Gemini exercé en réel par le banc d'essai.
 
-[➖] **TASK-010-04 — Ajouter le routage des modèles**
+[✅] **TASK-010-03 — Ajouter le système de configuration**
 
-[➖] **TASK-010-05 — Ajouter le mode local lorsque disponible**
+[✅] **TASK-010-04 — Ajouter le routage des modèles**
 
-### [➖] FEATURE 010.2 — Gestion des coûts
+[✅] **TASK-010-05 — Ajouter le mode local lorsque disponible**
 
-[➖] **TASK-010-06 — Créer AIUsage**
+### [✅] FEATURE 010.2 — Gestion des coûts
 
-[➖] **TASK-010-07 — Enregistrer les tokens**
+[✅] **TASK-010-06 — Créer AIUsage**
 
-[➖] **TASK-010-08 — Calculer les coûts**
+[✅] **TASK-010-07 — Enregistrer les tokens**
 
-[➖] **TASK-010-09 — Ajouter les budgets journaliers**
+[✅] **TASK-010-08 — Calculer les coûts**
 
-[➖] **TASK-010-10 — Ajouter les budgets mensuels**
+[✅] **TASK-010-09 — Ajouter les budgets journaliers**
 
-[➖] **TASK-010-11 — Ajouter les alertes**
+[✅] **TASK-010-10 — Ajouter les budgets mensuels**
 
-[➖] **TASK-010-12 — Ajouter les plafonds par tâche**
+[✅] **TASK-010-11 — Ajouter les alertes**
 
-### [➖] FEATURE 010.3 — Cache et optimisation
+[✅] **TASK-010-12 — Ajouter les plafonds par tâche**
 
-[➖] **TASK-010-13 — Développer le cache des analyses**
+### [✅] FEATURE 010.3 — Cache et optimisation
 
-[➖] **TASK-010-14 — Définir les clés de cache**
+[✅] **TASK-010-13 — Développer le cache des analyses**
 
-[➖] **TASK-010-15 — Gérer l'expiration**
+[✅] **TASK-010-14 — Définir les clés de cache**
 
-[➖] **TASK-010-16 — Versionner les prompts**
+[✅] **TASK-010-15 — Gérer l'expiration**
 
-[➖] **TASK-010-17 — Regrouper les tâches compatibles**
+[✅] **TASK-010-16 — Versionner les prompts**
 
-[➖] **TASK-010-18 — Limiter les contextes envoyés**
+> Vérifié : chaque requête porte `prompt_version`, incluse dans l'empreinte du cache ; versions des prompts CV, lettre, reformulation, entretien.
 
-### [➖] FEATURE 010.4 — Interface de gestion IA
+[✅] **TASK-010-17 — Regrouper les tâches compatibles**
 
-[➖] **TASK-010-19 — Créer AI Settings**
+> Vérifié : les réalisations du CV sont reformulées par lots de 25 au plus dans une même requête (consignes envoyées une fois par lot, sortie jamais tronquée) ; testé sur 60 réalisations (3 requêtes).
 
-[➖] **TASK-010-20 — Créer AI Usage Dashboard**
+[✅] **TASK-010-18 — Limiter les contextes envoyés**
 
-[➖] **TASK-010-21 — Créer AI Budget Manager**
+> Vérifié : textes tronqués (offre : 6000 caractères), jamais le CV complet par défaut ; catalogue des transferts testé (ADR-0019).
 
-[➖] **TASK-010-22 — Ajouter les modes économique, équilibré et qualité**
+### [✅] FEATURE 010.4 — Interface de gestion IA
 
-[➖] **TASK-010-23 — Ajouter le mode IA désactivée**
+[✅] **TASK-010-19 — Créer AI Settings**
 
-### [➖] FEATURE 010.5 — Fiabilité des traitements IA
+[✅] **TASK-010-20 — Créer AI Usage Dashboard**
 
-[➖] **TASK-010-24 — Valider les sorties structurées**
+[✅] **TASK-010-21 — Créer AI Budget Manager**
 
-[➖] **TASK-010-25 — Gérer les réponses incomplètes**
+[✅] **TASK-010-22 — Ajouter les modes économique, équilibré et qualité**
 
-[➖] **TASK-010-26 — Gérer les erreurs fournisseurs**
+[✅] **TASK-010-23 — Ajouter le mode IA désactivée**
 
-[➖] **TASK-010-27 — Tester le cache et les plafonds**
+### [✅] FEATURE 010.5 — Fiabilité des traitements IA
 
-[➖] **TASK-010-28 — Afficher le coût estimé avant les opérations IA importantes**
+[✅] **TASK-010-24 — Valider les sorties structurées**
+
+[✅] **TASK-010-25 — Gérer les réponses incomplètes**
+
+[✅] **TASK-010-26 — Gérer les erreurs fournisseurs**
+
+[✅] **TASK-010-27 — Tester le cache et les plafonds**
+
+[✅] **TASK-010-28 — Afficher le coût estimé avant les opérations IA importantes**
+
+> Vérifié : `POST /ai/estimate` (profil de chaque tâche) affiché avant le résumé d'offre, les questions et commentaires d'entretien et la reformulation du CV, avec la raison d'un refus éventuel.
 
 ### [➖] FEATURE 010.6 — API IA payante avec plafonds budgétaires stricts
 
@@ -1065,29 +1083,31 @@ Méthodes :
 - Clé API fournie via variable d'environnement, jamais affichée en clair.
 - Modèle économique pour le niveau 1 (extraction, classification, résumé) et modèle plus performant pour le niveau 2 (CV, lettres, analyse approfondie).
 
-[➖] **TASK-010-30 — Plafond obligatoire avant toute utilisation**
+[✅] **TASK-010-30 — Plafond obligatoire avant toute utilisation**
 
 - Aucun appel payant n'est possible tant qu'un plafond n'est pas défini par l'utilisateur.
 - Valeur par défaut basse, modifiable uniquement par l'utilisateur.
 
-[➖] **TASK-010-31 — Plafonds budgétaires stricts**
+[✅] **TASK-010-31 — Plafonds budgétaires stricts**
 
 - Plafond mensuel, journalier, par opération et par fournisseur (valeurs initiales proposées dans ADR-0005 : 10 €/mois, 1 €/jour, à calibrer une fois le fournisseur choisi).
 - Contrôle du coût estimé **avant** chaque appel : l'appel est refusé s'il ferait dépasser le plafond.
 - Alertes aux seuils configurés (par exemple 50 %, 80 %, 100 %).
 - Dépassement : blocage des appels non essentiels avec explication claire, jamais de désactivation silencieuse, aucune dépense au-delà du plafond.
 
-[➖] **TASK-010-32 — Réduction de la consommation**
+[✅] **TASK-010-32 — Réduction de la consommation**
 
 - Traitement déterministe d'abord (niveau 0), cache systématique, contextes minimaux, sorties JSON strictes.
 - Modèle le moins cher suffisant pour chaque tâche.
 
-[➖] **TASK-010-33 — Consentement sur les données transmises**
+> Vérifié : repli sans IA déclaré pour chaque tâche (`ESTIMATE_PROFILES`) ; cache consulté avant tout appel (tests du cache) ; contextes bornés (010-18) ; schéma JSON et sortie bornée exigés pour chaque appel (garde-fou CI `test_ai_consumption`) ; en mode économique, le candidat le moins cher est essayé en premier, le local toujours avant l'API.
+
+[✅] **TASK-010-33 — Consentement sur les données transmises**
 
 - Afficher à l'utilisateur quelles données partent vers l'API avant l'activation.
 - Ne jamais envoyer le CV complet par défaut.
 
-[➖] **TASK-010-34 — Tests des plafonds**
+[✅] **TASK-010-34 — Tests des plafonds**
 
 - Plafond atteint, estimation dépassant le reste du budget, absence de plafond, API en erreur, cache réutilisé.
 
@@ -1109,395 +1129,407 @@ Méthodes :
 
 ---
 
-# [➖] EPIC 011 — JOB INTELLIGENCE & OFFER ANALYSIS
+# [✅] EPIC 011 — JOB INTELLIGENCE & OFFER ANALYSIS
 
 **Priorité : P1 — Intelligence métier**
 
 **Objectif :** enrichir les offres pertinentes avec une analyse sémantique.
 
-### [➖] FEATURE 011.1 — Extraction des exigences
+### [✅] FEATURE 011.1 — Extraction des exigences
 
-[➖] **TASK-011-01 — Extraire les missions**
+[✅] **TASK-011-01 — Extraire les missions**
 
-[➖] **TASK-011-02 — Extraire les compétences obligatoires**
+[✅] **TASK-011-02 — Extraire les compétences obligatoires**
 
-[➖] **TASK-011-03 — Extraire les compétences souhaitées**
+[✅] **TASK-011-03 — Extraire les compétences souhaitées**
 
-[➖] **TASK-011-04 — Extraire les outils et technologies**
+[✅] **TASK-011-04 — Extraire les outils et technologies**
 
-[➖] **TASK-011-05 — Extraire les années d'expérience**
+[✅] **TASK-011-05 — Extraire les années d'expérience**
 
-[➖] **TASK-011-06 — Extraire les exigences linguistiques**
+[✅] **TASK-011-06 — Extraire les exigences linguistiques**
 
-[➖] **TASK-011-07 — Extraire les contraintes de mobilité et de visa si mentionnées**
+[✅] **TASK-011-07 — Extraire les contraintes de mobilité et de visa si mentionnées**
 
-### [➖] FEATURE 011.2 — Analyse de pertinence
+### [✅] FEATURE 011.2 — Analyse de pertinence
 
-[➖] **TASK-011-08 — Comparer l'annonce au CV maître**
+[✅] **TASK-011-08 — Comparer l'annonce au CV maître**
 
-[➖] **TASK-011-09 — Identifier les compétences transférables**
+[✅] **TASK-011-09 — Identifier les compétences transférables**
 
-[➖] **TASK-011-10 — Identifier les informations manquantes**
+[✅] **TASK-011-10 — Identifier les informations manquantes**
 
-[➖] **TASK-011-11 — Générer un résumé de l'annonce**
+[✅] **TASK-011-11 — Générer un résumé de l'annonce**
 
-[➖] **TASK-011-12 — Expliquer les raisons de compatibilité**
+[✅] **TASK-011-12 — Expliquer les raisons de compatibilité**
 
-### [➖] FEATURE 011.3 — Historique des analyses
+### [✅] FEATURE 011.3 — Historique des analyses
 
-[➖] **TASK-011-13 — Versionner les analyses**
+[✅] **TASK-011-13 — Versionner les analyses**
 
-[➖] **TASK-011-14 — Réutiliser les analyses en cache**
+[✅] **TASK-011-14 — Réutiliser les analyses en cache**
 
-[➖] **TASK-011-15 — Invalider le cache si l'annonce change**
+[✅] **TASK-011-15 — Invalider le cache si l'annonce change**
 
 ### Critères d'acceptation
 
-- [➖] Analyse basée sur des informations réelles.
-- [➖] Résultats structurés.
-- [➖] Coût IA maîtrisé.
-- [➖] Analyse réutilisable.
-- [➖] Aucun fait inventé.
+- [✅] Analyse basée sur des informations réelles.
+- [✅] Résultats structurés.
+- [✅] Coût IA maîtrisé.
+- [✅] Analyse réutilisable.
+- [✅] Aucun fait inventé.
 
 **Livrable :** moteur d'analyse des offres.
 
 ---
 
-# [➖] EPIC 012 — LATEX RESUME GENERATOR
+# [✅] EPIC 012 — LATEX RESUME GENERATOR
 
 **Priorité : P1 — Génération documentaire**
 
 **Objectif :** produire des CV personnalisés, professionnels et compatibles avec les contraintes ATS.
 
-### [➖] FEATURE 012.1 — Templates LaTeX
+### [✅] FEATURE 012.1 — Templates LaTeX
 
-[➖] **TASK-012-01 — Créer le template principal**
+[✅] **TASK-012-01 — Créer le template principal**
 
-[➖] **TASK-012-02 — Créer les sections standards**
+[✅] **TASK-012-02 — Créer les sections standards**
 
-[➖] **TASK-012-03 — Garantir la mise en page mono-colonne**
+[✅] **TASK-012-03 — Garantir la mise en page mono-colonne**
 
-[➖] **TASK-012-04 — Gérer les caractères internationaux**
+[✅] **TASK-012-04 — Gérer les caractères internationaux**
 
-[➖] **TASK-012-05 — Gérer les variations de longueur**
+[✅] **TASK-012-05 — Gérer les variations de longueur**
 
-### [➖] FEATURE 012.2 — Génération du contenu
+### [✅] FEATURE 012.2 — Génération du contenu
 
-[➖] **TASK-012-06 — Construire le contexte de génération**
+[✅] **TASK-012-06 — Construire le contexte de génération**
 
-[➖] **TASK-012-07 — Sélectionner les expériences pertinentes**
+[✅] **TASK-012-07 — Sélectionner les expériences pertinentes**
 
-[➖] **TASK-012-08 — Adapter les formulations**
+[✅] **TASK-012-08 — Adapter les formulations**
 
-[➖] **TASK-012-09 — Intégrer les mots-clés vérifiés**
+> Niveau 0 : réalisations les plus pertinentes en tête, accroche factuelle, compétences de l'offre mises en avant. **Reformulation facultative** (`rewrite_mode` = `none` par défaut, `local` ou `ai`) via la passerelle IA : seul le texte des réalisations est transmis, la requête est marquée « données personnelles », consentement, plafond, cache et journal de la passerelle s'appliquent, `local` interdit tout fournisseur payant. Une reformulation n'est retenue que si elle n'ajoute ni chiffre, ni nom propre, ni sigle, ni technologie ; sinon le texte d'origine est conservé. L'échec de l'IA n'empêche pas la génération et est consigné dans la version (`generation.ai_rewrite`). ADR-0013.
 
-[➖] **TASK-012-10 — Contrôler les faits**
+[✅] **TASK-012-09 — Intégrer les mots-clés vérifiés**
 
-[➖] **TASK-012-11 — Produire le code LaTeX**
+[✅] **TASK-012-10 — Contrôler les faits**
 
-### [➖] FEATURE 012.3 — Compilation
+[✅] **TASK-012-11 — Produire le code LaTeX**
 
-[➖] **TASK-012-12 — Installer et configurer pdfLaTeX**
+### [✅] FEATURE 012.3 — Compilation
 
-[➖] **TASK-012-13 — Développer le service de compilation isolé**
+[✅] **TASK-012-12 — Installer et configurer pdfLaTeX**
 
-[➖] **TASK-012-14 — Gérer les erreurs de compilation**
+[✅] **TASK-012-13 — Développer le service de compilation isolé**
 
-[➖] **TASK-012-15 — Appliquer les limites de ressources**
+[✅] **TASK-012-14 — Gérer les erreurs de compilation**
 
-[➖] **TASK-012-16 — Désactiver l'accès réseau pendant la compilation**
+[✅] **TASK-012-15 — Appliquer les limites de ressources**
 
-### [➖] FEATURE 012.4 — Contrôle ATS
+[✅] **TASK-012-16 — Désactiver l'accès réseau pendant la compilation**
 
-[➖] **TASK-012-17 — Extraire le texte PDF**
+### [✅] FEATURE 012.4 — Contrôle ATS
 
-[➖] **TASK-012-18 — Vérifier l'ordre de lecture**
+[✅] **TASK-012-17 — Extraire le texte PDF**
 
-[➖] **TASK-012-19 — Vérifier les caractères accentués**
+[✅] **TASK-012-18 — Vérifier l'ordre de lecture**
 
-[➖] **TASK-012-20 — Vérifier les rubriques**
+[✅] **TASK-012-19 — Vérifier les caractères accentués**
 
-[➖] **TASK-012-21 — Détecter les problèmes de mise en page**
+[✅] **TASK-012-20 — Vérifier les rubriques**
 
-### [➖] FEATURE 012.5 — Versions et exports
+[✅] **TASK-012-21 — Détecter les problèmes de mise en page**
 
-[➖] **TASK-012-22 — Sauvegarder les versions**
+### [✅] FEATURE 012.5 — Versions et exports
 
-[➖] **TASK-012-23 — Associer chaque version à une offre**
+[✅] **TASK-012-22 — Sauvegarder les versions**
 
-[➖] **TASK-012-24 — Télécharger le PDF**
+[✅] **TASK-012-23 — Associer chaque version à une offre**
 
-[➖] **TASK-012-25 — Télécharger le LaTeX**
+[✅] **TASK-012-24 — Télécharger le PDF**
 
-[➖] **TASK-012-26 — Comparer les versions**
+[✅] **TASK-012-25 — Télécharger le LaTeX**
 
-[➖] **TASK-012-27 — Intégrer `docs/HAPPLY_AI_CV_GENERATION_PROMPT.md` comme prompt versionné**
+[✅] **TASK-012-26 — Comparer les versions**
+
+[✅] **TASK-012-27 — Intégrer `docs/HAPPLY_AI_CV_GENERATION_PROMPT.md` comme prompt versionné**
 
 ### Critères d'acceptation
 
-- [➖] PDF réellement compilé.
-- [➖] Texte sélectionnable.
-- [➖] Extraction vérifiée.
-- [➖] Une seule colonne.
-- [➖] Documents modifiables.
-- [➖] CV maître préservé.
-- [➖] Aucune information inventée.
+- [✅] PDF réellement compilé.
+- [✅] Texte sélectionnable.
+- [✅] Extraction vérifiée.
+- [✅] Une seule colonne.
+- [✅] Documents modifiables.
+- [✅] CV maître préservé.
+- [✅] Aucune information inventée.
 
 **Livrable :** générateur de CV professionnel.
 
 ---
 
-# [➖] EPIC 013 — COVER LETTER GENERATOR
+# [✅] EPIC 013 — COVER LETTER GENERATOR
 
 **Priorité : P1 — Génération documentaire**
 
 **Objectif :** créer une lettre de motivation adaptée à chaque entreprise.
 
-### [➖] FEATURE 013.1 — Analyse entreprise et offre
+### [✅] FEATURE 013.1 — Analyse entreprise et offre
 
-[➖] **TASK-013-01 — Extraire les informations de l'entreprise**
+[✅] **TASK-013-01 — Extraire les informations de l'entreprise**
 
-[➖] **TASK-013-02 — Analyser les responsabilités**
+[✅] **TASK-013-02 — Analyser les responsabilités**
 
-[➖] **TASK-013-03 — Identifier les attentes du recruteur**
+[✅] **TASK-013-03 — Identifier les attentes du recruteur**
 
-[➖] **TASK-013-04 — Sélectionner les expériences pertinentes**
+[✅] **TASK-013-04 — Sélectionner les expériences pertinentes**
 
-[➖] **TASK-013-05 — Vérifier les informations externes**
+[✅] **TASK-013-05 — Vérifier les informations externes**
 
-### [➖] FEATURE 013.2 — Génération
+> Aucune recherche externe (CLAUDE.md §10) : seules les informations de l'offre sont utilisées ; aucune connaissance de l'entreprise n'est affirmée au-delà de son nom, son lieu et son secteur s'ils figurent dans l'offre.
 
-[➖] **TASK-013-06 — Créer le prompt versionné**
+### [✅] FEATURE 013.2 — Génération
 
-[➖] **TASK-013-07 — Construire le contexte minimal**
+[✅] **TASK-013-06 — Créer le prompt versionné**
 
-[➖] **TASK-013-08 — Générer la lettre**
+[✅] **TASK-013-07 — Construire le contexte minimal**
 
-[➖] **TASK-013-09 — Contrôler la cohérence avec le CV**
+[✅] **TASK-013-08 — Générer la lettre**
 
-[➖] **TASK-013-10 — Contrôler les informations inventées**
+[✅] **TASK-013-09 — Contrôler la cohérence avec le CV**
 
-[➖] **TASK-013-11 — Contrôler la longueur et la qualité**
+[✅] **TASK-013-10 — Contrôler les informations inventées**
 
-### [➖] FEATURE 013.3 — Documents
+[✅] **TASK-013-11 — Contrôler la longueur et la qualité**
 
-[➖] **TASK-013-12 — Créer le template de lettre**
+### [✅] FEATURE 013.3 — Documents
 
-[➖] **TASK-013-13 — Générer le PDF**
+[✅] **TASK-013-12 — Créer le template de lettre**
 
-[➖] **TASK-013-14 — Ajouter l'édition manuelle**
+[✅] **TASK-013-13 — Générer le PDF**
 
-[➖] **TASK-013-15 — Gérer les versions**
+[✅] **TASK-013-14 — Ajouter l'édition manuelle**
 
-[➖] **TASK-013-16 — Ajouter les langues de candidature**
+[✅] **TASK-013-15 — Gérer les versions**
 
-[➖] **TASK-013-17 — Intégrer `docs/HAPPLY_AI_COVER_LETTER_PROMPT.md` comme prompt versionné**
+[✅] **TASK-013-16 — Ajouter les langues de candidature**
 
-[➖] **TASK-013-18 — Contrôler l'orthographe et adapter le ton au pays**
+[✅] **TASK-013-17 — Intégrer `docs/HAPPLY_AI_COVER_LETTER_PROMPT.md` comme prompt versionné**
+
+[✅] **TASK-013-18 — Contrôler l'orthographe et adapter le ton au pays**
+
+> Fait : ton, salutation, formule de politesse et date selon la langue et le pays (FR ; EN britannique ou américain) ; erreurs d'écriture évidentes (mots répétés, majuscule oubliée, ponctuation, parenthèses). **Correction orthographique par dictionnaire** (`pyspellchecker`, dictionnaires embarqués, 100 % hors ligne) : signalements non bloquants, noms propres, sigles et termes du profil/de l'offre écartés, langue sans dictionnaire non vérifiée. ADR-0014.
 
 ### Critères d'acceptation
 
-- [➖] Lettre personnalisée.
-- [➖] Cohérence avec le CV.
-- [➖] Coordonnées exactes.
-- [➖] Informations vérifiées.
-- [➖] PDF téléchargeable.
-- [➖] Modification manuelle possible.
+- [✅] Lettre personnalisée.
+- [✅] Cohérence avec le CV.
+- [✅] Coordonnées exactes.
+- [✅] Informations vérifiées.
+- [✅] PDF téléchargeable.
+- [✅] Modification manuelle possible.
 
 **Livrable :** générateur de lettres de motivation.
 
 ---
 
-# [➖] EPIC 014 — APPLICATION TRACKING & CANDIDATE CRM
+# [✅] EPIC 014 — APPLICATION TRACKING & CANDIDATE CRM
 
 **Priorité : P1 — Gestion des candidatures**
 
 **Objectif :** centraliser et suivre le parcours de chaque candidature.
 
-### [➖] FEATURE 014.1 — Gestion des candidatures
+### [✅] FEATURE 014.1 — Gestion des candidatures
 
-[➖] **TASK-014-01 — Créer Application Entity**
+[✅] **TASK-014-01 — Créer Application Entity**
 
-[➖] **TASK-014-02 — Associer une candidature à une offre**
+[✅] **TASK-014-02 — Associer une candidature à une offre**
 
-[➖] **TASK-014-03 — Gérer les statuts**
+[✅] **TASK-014-03 — Gérer les statuts**
 
-[➖] **TASK-014-04 — Enregistrer la date d'envoi**
+[✅] **TASK-014-04 — Enregistrer la date d'envoi**
 
-[➖] **TASK-014-05 — Enregistrer les coordonnées du recruteur lorsqu'elles sont connues**
+[✅] **TASK-014-05 — Enregistrer les coordonnées du recruteur lorsqu'elles sont connues**
 
-### [➖] FEATURE 014.2 — Historique
+### [✅] FEATURE 014.2 — Historique
 
-[➖] **TASK-014-06 — Historiser les changements de statut**
+[✅] **TASK-014-06 — Historiser les changements de statut**
 
-[➖] **TASK-014-07 — Ajouter des notes**
+[✅] **TASK-014-07 — Ajouter des notes**
 
-[➖] **TASK-014-08 — Ajouter des événements**
+[✅] **TASK-014-08 — Ajouter des événements**
 
-[➖] **TASK-014-09 — Associer les documents envoyés**
+[✅] **TASK-014-09 — Associer les documents envoyés**
 
-[➖] **TASK-014-10 — Gérer les dates de relance**
+[✅] **TASK-014-10 — Gérer les dates de relance**
 
-### [➖] FEATURE 014.3 — Interface CRM
+### [✅] FEATURE 014.3 — Interface CRM
 
-[➖] **TASK-014-11 — Créer la vue tableau**
+[✅] **TASK-014-11 — Créer la vue tableau**
 
-[➖] **TASK-014-12 — Créer la vue Kanban**
+> Corrigé après audit : l'interface n'existait pas (page vide) ; tableau paginé en base, filtres synchronisés avec l'URL.
 
-[➖] **TASK-014-13 — Créer les filtres**
+[✅] **TASK-014-12 — Créer la vue Kanban**
 
-[➖] **TASK-014-14 — Créer la fiche candidature**
+[✅] **TASK-014-13 — Créer les filtres**
 
-[➖] **TASK-014-15 — Ajouter les statistiques**
+[✅] **TASK-014-14 — Créer la fiche candidature**
 
-### [➖] FEATURE 014.4 — Préparation de candidature
+[✅] **TASK-014-15 — Ajouter les statistiques**
 
-[➖] **TASK-014-16 — Créer un dossier de candidature**
+### [✅] FEATURE 014.4 — Préparation de candidature
 
-[➖] **TASK-014-17 — Vérifier les documents**
+[✅] **TASK-014-16 — Créer un dossier de candidature**
 
-[➖] **TASK-014-18 — Ajouter le lien vers l'annonce originale**
+[✅] **TASK-014-17 — Vérifier les documents**
 
-[➖] **TASK-014-19 — Ajouter l'action d'ouverture du site de candidature**
+[✅] **TASK-014-18 — Ajouter le lien vers l'annonce originale**
 
-[➖] **TASK-014-20 — Ajouter la confirmation manuelle d'envoi**
+[✅] **TASK-014-19 — Ajouter l'action d'ouverture du site de candidature**
 
-### [➖] FEATURE 014.5 — Dashboard
+[✅] **TASK-014-20 — Ajouter la confirmation manuelle d'envoi**
 
-[➖] **TASK-014-21 — Créer le Dashboard**
+### [✅] FEATURE 014.5 — Dashboard
+
+[✅] **TASK-014-21 — Créer le Dashboard**
 
 - Offres trouvées, nouvelles offres, offres pertinentes.
 - Candidatures envoyées, entretiens, budget IA consommé.
 - Dernières recherches et dernières activités.
 
-[➖] **TASK-014-22 — Calculer le taux de réponse sur données réelles**
+[✅] **TASK-014-22 — Calculer le taux de réponse sur données réelles**
 
 - Aucun chiffre affiché sans donnée réelle sous-jacente.
 
 ### Critères d'acceptation
 
-- [➖] Historique fiable.
-- [➖] Statuts modifiables.
-- [➖] Documents associés.
-- [➖] Candidatures filtrables.
-- [➖] Envoi externe toujours contrôlé par l'utilisateur.
+- [✅] Historique fiable.
+- [✅] Statuts modifiables.
+- [✅] Documents associés.
+- [✅] Candidatures filtrables.
+- [✅] Envoi externe toujours contrôlé par l'utilisateur.
 
 **Livrable :** CRM personnel de candidatures.
 
 ---
 
-# [➖] EPIC 015 — SCHEDULER, AUTOMATION & NOTIFICATIONS
+# [✅] EPIC 015 — SCHEDULER, AUTOMATION & NOTIFICATIONS
 
 **Priorité : P1 — Automatisation**
 
 **Objectif :** automatiser les recherches et les rappels.
 
-### [➖] FEATURE 015.1 — Scheduler
+### [✅] FEATURE 015.1 — Scheduler
 
-[➖] **TASK-015-01 — Définir les tâches planifiées**
+[✅] **TASK-015-01 — Définir les tâches planifiées**
 
-[➖] **TASK-015-02 — Ajouter les recherches récurrentes**
+[✅] **TASK-015-02 — Ajouter les recherches récurrentes**
 
-[➖] **TASK-015-03 — Ajouter les fuseaux horaires**
+[✅] **TASK-015-03 — Ajouter les fuseaux horaires**
 
-[➖] **TASK-015-04 — Ajouter les règles de fréquence**
+[✅] **TASK-015-04 — Ajouter les règles de fréquence**
 
-[➖] **TASK-015-05 — Empêcher les exécutions concurrentes inutiles**
+[✅] **TASK-015-05 — Empêcher les exécutions concurrentes inutiles**
 
-### [➖] FEATURE 015.2 — Orchestration
+### [✅] FEATURE 015.2 — Orchestration
 
-[➖] **TASK-015-06 — Gérer les tâches asynchrones**
+[✅] **TASK-015-06 — Gérer les tâches asynchrones**
 
-[➖] **TASK-015-07 — Gérer les reprises**
+[✅] **TASK-015-07 — Gérer les reprises**
 
-[➖] **TASK-015-08 — Gérer les tâches échouées**
+[✅] **TASK-015-08 — Gérer les tâches échouées**
 
-[➖] **TASK-015-09 — Ajouter une file de tâches**
+[✅] **TASK-015-09 — Ajouter une file de tâches**
 
-[➖] **TASK-015-10 — Ajouter un historique d'exécution**
+[✅] **TASK-015-10 — Ajouter un historique d'exécution**
 
-### [➖] FEATURE 015.3 — Notifications
+### [✅] FEATURE 015.3 — Notifications
 
-[➖] **TASK-015-11 — Créer le centre de notifications**
+[✅] **TASK-015-11 — Créer le centre de notifications**
 
-[➖] **TASK-015-12 — Notifier les nouvelles offres**
+[✅] **TASK-015-12 — Notifier les nouvelles offres**
 
-[➖] **TASK-015-13 — Notifier les offres pertinentes**
+[✅] **TASK-015-13 — Notifier les offres pertinentes**
 
-[➖] **TASK-015-14 — Notifier les erreurs de recherche**
+[✅] **TASK-015-14 — Notifier les erreurs de recherche**
 
-[➖] **TASK-015-15 — Ajouter les rappels de candidature**
+[✅] **TASK-015-15 — Ajouter les rappels de candidature**
 
-[➖] **TASK-015-16 — Ajouter les alertes budget IA**
+[✅] **TASK-015-16 — Ajouter les alertes budget IA**
 
-### [➖] FEATURE 015.4 — Résumés
+### [✅] FEATURE 015.4 — Résumés
 
-[➖] **TASK-015-17 — Créer un résumé quotidien**
+[✅] **TASK-015-17 — Créer un résumé quotidien**
 
-[➖] **TASK-015-18 — Ajouter les préférences de notification**
+[✅] **TASK-015-18 — Ajouter les préférences de notification**
 
-[➖] **TASK-015-19 — Ajouter les notifications e-mail si configurées**
+[✅] **TASK-015-19 — Ajouter les notifications e-mail si configurées**
 
 ### Critères d'acceptation
 
-- [➖] Tâches planifiées fiables.
-- [➖] Pas de doublons d'exécution.
-- [➖] Erreurs traçables.
-- [➖] Notifications contrôlables.
-- [➖] Aucun e-mail externe sans configuration et consentement.
+- [✅] Tâches planifiées fiables.
+- [✅] Pas de doublons d'exécution.
+- [✅] Erreurs traçables.
+- [✅] Notifications contrôlables.
+- [✅] Aucun e-mail externe sans configuration et consentement.
 
 **Livrable :** système d'automatisation.
 
 ---
 
-# [➖] EPIC 016 — INTERVIEW PREPARATION & CAREER ASSISTANT
+# [✅] EPIC 016 — INTERVIEW PREPARATION & CAREER ASSISTANT
 
 **Priorité : P2 — Fonctionnalités avancées**
 
 **Objectif :** accompagner le candidat après l'envoi de ses candidatures.
 
-### [➖] FEATURE 016.1 — Préparation personnalisée
+### [✅] FEATURE 016.1 — Préparation personnalisée
 
-[➖] **TASK-016-01 — Analyser l'offre et le CV envoyé**
+[✅] **TASK-016-01 — Analyser l'offre et le CV envoyé**
 
-[➖] **TASK-016-02 — Générer des questions RH**
+> L'offre est lue avec son analyse (compétences) ; le parcours vient du **profil validé** dont le CV est issu, pas du texte du PDF envoyé. Un avertissement signale l'absence de CV associé (ADR-0018).
 
-[➖] **TASK-016-03 — Générer des questions techniques**
+[✅] **TASK-016-02 — Générer des questions RH**
 
-[➖] **TASK-016-04 — Préparer une présentation personnelle**
+[✅] **TASK-016-03 — Générer des questions techniques**
 
-[➖] **TASK-016-05 — Proposer des réponses structurées**
+[✅] **TASK-016-04 — Préparer une présentation personnelle**
 
-[➖] **TASK-016-06 — Préparer des questions pour le recruteur**
+[✅] **TASK-016-05 — Proposer des réponses structurées**
 
-### [➖] FEATURE 016.2 — Simulation
+[✅] **TASK-016-06 — Préparer des questions pour le recruteur**
 
-[➖] **TASK-016-07 — Créer le moteur de simulation**
+### [✅] FEATURE 016.2 — Simulation
 
-[➖] **TASK-016-08 — Ajouter les réponses utilisateur**
+[✅] **TASK-016-07 — Créer le moteur de simulation**
 
-[➖] **TASK-016-09 — Fournir des retours**
+[✅] **TASK-016-08 — Ajouter les réponses utilisateur**
 
-[➖] **TASK-016-10 — Sauvegarder les simulations**
+[✅] **TASK-016-09 — Fournir des retours**
 
-### [➖] FEATURE 016.3 — Suivi des entretiens
+[✅] **TASK-016-10 — Sauvegarder les simulations**
 
-[➖] **TASK-016-11 — Créer une fiche entretien**
+### [✅] FEATURE 016.3 — Suivi des entretiens
 
-[➖] **TASK-016-12 — Enregistrer les dates**
+[✅] **TASK-016-11 — Créer une fiche entretien**
 
-[➖] **TASK-016-13 — Enregistrer les retours**
+[✅] **TASK-016-12 — Enregistrer les dates**
 
-[➖] **TASK-016-14 — Préparer les relances post-entretien**
+[✅] **TASK-016-13 — Enregistrer les retours**
+
+[✅] **TASK-016-14 — Préparer les relances post-entretien**
 
 ### Critères d'acceptation
 
-- [➖] Questions adaptées au poste.
-- [➖] Réponses basées sur le vrai parcours.
-- [➖] Utilisation IA à la demande.
-- [➖] Historique conservé.
+- [✅] Questions adaptées au poste.
+- [✅] Réponses basées sur le vrai parcours.
+- [✅] Utilisation IA à la demande.
+- [✅] Historique conservé.
 
 **Livrable :** assistant de préparation aux entretiens.
+
+> Réalisé : module `interview_preparation` (ADR-0018), génération niveau 0 sans IA, IA facultative à la demande (`none`/`local`/`ai`) avec repli explicite, simulation avec retours et historique, fiches d'entretien synchronisées avec le suivi de candidatures, brouillon de relance. Limite : la préparation s'appuie sur le profil validé et non sur le texte du PDF du CV envoyé.
 
 ---
 
@@ -1589,85 +1621,85 @@ Méthodes :
 
 Cet EPIC doit être traité dès la phase initiale et non uniquement en fin de développement.
 
-### [➖] FEATURE 018.1 — Sécurité applicative
+### [✅] FEATURE 018.1 — Sécurité applicative
 
-[➖] **TASK-018-01 — Définir le modèle de menaces**
+[✅] **TASK-018-01 — Définir le modèle de menaces**
 
-[➖] **TASK-018-02 — Sécuriser les API**
+[✅] **TASK-018-02 — Sécuriser les API**
 
-[➖] **TASK-018-03 — Valider toutes les entrées**
+[✅] **TASK-018-03 — Valider toutes les entrées**
 
-[➖] **TASK-018-04 — Configurer les permissions**
+[✅] **TASK-018-04 — Configurer les permissions**
 
-[➖] **TASK-018-05 — Protéger les secrets**
+[✅] **TASK-018-05 — Protéger les secrets**
 
-[➖] **TASK-018-06 — Configurer les limites de requêtes**
+[✅] **TASK-018-06 — Configurer les limites de requêtes**
 
-[➖] **TASK-018-07 — Protéger contre SSRF**
+[✅] **TASK-018-07 — Protéger contre SSRF**
 
-[➖] **TASK-018-08 — Protéger contre les injections**
+[✅] **TASK-018-08 — Protéger contre les injections**
 
-### [➖] FEATURE 018.2 — Sécurité IA
+### [✅] FEATURE 018.2 — Sécurité IA
 
-[➖] **TASK-018-09 — Définir les frontières de confiance**
+[✅] **TASK-018-09 — Définir les frontières de confiance**
 
-[➖] **TASK-018-10 — Protéger contre prompt injection**
+[✅] **TASK-018-10 — Protéger contre prompt injection**
 
-[➖] **TASK-018-11 — Séparer instructions et données externes**
+[✅] **TASK-018-11 — Séparer instructions et données externes**
 
-[➖] **TASK-018-12 — Limiter les données envoyées aux fournisseurs**
+[✅] **TASK-018-12 — Limiter les données envoyées aux fournisseurs**
 
-[➖] **TASK-018-13 — Valider les réponses structurées**
+[✅] **TASK-018-13 — Valider les réponses structurées**
 
-### [➖] FEATURE 018.3 — Sécurité documentaire
+### [✅] FEATURE 018.3 — Sécurité documentaire
 
-[➖] **TASK-018-14 — Isoler les fichiers importés**
+[✅] **TASK-018-14 — Isoler les fichiers importés**
 
-[➖] **TASK-018-15 — Sécuriser la compilation LaTeX**
+[✅] **TASK-018-15 — Sécuriser la compilation LaTeX**
 
-[➖] **TASK-018-16 — Contrôler les fichiers générés**
+[✅] **TASK-018-16 — Contrôler les fichiers générés**
 
-[➖] **TASK-018-17 — Définir les limites de ressources**
+[✅] **TASK-018-17 — Définir les limites de ressources**
 
-### [➖] FEATURE 018.4 — RGPD et confidentialité
+### [✅] FEATURE 018.4 — RGPD et confidentialité
 
-[➖] **TASK-018-18 — Définir la politique de conservation**
+[✅] **TASK-018-18 — Définir la politique de conservation**
 
-[➖] **TASK-018-19 — Ajouter l'export des données**
+[✅] **TASK-018-19 — Ajouter l'export des données**
 
-[➖] **TASK-018-20 — Ajouter la suppression des données**
+[✅] **TASK-018-20 — Ajouter la suppression des données**
 
-[➖] **TASK-018-21 — Documenter les transferts vers les fournisseurs IA**
+[✅] **TASK-018-21 — Documenter les transferts vers les fournisseurs IA**
 
-[➖] **TASK-018-22 — Ajouter les paramètres de confidentialité**
+[✅] **TASK-018-22 — Ajouter les paramètres de confidentialité**
 
-### [➖] FEATURE 018.5 — Observabilité
+### [✅] FEATURE 018.5 — Observabilité
 
-[➖] **TASK-018-23 — Créer les logs structurés**
+[✅] **TASK-018-23 — Créer les logs structurés**
 
-[➖] **TASK-018-24 — Ajouter les identifiants de corrélation**
+[✅] **TASK-018-24 — Ajouter les identifiants de corrélation**
 
-[➖] **TASK-018-25 — Ajouter les health checks**
+[✅] **TASK-018-25 — Ajouter les health checks**
 
-[➖] **TASK-018-26 — Mesurer les performances**
+[✅] **TASK-018-26 — Mesurer les performances**
 
-[➖] **TASK-018-27 — Ajouter le tableau de santé**
+[✅] **TASK-018-27 — Ajouter le tableau de santé**
 
-[➖] **TASK-018-28 — Ajouter le monitoring des tâches**
+[✅] **TASK-018-28 — Ajouter le monitoring des tâches**
 
 ### [➖] FEATURE 018.6 — Résilience
 
-[➖] **TASK-018-29 — Tester les interruptions**
+[✅] **TASK-018-29 — Tester les interruptions**
 
-[➖] **TASK-018-30 — Tester la restauration**
+[✅] **TASK-018-30 — Tester la restauration**
 
-[➖] **TASK-018-31 — Tester les défaillances de fournisseurs**
+[✅] **TASK-018-31 — Tester les défaillances de fournisseurs**
 
-[➖] **TASK-018-32 — Documenter les procédures de récupération**
+[✅] **TASK-018-32 — Documenter les procédures de récupération**
 
-[➖] **TASK-018-33 — Protéger l'accès réseau en mode local et configurer un CORS restrictif**
+[✅] **TASK-018-33 — Protéger l'accès réseau en mode local et configurer un CORS restrictif**
 
-[➖] **TASK-018-34 — Gérer la rotation des clés et le masquage des secrets dans l'interface**
+[✅] **TASK-018-34 — Gérer la rotation des clés et le masquage des secrets dans l'interface**
 
 [➖] **TASK-018-35 — Intégrer l'authentification (différée, ADR-0008)**
 
@@ -1678,21 +1710,25 @@ Cet EPIC doit être traité dès la phase initiale et non uniquement en fin de d
 
 - Autorisations par ressource sur la base de `owner_id`, migration des données de l'utilisateur local, tests d'isolation entre utilisateurs.
 
-[➖] **TASK-018-37 — Documenter et vérifier le mode local sans authentification**
+[✅] **TASK-018-37 — Documenter et vérifier le mode local sans authentification**
 
 - Liaison à `127.0.0.1`, ports Docker locaux, CORS restrictif ; voir `docs/security/LOCAL_NO_AUTH_NOTICE.md`.
 
 ### Critères d'acceptation
 
-- [➖] Modèle de menaces documenté.
-- [➖] Secrets protégés.
-- [➖] Documents isolés.
-- [➖] Compilation sécurisée.
-- [➖] Données personnelles contrôlables.
-- [➖] Logs non sensibles.
-- [➖] Procédures de restauration testées.
+- [✅] Modèle de menaces documenté.
+- [✅] Secrets protégés.
+- [✅] Documents isolés.
+- [✅] Compilation sécurisée.
+- [✅] Données personnelles contrôlables.
+- [✅] Logs non sensibles.
+- [✅] Procédures de restauration testées.
 
 **Livrable :** socle de sécurité et d'exploitation.
+
+> **Réalisé (ADR-0019)** : modèle de menaces, garde-fous exécutés par la CI (entrées bornées, surface sortante, SQL, secrets, mode local, catalogue RGPD, appels IA documentés), middleware de corrélation / en-têtes / limites / mesures, logs JSON masqués, santé et tableau de santé, module `privacy` (export ZIP, effacement confirmé, conservation, transferts IA, politique `local_only`/`never`), contrôle des PDF générés, restauration testée.
+>
+> **Reste à faire : TASK-018-35 (authentification) et TASK-018-36 (multi-utilisateur)**, volontairement différées par ADR-0008 tant que l'application reste locale ; obligatoires avant tout accès distant. L'EPIC reste donc `[➖]` (35/37). Voir `docs/security/LOCAL_NO_AUTH_NOTICE.md`.
 
 ---
 
@@ -1702,90 +1738,94 @@ Cet EPIC doit être traité dès la phase initiale et non uniquement en fin de d
 
 **Objectif :** garantir que le produit est réellement utilisable, maintenable et livrable.
 
-### [➖] FEATURE 019.1 — Tests backend
+### [✅] FEATURE 019.1 — Tests backend
 
-[➖] **TASK-019-01 — Tests unitaires du domaine**
+[✅] **TASK-019-01 — Tests unitaires du domaine**
 
-[➖] **TASK-019-02 — Tests des use cases**
+[✅] **TASK-019-02 — Tests des use cases**
 
-[➖] **TASK-019-03 — Tests des repositories**
+[✅] **TASK-019-03 — Tests des repositories**
 
-[➖] **TASK-019-04 — Tests des connecteurs**
+[✅] **TASK-019-04 — Tests des connecteurs**
 
-[➖] **TASK-019-05 — Tests des tâches asynchrones**
+[✅] **TASK-019-05 — Tests des tâches asynchrones**
 
-[➖] **TASK-019-06 — Tests de sécurité**
+[✅] **TASK-019-06 — Tests de sécurité**
 
-### [➖] FEATURE 019.2 — Tests frontend
+### [✅] FEATURE 019.2 — Tests frontend
 
-[➖] **TASK-019-07 — Tests des composants**
+[✅] **TASK-019-07 — Tests des composants**
 
-[➖] **TASK-019-08 — Tests des formulaires**
+[✅] **TASK-019-08 — Tests des formulaires**
 
-[➖] **TASK-019-09 — Tests de navigation**
+[✅] **TASK-019-09 — Tests de navigation**
 
-[➖] **TASK-019-10 — Tests responsive**
+[✅] **TASK-019-10 — Tests responsive**
 
-[➖] **TASK-019-11 — Tests des états d'erreur**
+[✅] **TASK-019-11 — Tests des états d'erreur**
 
-### [➖] FEATURE 019.3 — Tests E2E
+### [✅] FEATURE 019.3 — Tests E2E
 
-[➖] **TASK-019-12 — Parcours de recherche**
+[✅] **TASK-019-12 — Parcours de recherche**
 
-[➖] **TASK-019-13 — Parcours d'import du CV**
+[✅] **TASK-019-13 — Parcours d'import du CV**
 
-[➖] **TASK-019-14 — Parcours de génération du CV**
+[✅] **TASK-019-14 — Parcours de génération du CV**
 
-[➖] **TASK-019-15 — Parcours de génération de lettre**
+[✅] **TASK-019-15 — Parcours de génération de lettre**
 
-[➖] **TASK-019-16 — Parcours de candidature**
+[✅] **TASK-019-16 — Parcours de candidature**
 
-[➖] **TASK-019-17 — Parcours de gestion du budget IA**
+[✅] **TASK-019-17 — Parcours de gestion du budget IA**
 
-### [➖] FEATURE 019.4 — Performance
+### [✅] FEATURE 019.4 — Performance
 
-[➖] **TASK-019-18 — Mesurer les temps de réponse**
+[✅] **TASK-019-18 — Mesurer les temps de réponse**
 
-[➖] **TASK-019-19 — Analyser les requêtes SQL**
+[✅] **TASK-019-19 — Analyser les requêtes SQL**
 
-[➖] **TASK-019-20 — Tester la pagination**
+[✅] **TASK-019-20 — Tester la pagination**
 
-[➖] **TASK-019-21 — Tester les volumes d'offres**
+[✅] **TASK-019-21 — Tester les volumes d'offres**
 
-[➖] **TASK-019-22 — Tester les tâches concurrentes**
+[✅] **TASK-019-22 — Tester les tâches concurrentes**
 
 ### [➖] FEATURE 019.5 — Documentation et livraison
 
-[➖] **TASK-019-23 — Finaliser README**
+[✅] **TASK-019-23 — Finaliser README**
 
-[➖] **TASK-019-24 — Finaliser le guide utilisateur**
+[✅] **TASK-019-24 — Finaliser le guide utilisateur**
 
-[➖] **TASK-019-25 — Finaliser le guide d'installation**
+[✅] **TASK-019-25 — Finaliser le guide d'installation**
 
-[➖] **TASK-019-26 — Finaliser le guide de sauvegarde**
+[✅] **TASK-019-26 — Finaliser le guide de sauvegarde**
 
-[➖] **TASK-019-27 — Finaliser les ADR**
+[✅] **TASK-019-27 — Finaliser les ADR**
 
-[➖] **TASK-019-28 — Créer le rapport de qualité**
+[✅] **TASK-019-28 — Créer le rapport de qualité**
 
 [➖] **TASK-019-29 — Préparer la version stable**
 
-[➖] **TASK-019-30 — Produire les documents obligatoires de la spécification (§22)**
+[✅] **TASK-019-30 — Produire les documents obligatoires de la spécification (§22)**
 
 - `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, `API.md`.
 - `AI_COSTS.md`, `DATA_SOURCES.md`, `DEPLOYMENT.md`.
 
 ### Critères d'acceptation
 
-- [➖] Tests critiques exécutés.
-- [➖] Aucun défaut bloquant connu.
+- [✅] Tests critiques exécutés.
+- [✅] Aucun défaut bloquant connu.
 - [➖] Installation reproductible.
-- [➖] Documentation à jour.
-- [➖] Sauvegarde et restauration testées.
-- [➖] Parcours métier principaux opérationnels.
-- [➖] Limites restantes clairement documentées.
+- [✅] Documentation à jour.
+- [✅] Sauvegarde et restauration testées.
+- [✅] Parcours métier principaux opérationnels.
+- [✅] Limites restantes clairement documentées.
 
 **Livrable :** version stable de HAPPLY AI.
+
+> **Réalisé (ADR-0020)** : parcours E2E à pile réelle (8 parcours), pages Espace CV (CV générés) et Lettres, tests de volume (20 000 offres), pagination, EXPLAIN réel et concurrence, tests de routes des notifications et du planificateur, couverture mesurée avec seuil en CI, README, guides, CONTRIBUTING, SECURITY, CHANGELOG, DEPLOYMENT, rapport de qualité chiffré, checklist de release. Version **0.5.0-rc.1** préparée, **non publiée**.
+>
+> **Reste à faire** : TASK-019-29 (version stable) : elle ne peut pas être déclarée tant que les EPIC 017, 006, 008, 010 et l'authentification (018-35/36) ne sont pas terminés ; critère « Installation reproductible » non validé : la voie Docker n'a pas pu être rejouée de zéro dans l'environnement de travail (sans Docker). Détails : `docs/engineering/QUALITY_REPORT.md`.
 
 ---
 
@@ -2025,24 +2065,24 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | Statut | EPIC | Priorité | Features | Tasks | Tasks [✅] | Release |
 |---|---|---|---|---|---|---|
 | [➖] | 001 — Product Discovery & Software Architecture | P0 | 4 | 11 | 11 | 0.1 |
-| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 6 | 0.1 |
-| [➖] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
-| [➖] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 12 | 0.1 |
+| [➖] | 002 — Project Foundation & Developer Experience | P0 | 3 | 11 | 10 | 0.1 |
+| [✅] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
+| [✅] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 13 | 0.1 |
 | [✅] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 18 | 0.3 |
-| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 18 | 0.2 |
+| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 19 | 0.2 |
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
-| [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 19 | 0.2 |
+| [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 24 | 0.2 |
 | [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
-| [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 0 | 0.3 |
-| [➖] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 0 | 0.3 |
-| [➖] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 0 | 0.4 |
-| [➖] | 013 — Cover Letter Generator | P1 | 3 | 18 | 0 | 0.4 |
-| [➖] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 0 | 0.4 |
-| [➖] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 0 | 0.5 |
-| [➖] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 0 | 0.5 |
+| [➖] | 010 — AI Platform & Cost Management | P0 | 6 | 35 | 27 | 0.3 |
+| [✅] | 011 — Job Intelligence & Offer Analysis | P1 | 3 | 15 | 15 | 0.3 |
+| [✅] | 012 — LaTeX Resume Generator | P1 | 5 | 27 | 27 | 0.4 |
+| [✅] | 013 — Cover Letter Generator | P1 | 3 | 18 | 18 | 0.4 |
+| [✅] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 22 | 0.4 |
+| [✅] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 19 | 0.5 |
+| [✅] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 14 | 0.5 |
 | [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 0 | 1.0 |
-| [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 0 | 0.1 → 1.0 |
-| [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 0 | 0.1 → 1.0 |
+| [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 35 | 0.1 → 1.0 |
+| [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 29 | 0.1 → 1.0 |
 
 État du dépôt au dernier relevé : 11 tâches réalisées (EPIC 001 : toutes ses tâches ; l'EPIC reste [➖] tant que le périmètre n'est pas validé par le propriétaire) ; EPIC 002 : TASK-002-01 à 002-03, 002-05 et 002-06 réalisées et 002-11 réalisées ; partielles : 002-04 (pre-commit configuré mais non exécuté), 002-07 (migration en attente d'Alembic, TASK-004-06), 002-08 (workflow CI écrit mais jamais exécuté, sans étape Playwright) ; EPIC 003 : les 18 tâches sont réalisées ; l'EPIC reste [➖] car deux critères ne sont pas vérifiés (design sombre cohérent : validation visuelle du propriétaire ; accessibilité clavier : parcours clavier complet non testé) ; EPIC 007 : réalisé et testé sur connecteurs de test (aucune source réelle encore intégrée) ; la planification des nettoyages (007-19) et le branchement des gestionnaires de tâches sont faits avec l'EPIC 015 ; EPIC 006 : FEATURES 006.1 à 006.3 réalisées (framework, registre, résilience) ; 006.6 en cours : détection par URL, JSON-LD, filtrage, SSRF et tests faits (006-22, 24, 26, 27, 28), connecteurs Greenhouse et Lever implémentés sur fixtures sans appel réel (006-23 partielle : Ashby, SmartRecruiters, Workable restants), 006-25 partielle (robots.txt et refus respectés ; limitation de débit et cache de pages à brancher), 006-21 sans interface ; 006-14/15 en attente de vérification des sources officielles (voir docs/DATA_SOURCES.md), 006-16 BLOCKED (identifiants à fournir par le propriétaire) ; EPIC 004 : 12 tâches sur 13 réalisées, 004-07 partielle (repositories JobOffer et AIUsage seulement, les autres arrivent avec leur EPIC), aucun code applicatif présent.
 

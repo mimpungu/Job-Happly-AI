@@ -47,3 +47,6 @@ test-results/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+# Fichiers d'exécution locaux (PID, journaux des services lancés à la demande)
+.run/

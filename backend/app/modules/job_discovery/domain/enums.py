@@ -5,6 +5,7 @@ class SourceKind(StrEnum):
     OFFICIAL_API = "official_api"
     PUBLIC_ATS = "public_ats"
     PUBLIC_PAGE = "public_page"
+    MANUAL = "manual"
 
 
 class OfferStatus(StrEnum):

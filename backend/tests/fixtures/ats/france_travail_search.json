@@ -1,0 +1,24 @@
+{
+  "resultats": [
+    {
+      "id": "190ABCD",
+      "intitule": "Développeur Python H/F",
+      "description": "Au sein de la direction informatique, vous développez des services Python et SQL pour les équipes métiers.",
+      "dateCreation": "2026-11-02T08:30:00.000Z",
+      "lieuTravail": {"libelle": "75 - PARIS 09", "codePostal": "75009", "commune": "75109"},
+      "entreprise": {"nom": "Exemple Banque"},
+      "typeContrat": "CDI",
+      "salaire": {"libelle": "Annuel de 45000 Euros à 55000 Euros"},
+      "origineOffre": {"origine": "1", "urlOrigine": "https://candidat.francetravail.fr/offres/recherche/detail/190ABCD"}
+    },
+    {
+      "id": "190EFGH",
+      "intitule": "Technicien de maintenance",
+      "description": "Maintenance préventive d'équipements industriels sur site.",
+      "dateCreation": "2026-11-01T10:00:00.000Z",
+      "lieuTravail": {"libelle": "69 - LYON 03"},
+      "typeContrat": "MIS",
+      "origineOffre": {"origine": "2", "urlOrigine": "https://partenaire.example/offre/190EFGH"}
+    }
+  ]
+}

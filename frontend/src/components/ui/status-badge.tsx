@@ -18,6 +18,8 @@ const STATUS_DISPLAY: Record<ApplicationStatus, { label: string; variant: BadgeP
     abandoned: { label: "Abandonnée", variant: "neutral" },
   };
 
+export const statusLabel = (status: ApplicationStatus): string => STATUS_DISPLAY[status].label;
+
 /** Le statut est toujours exprimé par un texte, jamais par la seule couleur. */
 export function StatusBadge({ status }: { status: ApplicationStatus }) {
   const { label, variant } = STATUS_DISPLAY[status];

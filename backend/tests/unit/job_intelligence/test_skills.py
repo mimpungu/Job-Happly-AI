@@ -142,6 +142,23 @@ class TestCritereCompetences:
         assert resultat.score == Decimal("0.5")
         assert resultat.items[0].kind is MatchKind.PARTIAL
 
+    def test_competence_transferable_est_nommee_et_jamais_presentee_comme_maitrisee(self) -> None:
+        req = extract_requirements("Profil recherché\n- MySQL\n")
+
+        resultat = evaluate_skills(profil(skills=("PostgreSQL",)), req, Decimal(1)).result
+
+        detail = resultat.items[0].detail or ""
+        assert "transférable" in detail and "PostgreSQL" in detail
+        assert "sans prétendre maîtriser" in detail
+        assert "transférable(s) à valoriser : MySQL (via PostgreSQL)" in resultat.explanation
+
+    def test_aucune_mention_transferable_sans_competence_proche(self) -> None:
+        req = extract_requirements("Profil recherché\n- Python\n")
+
+        resultat = evaluate_skills(profil(skills=("Python",)), req, Decimal(1)).result
+
+        assert "transférable" not in resultat.explanation
+
     def test_profil_sans_competence_donnees_manquantes_pas_zero(self) -> None:
         resultat = evaluate_skills(
             profil(skills=()), extract_requirements(OFFRE_FR), Decimal(25)
@@ -189,3 +206,22 @@ class TestCritereCompetences:
         resultat = evaluate_skills(profil(), extract_requirements(OFFRE_FR), Decimal(1)).result
 
         assert "pas forcément absente chez vous" in resultat.explanation
+
+
+class TestBruitDesAnnoncesReelles:
+    """Constaté sur de vraies annonces d'éditeurs logiciels (job boards publics)."""
+
+    def test_zones_geographiques_et_mots_courants_ne_sont_pas_des_competences(self) -> None:
+        assert extract_terms("Experience working with teams in the US and EMEA") == []
+        assert extract_terms("This role requires strong communication") == []
+
+    def test_les_abreviations_avec_point_ne_sont_pas_des_jetons_techniques(self) -> None:
+        assert extract_terms("Reinforcement learning (e.g. PPO, GRPO) and etc.") == ["PPO", "GRPO"]
+
+    def test_les_vraies_competences_restent_reconnues(self) -> None:
+        assert extract_terms("Python, Node.js, Docker, AWS") == [
+            "Python",
+            "Node.js",
+            "Docker",
+            "AWS",
+        ]

@@ -1,0 +1,124 @@
+"""Schémas Pydantic pour l'API REST de génération de documents."""
+
+from __future__ import annotations
+
+import uuid
+from datetime import datetime
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+
+from app.modules.document_generation.domain.enums import (
+    LengthTarget,
+    ResumeTemplateStyle,
+    RewriteMode,
+)
+
+
+class GenerateResumeRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    offer_id: uuid.UUID | None = None
+    title: str | None = Field(default=None, max_length=300)
+    target_role: str | None = Field(default=None, max_length=200)
+    language: str = Field(default="fr", pattern=r"^[a-z]{2,3}(-[A-Z]{2})?$")
+    style: ResumeTemplateStyle = ResumeTemplateStyle.CLASSIC
+    length_target: LengthTarget = LengthTarget.AUTO
+    max_experiences: int | None = Field(default=None, ge=1, le=20)
+    custom_summary: str | None = Field(default=None, max_length=2000)
+    rewrite_mode: RewriteMode = RewriteMode.NONE
+    """`local` ou `ai` : reformule les réalisations (jamais sans demande explicite)."""
+
+
+class CompileVersionRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    latex_source: str = Field(min_length=10, max_length=1_000_000)
+    expected_keywords: list[Annotated[str, StringConstraints(max_length=100)]] = Field(
+        default_factory=list, max_length=100
+    )
+
+
+class ATSCheckResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    status: str
+    message: str
+    details: str | None = None
+
+
+class ATSReportResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    score: int
+    passed: bool
+    checks: list[ATSCheckResponse]
+    word_count: int
+    character_count: int
+    page_count: int
+    keywords_found: list[str]
+    keywords_missing: list[str]
+    reading_order_valid: bool
+    accents_preserved: bool
+    single_column: bool
+
+
+class AIRewriteResponse(BaseModel):
+    """Bilan de la reformulation des réalisations (TASK-012-08)."""
+
+    requested: str
+    status: str
+    rewritten: int = 0
+    rejected: int = 0
+    provider: str | None = None
+    model: str | None = None
+    cache_hit: bool = False
+    reason: str | None = None
+
+
+class GenerationMetaResponse(BaseModel):
+    """Règles appliquées à la génération : traçabilité du prompt et des options."""
+
+    origin: str
+    prompt_version: str | None = None
+    style: str | None = None
+    length_target: str | None = None
+    language: str | None = None
+    ai_rewrite: AIRewriteResponse | None = None
+
+
+class DocumentVersionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    version: int
+    created_at: datetime
+    size_bytes: int
+    sha256: str
+    ats_report: ATSReportResponse | None = None
+    generation: GenerationMetaResponse | None = None
+
+
+class GeneratedDocumentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    kind: str
+    title: str
+    language: str
+    offer_id: uuid.UUID | None
+    created_at: datetime
+    versions: list[DocumentVersionResponse] = Field(default_factory=list)
+
+
+class ComparisonResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    document_id: uuid.UUID
+    version_a: int
+    version_b: int
+    diff_latex: str
+    score_a: int | None
+    score_b: int | None
+    size_diff_bytes: int

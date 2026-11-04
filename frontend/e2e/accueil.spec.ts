@@ -6,7 +6,7 @@ test("la racine redirige vers le tableau de bord", async ({ page }) => {
   await page.goto("/");
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Tableau de bord" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /Bon retour/ })).toBeVisible();
 });
 
 test.describe("navigation (bureau)", () => {
@@ -22,7 +22,9 @@ test.describe("navigation (bureau)", () => {
         .click();
 
       await expect(page).toHaveURL(new RegExp(`${href}$`));
-      await expect(page.getByRole("heading", { level: 1, name: label })).toBeVisible();
+      // Le tableau de bord s'ouvre sur un message de bienvenue, les autres pages sur leur titre.
+      const titre = href === "/dashboard" ? /Bon retour/ : label;
+      await expect(page.getByRole("heading", { level: 1, name: titre })).toBeVisible();
       await expect(
         page
           .getByRole("navigation", { name: "Navigation principale" })
