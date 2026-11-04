@@ -9,15 +9,17 @@ import { IconButton } from "@/components/ui/icon-button";
 import { GlobalSearch } from "./global-search";
 import { Logo } from "./logo";
 import { SidebarNav } from "./sidebar-nav";
+import { useTranslations } from "next-intl";
 
 /** Tiroir de navigation pour tablette et mobile (sous le point de rupture `lg`). */
 export function MobileNav() {
+  const t = useTranslations("shell");
   const [open, setOpen] = useState(false);
   const fermer = () => setOpen(false);
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <IconButton aria-label="Ouvrir le menu" variant="circle" className="lg:hidden">
+        <IconButton aria-label={t("openMenu")} variant="circle" className="lg:hidden">
           <Menu className="size-5" aria-hidden="true" />
         </IconButton>
       </Dialog.Trigger>
@@ -30,9 +32,9 @@ export function MobileNav() {
                 <Logo onNavigate={fermer} />
               </div>
             </Dialog.Title>
-            <Dialog.Description className="sr-only">Navigation principale</Dialog.Description>
+            <Dialog.Description className="sr-only">{t("mainNav")}</Dialog.Description>
             <Dialog.Close asChild>
-              <IconButton aria-label="Fermer le menu">
+              <IconButton aria-label={t("closeMenu")}>
                 <X className="size-5" aria-hidden="true" />
               </IconButton>
             </Dialog.Close>

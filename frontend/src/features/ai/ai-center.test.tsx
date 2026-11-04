@@ -32,6 +32,7 @@ const reglages = (extra: Partial<AISettings> = {}): AISettings => ({
 });
 
 const consommation = (extra: Partial<AIUsage> = {}): AIUsage => ({
+  daily_spend: [],
   alerts: [],
   currency: "EUR",
   spent_today: "0",

@@ -21,7 +21,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [✅] | 003 — DESIGN SYSTEM & APPLICATION SHELL | P0 | 3 | 18 | 18 | EPIC 002 |
 | [✅] | 004 — DATABASE & DOMAIN FOUNDATION | P0 | 3 | 13 | 13 | EPIC 002 |
 | [✅] | 005 — CANDIDATE PROFILE & MASTER CV | P0 | 4 | 18 | 18 | EPIC 003, EPIC 004 |
-| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 20 | EPIC 002 |
+| [➖] | 006 — JOB SOURCE CONNECTOR FRAMEWORK | P0 | 6 | 28 | 21 | EPIC 002 |
 | [✅] | 007 — JOB INGESTION, NORMALIZATION & DEDUPLICATION | P0 | 4 | 19 | 19 | EPIC 004, EPIC 006 |
 | [➖] | 008 — JOB SEARCH ENGINE & SEARCH EXPERIENCE | P0 | 5 | 28 | 26 | EPIC 003, EPIC 007 |
 | [✅] | 009 — JOB MATCHING & SCORING ENGINE | P0 | 3 | 17 | 17 | EPIC 005, EPIC 007, EPIC 008 |
@@ -32,7 +32,7 @@ Légende : [✅] réalisé et validé, [➖] non réalisé. L'état fin (`BACKLO
 | [✅] | 014 — APPLICATION TRACKING & CANDIDATE CRM | P1 | 5 | 22 | 22 | EPIC 004, EPIC 008, EPIC 012, EPIC 013 |
 | [✅] | 015 — SCHEDULER, AUTOMATION & NOTIFICATIONS | P1 | 4 | 19 | 19 | EPIC 008, EPIC 009, EPIC 010 |
 | [✅] | 016 — INTERVIEW PREPARATION & CAREER ASSISTANT | P2 | 3 | 14 | 14 | EPIC 014 |
-| [➖] | 017 — INTERNATIONALIZATION & GLOBAL JOB SEARCH | P1 | 5 | 24 | 15 | EPIC 006, EPIC 007, EPIC 008 |
+| [➖] | 017 — INTERNATIONALIZATION & GLOBAL JOB SEARCH | P1 | 5 | 24 | 18 | EPIC 006, EPIC 007, EPIC 008 |
 | [➖] | 018 — SECURITY, PRIVACY & OPERATIONAL EXCELLENCE | P0 | 6 | 37 | 35 | EPIC 002 |
 | [➖] | 019 — QA, RELEASE & PRODUCTION READINESS | P0 | 5 | 30 | 29 | EPIC 002 |
 
@@ -333,7 +333,7 @@ Total : 404 tâches.
 | [✅] | TASK-006-22 | Détecter la source publique d'une entreprise | P0 | DONE | à estimer |
 | [➖] | TASK-006-23 | Connecteurs d'API publiques d'ATS | P0 | BACKLOG | à estimer |
 | [✅] | TASK-006-24 | Extraction des données structurées `JobPosting` (schema.org) | P0 | DONE | à estimer |
-| [➖] | TASK-006-25 | Lecture de pages publiques conditionnée à l'autorisation | P0 | BACKLOG | à estimer |
+| [✅] | TASK-006-25 | Lecture de pages publiques conditionnée à l'autorisation | P0 | DONE | à estimer |
 | [✅] | TASK-006-26 | Filtrer les offres d'entreprise par intitulé de poste | P0 | DONE | à estimer |
 | [✅] | TASK-006-27 | Sécuriser les requêtes sortantes (SSRF) | P0 | DONE | à estimer |
 | [✅] | TASK-006-28 | Tests avec fixtures anonymisées | P0 | DONE | à estimer |
@@ -924,9 +924,9 @@ Total : 404 tâches.
 |---|---|---|---|---|---|
 | [✅] | TASK-017-01 | Définir les langues de l'interface | P1 | DONE | à estimer |
 | [➖] | TASK-017-02 | Ajouter les traductions | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-03 | Gérer les formats de date | P1 | BACKLOG | à estimer |
+| [✅] | TASK-017-03 | Gérer les formats de date | P1 | DONE | à estimer |
 | [✅] | TASK-017-04 | Gérer les devises | P1 | DONE | à estimer |
-| [➖] | TASK-017-05 | Gérer les fuseaux horaires | P1 | BACKLOG | à estimer |
+| [✅] | TASK-017-05 | Gérer les fuseaux horaires | P1 | DONE | à estimer |
 
 ### [➖] FEATURE 017.2 — Référentiel géographique
 
@@ -965,7 +965,7 @@ Total : 404 tâches.
 | [➖] | TASK-017-21 | Intégrer une première source européenne réelle | P1 | BACKLOG | à estimer |
 | [➖] | TASK-017-22 | Étudier une source nord-américaine | P1 | BACKLOG | à estimer |
 | [➖] | TASK-017-23 | Ajouter progressivement les autres fournisseurs | P1 | BACKLOG | à estimer |
-| [➖] | TASK-017-24 | Créer la page Paramètres généraux | P1 | BACKLOG | à estimer |
+| [✅] | TASK-017-24 | Créer la page Paramètres généraux | P1 | DONE | à estimer |
 
 **Critères d'acceptation de l'EPIC**
 

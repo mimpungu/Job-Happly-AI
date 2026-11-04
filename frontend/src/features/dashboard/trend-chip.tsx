@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { formatNumber } from "@/lib/regional";
 
 /**
  * Variation en % par rapport à la période précédente. Sans période de référence (`percent`
@@ -20,9 +21,7 @@ export function TrendChip({
     );
   }
   const signe = percent > 0 ? "+" : percent < 0 ? "−" : "";
-  const nombre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(
-    Math.abs(percent),
-  );
+  const nombre = formatNumber(Math.abs(percent), { maximumFractionDigits: 1 });
   return (
     <span className={cn("flex items-center gap-2", className)}>
       <span

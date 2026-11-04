@@ -10,7 +10,7 @@ from sqlalchemy import ColumnElement, and_, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.job_discovery.domain.enums import OfferState
+from app.modules.job_discovery.domain.enums import OfferState, OfferStatus
 from app.modules.job_discovery.domain.multilingual import expand_term
 from app.modules.job_discovery.domain.search import (
     OfferDetail,
@@ -23,7 +23,9 @@ from app.modules.job_discovery.domain.search import (
     ScoreContext,
     ScoringUnavailableError,
     StateFilter,
+    SuggestionField,
 )
+from app.modules.job_discovery.domain.text import search_words
 from app.modules.job_discovery.infrastructure.models import (
     JobOfferModel,
     JobOfferSourceModel,
@@ -37,11 +39,69 @@ from app.modules.job_intelligence.infrastructure.models import JobMatchScoreMode
 
 _ECHAPPEMENT = "\\"
 
+# Recherche insensible aux accents sans extension PostgreSQL (`unaccent` exige des droits
+# supplémentaires) : `translate` replie les lettres accentuées usuelles, majuscules comprises
+# (le `lower()` de la base ne touche que l'ASCII selon sa locale), des deux côtés de la comparaison.
+_PLIAGE = {
+    **dict.fromkeys("àâäáãåÀÂÄÁÃÅæÆ", "a"),
+    **dict.fromkeys("éèêëÉÈÊË", "e"),
+    **dict.fromkeys("íìîïÍÌÎÏ", "i"),
+    **dict.fromkeys("óòôöõÓÒÔÖÕœŒ", "o"),
+    **dict.fromkeys("úùûüÚÙÛÜ", "u"),
+    **dict.fromkeys("ýÿÝ", "y"),
+    "ç": "c",
+    "Ç": "c",
+    "ñ": "n",
+    "Ñ": "n",
+}
+_PLIAGE_SOURCE = "".join(_PLIAGE)
+_PLIAGE_CIBLE = "".join(_PLIAGE.values())
+
+
+def _plier(terme: str) -> str:
+    """Minuscules sans accents, comme `_replie` côté base ; la ponctuation est conservée."""
+    return "".join(_PLIAGE.get(c, c) for c in terme).lower()
+
+
+def _replie(colonne: Any) -> ColumnElement[str]:
+    return cast(
+        "ColumnElement[str]",
+        func.lower(func.translate(colonne, _PLIAGE_SOURCE, _PLIAGE_CIBLE)),
+    )
+
 
 def _contient(colonne: Any, terme: str) -> ColumnElement[bool]:
-    """`ILIKE '%terme%'` avec échappement : `%` et `_` saisis restent littéraux."""
-    protege = terme.replace(_ECHAPPEMENT, _ECHAPPEMENT * 2).replace("%", r"\%").replace("_", r"\_")
-    return cast("ColumnElement[bool]", colonne.ilike(f"%{protege}%", escape=_ECHAPPEMENT))
+    """Contient `terme`, sans casse ni accents ; `%` et `_` saisis restent littéraux."""
+    protege = (
+        _plier(terme)
+        .replace(_ECHAPPEMENT, _ECHAPPEMENT * 2)
+        .replace("%", r"\%")
+        .replace("_", r"\_")
+    )
+    return cast("ColumnElement[bool]", _replie(colonne).like(f"%{protege}%", escape=_ECHAPPEMENT))
+
+
+_COLONNES_TEXTE = (JobOfferModel.title, JobOfferModel.company_name, JobOfferModel.description)
+
+
+def _condition_texte(texte: str, *, multilingue: bool) -> ColumnElement[bool]:
+    """Chaque mot saisi doit figurer (intitulé, entreprise ou description), dans n'importe quel
+    ordre : « python développeur » trouve « Développeur Python ». En mode multilingue, chaque mot
+    (et la phrase entière) accepte aussi ses équivalents français / anglais."""
+    mots = search_words(texte) or [texte]
+
+    def un_terme(terme: str) -> ColumnElement[bool]:
+        variantes = expand_term(terme) if multilingue else (terme,)
+        return or_(*(_contient(c, v) for v in variantes for c in _COLONNES_TEXTE))
+
+    tous_les_mots = and_(*(un_terme(m) for m in mots))
+    if not multilingue or len(mots) == 1:
+        return tous_les_mots
+    # Phrase connue d'un autre langage (« data analyst » ↔ « analyste de données »).
+    equivalents = [v for v in expand_term(texte) if v != texte]
+    if not equivalents:
+        return tous_les_mots
+    return or_(tous_les_mots, *(_contient(c, v) for v in equivalents for c in _COLONNES_TEXTE))
 
 
 def _tri(tri: OfferSort) -> list[ColumnElement[Any]]:
@@ -66,20 +126,7 @@ def _conditions(owner_id: uuid.UUID, f: OfferFilter) -> list[ColumnElement[bool]
     if f.statuses:
         conditions.append(JobOfferModel.status.in_([s.value for s in f.statuses]))
     if f.text:
-        variantes = expand_term(f.text) if f.multilingual else (f.text,)
-        conditions.append(
-            or_(
-                *(
-                    _contient(colonne, v)
-                    for v in variantes
-                    for colonne in (
-                        JobOfferModel.title,
-                        JobOfferModel.company_name,
-                        JobOfferModel.description,
-                    )
-                )
-            )
-        )
+        conditions.append(_condition_texte(f.text, multilingue=f.multilingual))
     for mot in f.keywords:
         variantes = expand_term(mot) if f.multilingual else (mot,)
         conditions.append(
@@ -195,9 +242,38 @@ def _jointure_score(requete: Any, owner_id: uuid.UUID, contexte: ScoreContext | 
     )
 
 
+_COLONNE_SUGGESTION: dict[SuggestionField, Any] = {
+    SuggestionField.TITLE: JobOfferModel.title,
+    SuggestionField.COMPANY: JobOfferModel.company_name,
+    SuggestionField.CITY: JobOfferModel.location,
+}
+
+
 class SqlOfferQueryRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def suggest(
+        self, *, owner_id: uuid.UUID, field: SuggestionField, prefix: str, limit: int
+    ) -> list[str]:
+        """Valeurs déjà présentes dans les offres actives, les plus fréquentes d'abord.
+
+        Jamais de valeur inventée : on ne propose que ce qui existe dans les offres collectées.
+        """
+        colonne = _COLONNE_SUGGESTION[field]
+        requete = (
+            select(colonne, func.count().label("total"))
+            .where(
+                JobOfferModel.owner_id == owner_id,
+                JobOfferModel.status == OfferStatus.ACTIVE.value,
+                colonne.is_not(None),
+                _contient(colonne, prefix),
+            )
+            .group_by(colonne)
+            .order_by(func.count().desc(), colonne.asc())
+            .limit(limit)
+        )
+        return [valeur for valeur, _ in (await self._session.execute(requete)).all()]
 
     async def search(
         self,

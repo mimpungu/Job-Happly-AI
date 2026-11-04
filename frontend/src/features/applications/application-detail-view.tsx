@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { ApiError } from "@/services/api-client";
 
 import { ContactsPanel } from "./contacts-panel";
+import { DeleteApplicationButton } from "./delete-application-button";
 import { DossierPanel } from "./dossier-panel";
 import { FollowUpPanel } from "./follow-up-panel";
 import { formatDateTime } from "./format";
@@ -68,6 +69,9 @@ export function ApplicationDetailView({ id }: { id: string }) {
             {c.offer?.title ?? "Offre introuvable"}
           </h1>
           <StatusBadge status={c.status} />
+          <span className="ml-auto">
+            <DeleteApplicationButton applicationId={c.id} />
+          </span>
         </div>
         <p className="text-foreground-muted">
           {c.offer?.company_name ?? "Entreprise inconnue"}

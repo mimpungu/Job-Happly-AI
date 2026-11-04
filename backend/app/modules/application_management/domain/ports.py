@@ -77,6 +77,13 @@ class ApplicationRepositoryPort(ABC):
         """Change le statut ; les dates déjà connues ne sont jamais effacées."""
 
     @abstractmethod
+    async def delete(self, owner_id: uuid.UUID, application_id: uuid.UUID) -> None:
+        """Supprime la candidature avec son historique, ses contacts et ses documents associés.
+
+        L'offre n'est jamais supprimée : seule la décision de la suivre est annulée.
+        """
+
+    @abstractmethod
     async def update_follow_up(
         self, owner_id: uuid.UUID, application_id: uuid.UUID, follow_up_at: datetime | None
     ) -> None:

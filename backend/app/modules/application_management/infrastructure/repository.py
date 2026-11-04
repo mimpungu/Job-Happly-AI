@@ -208,6 +208,12 @@ class SQLAlchemyApplicationRepository(ApplicationRepositoryPort):
             model.response_received_at = response_received_at
         await self._session.flush()
 
+    async def delete(self, owner_id: uuid.UUID, application_id: uuid.UUID) -> None:
+        model = await self._model(owner_id, application_id)
+        # Historique, contacts et documents associés partent en cascade (clés étrangères).
+        await self._session.delete(model)
+        await self._session.flush()
+
     async def update_follow_up(
         self, owner_id: uuid.UUID, application_id: uuid.UUID, follow_up_at: datetime | None
     ) -> None:

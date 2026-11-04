@@ -15,7 +15,10 @@
     "title": "Paramètres généraux",
     "intro": "Langue, pays, devise et fuseau horaire. Ces choix servent de valeurs par défaut ; rien n'est converti ni deviné.",
     "language": "Langue de l'interface",
-    "languageNames": { "fr": "Français", "en": "English" },
+    "languageNames": {
+      "fr": "Français",
+      "en": "English"
+    },
     "country": "Pays de recherche principal",
     "currency": "Devise",
     "timezone": "Fuseau horaire",
@@ -33,6 +36,22 @@
     "save": "Enregistrer",
     "saved": "Préférences enregistrées.",
     "loadError": "Impossible de charger vos préférences : {message}",
-    "loading": "Chargement des préférences"
+    "loading": "Chargement des préférences",
+    "profileLink": "Modifier mon profil (Espace CV)"
+  },
+  "shell": {
+    "profile": "Profil",
+    "myProfile": "Mon profil",
+    "settings": "Paramètres",
+    "notifications": "Notifications",
+    "noNotification": "Aucune notification.",
+    "globalSearch": "Recherche globale",
+    "searchPlaceholder": "Rechercher une offre…",
+    "lightTheme": "Passer au thème clair",
+    "darkTheme": "Passer au thème sombre",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "mainNav": "Navigation principale",
+    "back": "Revenir à la vue précédente"
   }
 }

@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
@@ -379,3 +379,22 @@ class SqlAIUsageReader:
             .group_by(AIUsageModel.provider)
         )
         return {p: Decimal(c) for p, c in (await self._session.execute(requete)).all()}
+
+    async def daily_costs(
+        self, owner_id: uuid.UUID, since: datetime, until: datetime
+    ) -> dict[date, Decimal]:
+        """Dépense par jour (UTC) sur [since, until[ ; les jours sans appel facturé sont absents."""
+        cout = func.coalesce(AIUsageModel.actual_cost, AIUsageModel.estimated_cost)
+        jour = func.date(func.timezone("UTC", AIUsageModel.created_at))
+        requete = (
+            select(jour, func.coalesce(func.sum(cout), 0))
+            .where(
+                AIUsageModel.owner_id == owner_id,
+                AIUsageModel.created_at >= since,
+                AIUsageModel.created_at < until,
+                AIUsageModel.outcome.not_in(_RESULTATS_NON_FACTURES),
+            )
+            .group_by(jour)
+            .order_by(jour)
+        )
+        return {j: Decimal(c) for j, c in (await self._session.execute(requete)).all()}

@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, Funnel, MapPin, Search } from "lucide-react";
+import { Building2, BriefcaseBusiness, Funnel, MapPin, Search } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import type { OfferFilters } from "@/types/jobs";
 
+import { SuggestInput } from "./suggest-input";
 import { DEFAULT_FILTERS, EMPLOYMENT_TYPES, REMOTE_TYPES } from "./filters";
 
 const SCORES_MINIMAUX = [50, 60, 70, 80].map((n) => ({
@@ -27,7 +28,6 @@ export interface SearchFormProps {
 export function countAdvancedFilters(filters: OfferFilters): number {
   return (
     [
-      filters.company,
       filters.country,
       filters.remoteType,
       filters.salaryMin,
@@ -83,13 +83,28 @@ export function SearchForm({ filters, onSubmit, onSaveSearch }: SearchFormProps)
       >
         <label className="flex flex-[2] items-center gap-2 px-2 md:px-0">
           <Search className="size-5 shrink-0 text-foreground-muted" aria-hidden="true" />
-          <input
+          <SuggestInput
+            bare
+            field="title"
             aria-label="Intitulé ou mot-clé"
-            placeholder="Offre, entreprise ou mot-clé"
+            placeholder="Poste ou mot-clé"
             className={champBarre}
             value={draft.text}
             maxLength={200}
-            onChange={(e) => maj("text", e.target.value)}
+            onValueChange={(v) => maj("text", v)}
+          />
+        </label>
+        <label className="flex flex-1 items-center gap-2 border-t border-border px-2 md:border-l md:border-t-0 md:px-4">
+          <Building2 className="size-5 shrink-0 text-foreground-muted" aria-hidden="true" />
+          <SuggestInput
+            bare
+            field="company"
+            aria-label="Entreprise"
+            placeholder="Entreprise (ex. Datadog)"
+            className={champBarre}
+            value={draft.company}
+            maxLength={200}
+            onValueChange={(v) => maj("company", v)}
           />
         </label>
         <label className="flex flex-1 items-center gap-2 border-t border-border px-2 md:border-l md:border-t-0 md:px-4">
@@ -110,13 +125,15 @@ export function SearchForm({ filters, onSubmit, onSaveSearch }: SearchFormProps)
         </label>
         <label className="flex flex-1 items-center gap-2 border-t border-border px-2 md:border-l md:border-t-0 md:px-4">
           <MapPin className="size-5 shrink-0 text-foreground-muted" aria-hidden="true" />
-          <input
+          <SuggestInput
+            bare
+            field="city"
             aria-label="Ville"
             placeholder="Ville, département…"
             className={champBarre}
             value={draft.city}
             maxLength={200}
-            onChange={(e) => maj("city", e.target.value)}
+            onValueChange={(v) => maj("city", v)}
           />
         </label>
         <Button type="submit" className="md:rounded-full">
@@ -147,16 +164,6 @@ export function SearchForm({ filters, onSubmit, onSaveSearch }: SearchFormProps)
           >
             <form aria-label="Filtres" onSubmit={appliquer} className="flex flex-col gap-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Entreprise" hint="Nom d'une entreprise déjà collectée.">
-                  {(champ) => (
-                    <Input
-                      {...champ}
-                      value={draft.company}
-                      maxLength={200}
-                      onChange={(e) => maj("company", e.target.value)}
-                    />
-                  )}
-                </Field>
                 <Field label="Pays" hint="Codes ISO séparés par des virgules, ex. FR, CA">
                   {(champ) => (
                     <Input

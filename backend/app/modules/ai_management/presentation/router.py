@@ -136,7 +136,16 @@ class AlertView(BaseModel):
     limit: Decimal
 
 
+class DailySpendView(BaseModel):
+    date: str
+    """Jour (UTC) au format `AAAA-MM-JJ`."""
+    cost: Decimal
+    """Dépense facturée ce jour-là, `0` si aucun appel payant."""
+
+
 class UsageResponse(BaseModel):
+    daily_spend: list[DailySpendView]
+    """Un point par jour, du 1er du mois à aujourd'hui, jours sans dépense compris (jamais omis)."""
     alerts: list[AlertView]
     """Plus haut seuil atteint par période (jour, mois) : à afficher tant qu'il est franchi."""
     currency: str
@@ -290,7 +299,16 @@ async def get_usage(session: Session, owner_id: Owner, limit: int = 25) -> Usage
         return None if plafond is None else (depense / plafond * 100).quantize(Decimal("0.1"))
 
     alertes = active_alerts(limites, spent_today=aujourdhui, spent_month=ce_mois)
+    par_jour = await lecteur.daily_costs(owner_id, debut_mois, jusque)
+    jours = (maintenant.date() - debut_mois.date()).days + 1
     return UsageResponse(
+        daily_spend=[
+            DailySpendView(
+                date=(debut_mois.date() + timedelta(days=i)).isoformat(),
+                cost=par_jour.get(debut_mois.date() + timedelta(days=i), Decimal(0)),
+            )
+            for i in range(jours)
+        ],
         alerts=[
             AlertView(
                 period=a.period,

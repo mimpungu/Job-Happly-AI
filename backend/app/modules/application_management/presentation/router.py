@@ -10,7 +10,7 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.core.api.dependencies import SessionDep, get_owner_id
 from app.modules.application_management.domain.entities import (
@@ -204,6 +204,17 @@ async def get_application_detail(
     service = build_application_tracking_service(session)
     app = await service.get_application(owner_id=owner_id, application_id=application_id)
     return _detail(app, await service.describe_documents(app))
+
+
+@applications_router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_application(
+    application_id: uuid.UUID, session: SessionDep, owner_id: Owner
+) -> Response:
+    """Retire une candidature suivie, avec son historique ; l'offre reste dans la recherche."""
+    await build_application_tracking_service(session).delete_application(
+        owner_id=owner_id, application_id=application_id
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @applications_router.patch("/{application_id}/status", response_model=ApplicationDetailResponse)

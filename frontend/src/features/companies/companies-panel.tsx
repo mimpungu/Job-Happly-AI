@@ -17,6 +17,7 @@ import {
   useRunCollection,
   useSetCompanyEnabled,
 } from "./use-companies";
+import { formatDateParts } from "@/lib/regional";
 
 const ATS_LABELS: Record<string, string> = { greenhouse: "Greenhouse", lever: "Lever" };
 
@@ -34,7 +35,11 @@ export function resumeCollecte(rapport: CollectionReport): string {
   return echecs > 0 ? `${base} · ${pluriel(echecs, "source")} en échec` : base;
 }
 
-function Recherche() {
+/**
+ * Recherche du site carrières public d'une entreprise (Greenhouse, Lever) puis suivi en un clic.
+ * `onFollowed` permet à l'appelant d'enchaîner (par exemple lancer la collecte de ses offres).
+ */
+export function CompanyFinder({ onFollowed }: { onFollowed?: () => void }) {
   const [nom, setNom] = useState("");
   const [interroge, setInterroge] = useState("");
   const decouvrir = useDiscoverCompany();
@@ -56,9 +61,14 @@ function Recherche() {
       },
       {
         onSuccess: () => {
-          toast.success("Entreprise ajoutée. Lancez la collecte pour récupérer ses offres.");
+          toast.success(
+            onFollowed
+              ? "Entreprise ajoutée : récupération de ses offres…"
+              : "Entreprise ajoutée. Lancez la collecte pour récupérer ses offres.",
+          );
           decouvrir.reset();
           setNom("");
+          onFollowed?.();
         },
         onError: (e) => toast.error(e.message),
       },
@@ -232,7 +242,7 @@ function Liste({ entreprises }: { entreprises: Company[] }) {
               <span className="text-xs text-foreground-muted">
                 {e.ats_kind ? (ATS_LABELS[e.ats_kind] ?? e.ats_kind) : "Source inconnue"}
                 {e.last_success_at
-                  ? ` · dernière collecte réussie le ${new Date(e.last_success_at).toLocaleString("fr-FR")}`
+                  ? ` · dernière collecte réussie le ${formatDateParts(new Date(e.last_success_at), { dateStyle: "short", timeStyle: "medium" })}`
                   : ""}
               </span>
             </div>
@@ -314,7 +324,7 @@ export function CompaniesPanel() {
           débit réduit et sans contournement. Aucune liste d&apos;entreprises n&apos;est imposée :
           cherchez celles qui vous intéressent.
         </p>
-        <Recherche />
+        <CompanyFinder />
         <fieldset className="flex flex-wrap items-end gap-4">
           <legend className="mb-2 text-sm font-medium text-foreground">
             Filtres de la collecte

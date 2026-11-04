@@ -1,5 +1,10 @@
 import { Badge } from "@/components/ui/badge";
-import type { GeographicCoverage, SourceSearchResult } from "@/types/sources";
+import { Button } from "@/components/ui/button";
+import type { CompanySearch, GeographicCoverage, SourceSearchResult } from "@/types/sources";
+
+const ATS: Record<string, string> = { greenhouse: "Greenhouse", lever: "Lever" };
+
+export type CandidateBoard = CompanySearch["boards"][number];
 
 const ERREURS: Record<string, string> = {
   SourceUnavailableError: "source indisponible",
@@ -36,9 +41,96 @@ function Couverture({ couverture }: { couverture: GeographicCoverage }) {
   );
 }
 
+/**
+ * Ce qui a été retrouvé pour l'entreprise tapée dans la recherche. Rien n'est caché : un site
+ * suivi automatiquement est annoncé, un doute est soumis à l'utilisateur, un échec est expliqué.
+ */
+function Entreprise({
+  recherche,
+  onFollowBoard,
+}: {
+  recherche: CompanySearch;
+  onFollowBoard?: (board: CandidateBoard) => void;
+}) {
+  const nom = recherche.query;
+  switch (recherche.status) {
+    case "followed":
+      return (
+        <p role="status" className="text-sm text-foreground">
+          Site carrières de <strong>{recherche.followed_name ?? nom}</strong> trouvé et ajouté à vos
+          entreprises suivies ; seules ses offres ont été lues. Vous pouvez la retirer dans les
+          paramètres.
+        </p>
+      );
+    case "tracked":
+      return (
+        <p role="status" className="text-sm text-foreground-muted">
+          Recherche limitée à l&apos;entreprise suivie « {nom} ».
+        </p>
+      );
+    case "disabled":
+      return (
+        <p role="status" className="text-sm text-foreground">
+          « {nom} » est dans vos entreprises suivies mais désactivée : réactivez-la dans les
+          paramètres pour lire ses offres.
+        </p>
+      );
+    case "not_found":
+      return (
+        <p role="status" className="text-sm text-foreground">
+          Aucun site carrières public (Greenhouse ou Lever) trouvé pour « {nom} ». Cela ne veut pas
+          dire que l&apos;entreprise n&apos;a pas d&apos;offres : elle utilise peut-être un autre
+          outil, que l&apos;application ne sait pas encore lire. Vérifiez l&apos;orthographe du nom.
+        </p>
+      );
+    case "candidates":
+      return (
+        <div role="status" className="flex flex-col gap-2 text-sm">
+          <p className="text-foreground">
+            Des sites carrières existent mais leur nom ne correspond pas clairement à « {nom} » :
+            confirmez avant de suivre.
+          </p>
+          <ul className="flex flex-col gap-2">
+            {recherche.boards.map((b) => (
+              <li
+                key={`${b.ats_kind}:${b.token}`}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border px-3 py-2"
+              >
+                <span className="text-foreground">
+                  {b.board_name ?? b.token} · {ATS[b.ats_kind] ?? b.ats_kind} · {b.offer_count}{" "}
+                  offre
+                  {b.offer_count > 1 ? "s" : ""}
+                </span>
+                {onFollowBoard ? (
+                  <Button
+                    variant="secondary"
+                    onClick={() => onFollowBoard(b)}
+                    aria-label={`Suivre ${b.board_name ?? b.token} (${ATS[b.ats_kind] ?? b.ats_kind})`}
+                  >
+                    Suivre
+                  </Button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+  }
+}
+
 /** Sources interrogées par la dernière recherche : chaque échec est nommé, jamais masqué. */
-export function QueriedSources({ result }: { result: SourceSearchResult }) {
+export function QueriedSources({
+  result,
+  onFollowBoard,
+}: {
+  result: SourceSearchResult;
+  onFollowBoard?: (board: CandidateBoard) => void;
+}) {
+  const entreprise = result.company_search ? (
+    <Entreprise recherche={result.company_search} onFollowBoard={onFollowBoard} />
+  ) : null;
   if (!result.queried) {
+    if (entreprise) return <section aria-label="Sources interrogées">{entreprise}</section>;
     return (
       <p role="status" className="text-sm text-foreground-muted">
         Aucune source activée : seules les offres déjà collectées sont affichées. Suivez des
@@ -70,6 +162,7 @@ export function QueriedSources({ result }: { result: SourceSearchResult }) {
           </li>
         ))}
       </ul>
+      {entreprise}
       {result.coverage ? <Couverture couverture={result.coverage} /> : null}
     </section>
   );

@@ -25,7 +25,23 @@ export interface GeographicCoverage {
   sources_without_declared_countries: string[];
 }
 
+export interface CompanySearch {
+  /** `tracked`, `followed`, `candidates`, `not_found` ou `disabled`. */
+  status: "tracked" | "followed" | "candidates" | "not_found" | "disabled";
+  query: string;
+  followed_name: string | null;
+  boards: {
+    ats_kind: string;
+    token: string;
+    careers_url: string;
+    board_name: string | null;
+    offer_count: number;
+  }[];
+}
+
 export interface SourceSearchResult {
+  /** Présent quand la recherche porte sur une entreprise précise. */
+  company_search?: CompanySearch | null;
   coverage?: GeographicCoverage;
   /** Au moins une source interrogée ; sinon les résultats viennent de la base locale seule. */
   queried: boolean;

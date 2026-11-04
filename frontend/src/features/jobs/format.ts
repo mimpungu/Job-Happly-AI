@@ -1,6 +1,7 @@
 import type { OfferSummary } from "@/types/jobs";
 
 import { EMPLOYMENT_TYPES, REMOTE_TYPES } from "./filters";
+import { formatDateParts, formatNumber, getTimeZone } from "@/lib/regional";
 
 const NON_RENSEIGNE = "Non renseigné";
 
@@ -21,18 +22,18 @@ export function formatSalary(
 ): string {
   const { salary_min: min, salary_max: max, salary_currency: devise } = offre;
   if (min === null && max === null) return NON_RENSEIGNE;
-  const nombre = (v: string) =>
-    new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(Number(v));
+  const nombre = (v: string) => formatNumber(Number(v), { maximumFractionDigits: 0 });
   const suffixe = devise ? ` ${devise}` : "";
   if (min !== null && max !== null && min !== max)
     return `${nombre(min)} – ${nombre(max)}${suffixe}`;
   return `${nombre((min ?? max) as string)}${suffixe}`;
 }
 
-/** Date au format français ; l'heure est ignorée car la source ne la garantit pas. */
+/** Date au format de la langue choisie ; l'heure est ignorée car la source ne la garantit pas. */
 export function formatDate(iso: string | null): string {
   if (!iso) return NON_RENSEIGNE;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return NON_RENSEIGNE;
-  return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "UTC" }).format(date);
+  // Sans fuseau choisi, UTC : la source ne garantit pas l'heure, on évite de décaler le jour.
+  return formatDateParts(date, { dateStyle: "medium", timeZone: getTimeZone() ?? "UTC" });
 }

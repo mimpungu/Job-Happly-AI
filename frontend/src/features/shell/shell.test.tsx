@@ -1,24 +1,31 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, render, screen, within } from "@testing-library/react";
+import { act, render as rtlRender, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const push = vi.fn();
+const mockBack = vi.fn();
 let pathname = "/jobs";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => pathname,
-  useRouter: () => ({ push }),
+  useRouter: () => ({ push, back: mockBack }),
 }));
 
 import { IntlWrapper } from "@/i18n/test-utils";
 
 import { GlobalSearch } from "./global-search";
 import { Header } from "./header";
+import { BackButton } from "./back-button";
 import { PageHeading } from "./page-heading";
 import { SidebarNav } from "./sidebar-nav";
 import { THEME_STORAGE_KEY } from "./theme";
 import { ThemeToggle } from "./theme-toggle";
+
+/** Tout composant du cadre est rendu avec les traductions, comme dans l'application. */
+function render(ui: React.ReactElement, options?: Parameters<typeof rtlRender>[1]) {
+  return rtlRender(ui, { wrapper: IntlWrapper, ...options });
+}
 
 function avecClient(ui: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -272,5 +279,50 @@ describe("SidebarNav : langue de l'interface", () => {
       expect(en[messageKey], `traduction anglaise manquante : ${messageKey}`).toBeTruthy();
       expect(fr[messageKey]).toBe(label);
     }
+  });
+});
+
+describe("BackButton", () => {
+  const origine = Object.getOwnPropertyDescriptor(window.history, "length");
+
+  afterEach(() => {
+    if (origine) Object.defineProperty(window.history, "length", origine);
+  });
+
+  it("revient à la vue précédente quand il y a un historique", async () => {
+    Object.defineProperty(window.history, "length", { configurable: true, value: 3 });
+    mockBack.mockClear();
+    render(<BackButton />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Revenir à la vue précédente" }));
+
+    expect(mockBack).toHaveBeenCalledOnce();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("retombe sur le tableau de bord sans historique", async () => {
+    Object.defineProperty(window.history, "length", { configurable: true, value: 1 });
+    mockBack.mockClear();
+    render(<BackButton />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Revenir à la vue précédente" }));
+
+    expect(push).toHaveBeenCalledWith("/dashboard");
+    expect(mockBack).not.toHaveBeenCalled();
+  });
+
+  it("n'apparaît pas sur le tableau de bord", () => {
+    pathname = "/dashboard";
+    render(<BackButton />);
+
+    expect(screen.queryByRole("button", { name: "Revenir à la vue précédente" })).toBeNull();
+  });
+
+  it("est traduit en anglais", () => {
+    render(<BackButton />, {
+      wrapper: ({ children }) => <IntlWrapper locale="en">{children}</IntlWrapper>,
+    });
+
+    expect(screen.getByRole("button", { name: "Back to the previous view" })).toBeInTheDocument();
   });
 });

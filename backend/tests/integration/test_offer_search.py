@@ -141,6 +141,32 @@ class TestFiltres:
         with pytest.raises(ValueError, match="devise"):
             OfferFilter(salary_min=Decimal(50000))
 
+    async def test_les_mots_saisis_se_cherchent_dans_n_importe_quel_ordre(
+        self, session: AsyncSession, user_id: uuid.UUID, repo: SqlOfferQueryRepository
+    ) -> None:
+        voulue = await _offre(session, user_id, title="Développeur Python senior")
+        await _offre(session, user_id, title="Développeur Java")
+
+        trouvees = await _ids(repo, user_id, text="python développeur")
+        phrase_inversee = await _ids(repo, user_id, text="senior python")
+        absent = await _ids(repo, user_id, text="python rust")
+
+        # Avant : la saisie était une phrase exacte, « python développeur » ne donnait rien.
+        assert trouvees == [voulue.id] and phrase_inversee == [voulue.id]
+        assert absent == []
+
+    async def test_la_recherche_ignore_les_accents_et_la_casse(
+        self, session: AsyncSession, user_id: uuid.UUID, repo: SqlOfferQueryRepository
+    ) -> None:
+        offre = await _offre(
+            session, user_id, title="Ingénieur Données", company_name="Société Générale"
+        )
+
+        assert await _ids(repo, user_id, text="ingenieur donnees") == [offre.id]
+        assert await _ids(repo, user_id, text="INGÉNIEUR") == [offre.id]
+        assert await _ids(repo, user_id, company="societe generale") == [offre.id]
+        assert await _ids(repo, user_id, text="ingenieurs") == []  # pas de racinisation
+
     async def test_filtre_experience_garde_les_offres_dont_l_exigence_est_inconnue(
         self, session: AsyncSession, user_id: uuid.UUID, repo: SqlOfferQueryRepository
     ) -> None:

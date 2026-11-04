@@ -176,6 +176,7 @@ class CollectionService:
         keep: CollectionFilter | None = None,
         extra_factory: ExtraFactory | None = None,
         criteria: SearchCriteria | None = None,
+        only_company_ids: frozenset[uuid.UUID] | None = None,
     ) -> CollectionReport:
         """Collecte les entreprises activées, plus d'éventuelles sources de recherche.
 
@@ -186,7 +187,7 @@ class CollectionService:
         keep = keep or CollectionFilter()
         debut = self._clock()
         async with self._client_factory() as client:
-            cibles = await self._preparer(owner_id, client)
+            cibles = await self._preparer(owner_id, client, only_company_ids)
             recherche = criteria or SearchCriteria(whole_catalogue=True)
             # Seules les sources dont la couverture correspond à la recherche sont interrogées.
             compatibles = [
@@ -230,13 +231,20 @@ class CollectionService:
             companies=resultats,
         )
 
-    async def _preparer(self, owner_id: uuid.UUID, client: httpx.AsyncClient) -> list[_Cible]:
+    async def _preparer(
+        self,
+        owner_id: uuid.UUID,
+        client: httpx.AsyncClient,
+        only_company_ids: frozenset[uuid.UUID] | None = None,
+    ) -> list[_Cible]:
         cibles: list[_Cible] = []
         async with self._uow.begin() as session:
             sources = SqlJobSourceRepository(session)
             entreprises = await SqlTargetCompanyRepository(session).list(owner_id)
             for entreprise in entreprises:
                 if not entreprise.enabled:
+                    continue
+                if only_company_ids is not None and entreprise.id not in only_company_ids:
                     continue
                 connecteur = connector_for(entreprise, client)
                 if connecteur is None:

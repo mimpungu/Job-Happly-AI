@@ -3,9 +3,11 @@
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 
 /** Recherche globale : envoie vers la recherche d'offres ; « / » place le curseur dans le champ. */
 export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
+  const t = useTranslations("shell");
   const router = useRouter();
   const champ = useRef<HTMLInputElement>(null);
   const [terme, setTerme] = useState("");
@@ -44,9 +46,9 @@ export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
       <input
         ref={champ}
         type="search"
-        aria-label="Recherche globale"
+        aria-label={t("globalSearch")}
         aria-keyshortcuts="/"
-        placeholder="Rechercher une offre…"
+        placeholder={t("searchPlaceholder")}
         value={terme}
         onChange={(e) => setTerme(e.target.value)}
         className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-foreground-muted [&::-webkit-search-cancel-button]:hidden"

@@ -1,3 +1,5 @@
+import { formatDateParts } from "@/lib/regional";
+
 export function formatSize(octets: number): string {
   return octets < 1024 * 1024
     ? `${Math.max(1, Math.round(octets / 1024))} Ko`
@@ -8,5 +10,5 @@ export function formatDate(iso: string): string {
   const date = new Date(iso);
   return Number.isNaN(date.getTime())
     ? "Date inconnue"
-    : new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(date);
+    : formatDateParts(date, { dateStyle: "medium", timeStyle: "short" });
 }

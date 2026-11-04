@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,11 @@ function Formulaire({ initial }: { initial: PreferencesView }) {
   return (
     <form aria-label={t("title")} onSubmit={soumettre} className="flex flex-col gap-4">
       <p className="text-sm text-foreground-muted">{t("intro")}</p>
+      <p className="text-sm">
+        <Link href="/cv-studio" className="underline">
+          {t("profileLink")}
+        </Link>
+      </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t("language")}>
           {({ id }) => (

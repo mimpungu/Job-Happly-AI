@@ -113,6 +113,11 @@ class ApplicationTrackingService:
         """Fiche complète d'une candidature (TASK-014-14)."""
         return await self._load(owner_id, application_id)
 
+    async def delete_application(self, *, owner_id: uuid.UUID, application_id: uuid.UUID) -> None:
+        """Retire une candidature suivie (par exemple ajoutée par erreur). L'offre est conservée."""
+        await self._load(owner_id, application_id, for_update=True)
+        await self._repository.delete(owner_id, application_id)
+
     async def _load(
         self, owner_id: uuid.UUID, application_id: uuid.UUID, *, for_update: bool = False
     ) -> ApplicationAggregate:

@@ -6,9 +6,9 @@ import { buttonVariants } from "@/components/ui/button";
 import type { TopMatch } from "@/types/applications";
 
 import { Monogram } from "./monogram";
+import { formatNumber } from "@/lib/regional";
 
-const formatScore = (score: number) =>
-  new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(score);
+const formatScore = (score: number) => formatNumber(score, { maximumFractionDigits: 1 });
 
 export interface TopMatchesCardProps {
   matches: readonly TopMatch[];

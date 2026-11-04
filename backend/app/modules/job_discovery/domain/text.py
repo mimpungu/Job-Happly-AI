@@ -23,6 +23,19 @@ def normalize_text(valeur: str) -> str:
     return " ".join(re.sub(r"[^\w]+", " ", sans_accents.casefold()).split())
 
 
+_SEPARATEURS_DE_MOTS = re.compile(r"[\s\-_/]+")
+MAX_MOTS_RECHERCHE = 10
+
+
+def search_words(saisie: str) -> list[str]:
+    """Mots d'une saisie de recherche : « Data-analyst » donne `Data` et `analyst`.
+
+    Seuls les espaces, tirets, soulignés et barres séparent : « C++ » ou « Node.js » restent
+    entiers. Même découpage pour la base locale et pour la lecture des sources.
+    """
+    return [m for m in _SEPARATEURS_DE_MOTS.split(saisie.strip()) if m][:MAX_MOTS_RECHERCHE]
+
+
 class _Extracteur(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)

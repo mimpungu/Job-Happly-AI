@@ -125,6 +125,15 @@ describe("GeneralSettingsPanel", () => {
     );
   });
 
+  it("renvoie vers le profil, dans la langue choisie", async () => {
+    simuler();
+    afficher();
+
+    expect(
+      await screen.findByRole("link", { name: "Modifier mon profil (Espace CV)" }),
+    ).toHaveAttribute("href", "/cv-studio");
+  });
+
   it("retrouve la langue enregistrée au montage", async () => {
     localStorage.setItem("happly-locale", "en");
     simuler({ ...PREFS, ui_language: "en" });

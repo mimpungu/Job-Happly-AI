@@ -56,6 +56,14 @@ class OfferSort(StrEnum):
     SCORE_DESC = "score_desc"
 
 
+class SuggestionField(StrEnum):
+    """Champs de recherche qui proposent des valeurs déjà présentes dans les offres."""
+
+    TITLE = "title"
+    COMPANY = "company"
+    CITY = "city"
+
+
 class StateFilter(StrEnum):
     """Visibilité selon l'état posé par l'utilisateur ; ignorées masquées par défaut."""
 

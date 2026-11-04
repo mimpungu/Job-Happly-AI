@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { DataSource } from "@/types/sources";
 
 import { useDataSources } from "./use-sources";
+import { formatDateParts } from "@/lib/regional";
 
 const STATUTS: Record<DataSource["status"], { label: string; variant: BadgeProps["variant"] }> = {
   ok: { label: "Opérationnelle", variant: "success" },
@@ -16,7 +17,7 @@ const STATUTS: Record<DataSource["status"], { label: string; variant: BadgeProps
 };
 
 const date = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "—";
+  iso ? formatDateParts(new Date(iso), { dateStyle: "short", timeStyle: "short" }) : "—";
 
 /** État de chaque source : dernier accès, dernière erreur, offres et configuration requise. */
 export function DataSourcesPanel() {

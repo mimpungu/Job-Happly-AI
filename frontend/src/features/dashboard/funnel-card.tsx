@@ -10,8 +10,9 @@ import type { Funnel } from "@/types/applications";
 
 import { DashCard } from "./dash-card";
 import { biggestDrop, funnelStages, niceTicks, type FunnelStage } from "./funnel";
+import { formatNumber } from "@/lib/regional";
 
-const nombre = (n: number) => new Intl.NumberFormat("fr-FR").format(n);
+const nombre = (n: number) => formatNumber(n);
 
 // Dégradé et hachures : dérogation à l'interdiction des dégradés validée par le propriétaire
 // pour ce graphique (ADR-0017). Les couleurs viennent des jetons, donc des deux thèmes.

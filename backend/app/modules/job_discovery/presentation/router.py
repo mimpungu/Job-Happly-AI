@@ -28,6 +28,7 @@ from app.modules.job_discovery.domain.search import (
     OfferNotFoundError,
     OfferPage,
     OfferSummary,
+    SuggestionField,
 )
 from app.modules.job_discovery.infrastructure.offer_queries import SqlOfferQueryRepository
 from app.modules.job_discovery.infrastructure.saved_search_repository import (
@@ -96,6 +97,20 @@ async def list_offers(
         owner_id=owner_id, offer_filter=offer_filter, score_context=contexte
     )
     return OfferPageResponse.from_page(page)
+
+
+@router.get("/offers/suggestions", response_model=list[str])
+async def suggest_values(
+    session: Session,
+    owner_id: Owner,
+    field: Annotated[SuggestionField, Query()],
+    q: Annotated[str, Query(min_length=1, max_length=100)],
+    limit: Annotated[int, Query(ge=1, le=15)] = 8,
+) -> list[str]:
+    """Suggestions pour un champ de recherche : valeurs existantes des offres actives."""
+    return await SqlOfferQueryRepository(session).suggest(
+        owner_id=owner_id, field=field, prefix=q.strip(), limit=limit
+    )
 
 
 @router.get("/offers/{offer_id}", response_model=OfferDetail)

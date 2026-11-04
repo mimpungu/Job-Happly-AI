@@ -67,7 +67,16 @@ export interface AICostEstimate {
   reason: string | null;
 }
 
+export interface AIDailySpend {
+  /** Jour (UTC) au format `AAAA-MM-JJ`. */
+  date: string;
+  /** Dépense facturée ce jour-là, `0` si aucun appel payant. */
+  cost: string;
+}
+
 export interface AIUsage {
+  /** Un point par jour, du 1er du mois à aujourd'hui, jours sans dépense compris. */
+  daily_spend: AIDailySpend[];
   /** Plus haut seuil atteint par période, tant qu'il est franchi. */
   alerts: AIAlert[];
   currency: string;

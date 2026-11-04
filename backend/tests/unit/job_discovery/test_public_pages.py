@@ -6,13 +6,28 @@ from app.modules.job_discovery.domain.connector import (
     InvalidResponseError,
 )
 from app.modules.job_discovery.infrastructure.http import UnsafeUrlError, create_http_client
-from app.modules.job_discovery.infrastructure.public_pages import PublicPageFetcher
+from app.modules.job_discovery.infrastructure.public_pages import PageCache, PublicPageFetcher
 
 HTML = "<html><body><h1>Offres</h1></body></html>"
 
 
 async def _publique(_: str) -> list[str]:
     return ["93.184.216.34"]
+
+
+class Horloge:
+    """Temps simulé : `dormir` avance l'horloge et garde la trace des attentes demandées."""
+
+    def __init__(self) -> None:
+        self.maintenant = 1000.0
+        self.attentes: list[float] = []
+
+    def __call__(self) -> float:
+        return self.maintenant
+
+    async def dormir(self, secondes: float) -> None:
+        self.attentes.append(secondes)
+        self.maintenant += secondes
 
 
 def _fetcher(routes: dict[str, httpx.Response], vus: list[str] | None = None) -> PublicPageFetcher:
@@ -22,7 +37,10 @@ def _fetcher(routes: dict[str, httpx.Response], vus: list[str] | None = None) ->
         return routes.get(str(requete.url), httpx.Response(404))
 
     client = create_http_client(transport=httpx.MockTransport(handler))
-    return PublicPageFetcher(client, resolver=_publique)
+    horloge = Horloge()
+    return PublicPageFetcher(
+        client, resolver=_publique, clock=horloge, sleep=horloge.dormir, min_interval=0.0
+    )
 
 
 def _html(contenu: str = HTML) -> httpx.Response:
@@ -163,3 +181,95 @@ async def test_la_protection_ssrf_s_applique_avant_toute_requete(url: str) -> No
     with pytest.raises(UnsafeUrlError):
         await fetcher.fetch_html(url, source_key="s")
     assert vus == []
+
+
+def _avec_horloge(
+    routes: dict[str, httpx.Response], vus: list[str], **options: object
+) -> tuple[PublicPageFetcher, Horloge]:
+    def handler(requete: httpx.Request) -> httpx.Response:
+        vus.append(str(requete.url))
+        return routes.get(str(requete.url), httpx.Response(404))
+
+    horloge = Horloge()
+    fetcher = PublicPageFetcher(
+        create_http_client(transport=httpx.MockTransport(handler)),
+        resolver=_publique,
+        clock=horloge,
+        sleep=horloge.dormir,
+        **options,  # type: ignore[arg-type]
+    )
+    return fetcher, horloge
+
+
+async def test_une_page_deja_lue_n_est_pas_redemandee_avant_l_expiration() -> None:
+    vus: list[str] = []
+    fetcher, horloge = _avec_horloge({URL: _html()}, vus)
+
+    await fetcher.fetch_html(URL, source_key="s")
+    await fetcher.fetch_html(URL, source_key="s")
+    appels_apres_deux_lectures = len(vus)
+    horloge.maintenant += 10_000  # bien au-delà de la durée de validité du cache
+    await fetcher.fetch_html(URL, source_key="s")
+
+    assert appels_apres_deux_lectures == 2  # robots.txt + la page, une seule fois
+    assert vus.count(URL) == 2  # relue après expiration
+
+
+async def test_un_refus_n_est_jamais_mis_en_cache() -> None:
+    vus: list[str] = []
+    page = httpx.Response(
+        200, content=b"<html>Just a moment...</html>", headers={"Content-Type": "text/html"}
+    )
+    fetcher, _ = _avec_horloge({URL: page}, vus)
+
+    for _ in range(2):
+        with pytest.raises(AccessDeniedError):
+            await fetcher.fetch_html(URL, source_key="s")
+
+    assert vus.count(URL) == 2  # redemandée : un défi anti-robot n'est pas une réponse valide
+
+
+async def test_le_cache_est_borne() -> None:
+    cache = PageCache(ttl=100, max_entries=2, clock=lambda: 0.0)
+
+    cache.put("a", "1")
+    cache.put("b", "2")
+    cache.put("c", "3")
+
+    assert cache.get("a") is None and cache.get("b") == "2" and cache.get("c") == "3"
+
+
+async def test_les_requetes_vers_un_meme_hote_sont_espacees() -> None:
+    vus: list[str] = []
+    autre = URL + "-2"
+    fetcher, horloge = _avec_horloge({URL: _html(), autre: _html()}, vus, min_interval=1.0)
+
+    await fetcher.fetch_html(URL, source_key="s")
+    await fetcher.fetch_html(autre, source_key="s")
+
+    # robots.txt, page 1, page 2 : trois requêtes, donc deux attentes d'une seconde.
+    assert len(vus) == 3
+    assert horloge.attentes == [1.0, 1.0]
+
+
+async def test_le_crawl_delay_du_site_est_respecte() -> None:
+    vus: list[str] = []
+    robots = httpx.Response(200, text="User-agent: *\nCrawl-delay: 5\n")
+    autre = URL + "-2"
+    fetcher, horloge = _avec_horloge(
+        {ROBOTS: robots, URL: _html(), autre: _html()}, vus, min_interval=1.0
+    )
+
+    await fetcher.fetch_html(URL, source_key="s")
+    await fetcher.fetch_html(autre, source_key="s")
+
+    assert 5.0 in horloge.attentes
+    assert max(horloge.attentes) == 5.0
+
+
+async def test_un_delai_exige_trop_long_vaut_refus() -> None:
+    robots = httpx.Response(200, text="User-agent: *\nCrawl-delay: 120\n")
+    fetcher, _ = _avec_horloge({ROBOTS: robots, URL: _html()}, [])
+
+    with pytest.raises(AccessDeniedError, match="délai"):
+        await fetcher.fetch_html(URL, source_key="s")

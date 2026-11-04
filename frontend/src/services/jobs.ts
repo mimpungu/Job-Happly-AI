@@ -17,6 +17,12 @@ export const PAGE_SIZE = 25;
 export const listOffers = (filters: OfferFilters) =>
   apiFetch<OfferPage>(`/api/v1/offers?${filtersToApiQuery(filters, PAGE_SIZE)}`);
 
+/** Valeurs déjà présentes dans les offres actives, pour compléter un champ de recherche. */
+export const suggestValues = (field: "title" | "company" | "city", q: string) =>
+  apiFetch<string[]>(
+    `/api/v1/offers/suggestions?field=${field}&q=${encodeURIComponent(q)}&limit=8`,
+  );
+
 export const getOffer = (id: string) =>
   apiFetch<OfferDetail>(`/api/v1/offers/${encodeURIComponent(id)}`);
 

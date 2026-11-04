@@ -15,6 +15,7 @@ from app.core.api.dependencies import UnitOfWorkDep, get_owner_id
 from app.core.config import Settings, get_settings
 from app.modules.demo.infrastructure.composition import ensure_demo_inactive
 from app.modules.job_discovery.application.collection import CollectionService
+from app.modules.job_discovery.application.company_resolution import CompanyResolver
 from app.modules.job_discovery.application.saved_searches import SearchService
 from app.modules.job_discovery.application.source_search import (
     SourceSearchReport,
@@ -81,7 +82,25 @@ class CoverageResponse(BaseModel):
     sources_without_declared_countries: list[str]
 
 
+class DiscoveredBoardView(BaseModel):
+    ats_kind: str
+    token: str
+    careers_url: str
+    board_name: str | None
+    offer_count: int
+
+
+class CompanySearchResponse(BaseModel):
+    status: str
+    """`tracked`, `followed`, `candidates`, `not_found` ou `disabled`."""
+    query: str
+    followed_name: str | None
+    boards: list[DiscoveredBoardView]
+
+
 class SourceSearchResponse(BaseModel):
+    company_search: CompanySearchResponse | None
+    """Présent quand la recherche porte sur une entreprise précise : ce qui a été retrouvé."""
     coverage: CoverageResponse
     """Couverture géographique des sources interrogées, par rapport aux pays demandés."""
     queried: bool
@@ -95,7 +114,25 @@ class SourceSearchResponse(BaseModel):
         cls, rapport: SourceSearchReport, page: OfferPageResponse, pays: tuple[str, ...]
     ) -> SourceSearchResponse:
         couverture = coverage_of(pays, rapport.sources)
+        entreprise = rapport.company
         return cls(
+            company_search=None
+            if entreprise is None
+            else CompanySearchResponse(
+                status=entreprise.status.value,
+                query=entreprise.query,
+                followed_name=entreprise.followed_name,
+                boards=[
+                    DiscoveredBoardView(
+                        ats_kind=b.ats_kind.value,
+                        token=b.token,
+                        careers_url=b.careers_url,
+                        board_name=b.board_name,
+                        offer_count=b.offer_count,
+                    )
+                    for b in entreprise.boards
+                ],
+            ),
             coverage=CoverageResponse(
                 requested=list(couverture.requested),
                 declared=list(couverture.declared),
@@ -136,7 +173,10 @@ async def search_sources(
     rapport = SourceSearchReport(status=None, sources=())
     if body.refresh:
         await ensure_demo_inactive(uow, owner_id)
-        rapport = await SourceSearchService(CollectionService(uow, create_http_client)).collect(
+        collection = CollectionService(uow, create_http_client)
+        rapport = await SourceSearchService(
+            collection, CompanyResolver(uow, create_http_client)
+        ).collect(
             owner_id=owner_id,
             offer_filter=body.filter,
             titles=tuple(body.titles),

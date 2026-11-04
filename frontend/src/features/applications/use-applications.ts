@@ -10,6 +10,7 @@ import {
   changeStatus,
   confirmSubmission,
   createApplication,
+  deleteApplication,
   getApplication,
   getApplicationStats,
   getDashboard,
@@ -68,6 +69,11 @@ export function useCreateApplication() {
     mutationFn: (offerId: string) => createApplication(offerId),
     onSuccess: invalider,
   });
+}
+
+export function useDeleteApplication() {
+  const invalider = useInvalidate();
+  return useMutation({ mutationFn: (id: string) => deleteApplication(id), onSuccess: invalider });
 }
 
 export function useChangeStatus(id: string) {

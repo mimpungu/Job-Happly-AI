@@ -51,6 +51,9 @@ export const createApplication = (offerId: string, initialStatus: ApplicationSta
     ...json({ offer_id: offerId, initial_status: initialStatus }),
   });
 
+/** Retire une candidature (ajoutée par erreur, par exemple) ; l'offre reste dans la recherche. */
+export const deleteApplication = (id: string) => apiFetch<void>(base(id), { method: "DELETE" });
+
 export const changeStatus = (id: string, target: ApplicationStatus, reason?: string) =>
   apiFetch<ApplicationDetail>(`${base(id)}/status`, {
     method: "PATCH",

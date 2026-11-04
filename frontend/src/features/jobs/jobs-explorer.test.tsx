@@ -61,6 +61,34 @@ function simulerApi(
     vi.fn(async (url: string, init?: RequestInit) => {
       appels.push({ url, methode: init?.method ?? "GET", corps: init?.body as string | undefined });
       if (url.includes("/preferences")) return json(preferencesSimulees);
+      if (url.includes("/offers/suggestions")) return json(suggestionsSimulees);
+      if (url.endsWith("/api/v1/search"))
+        return json({
+          queried: true,
+          status: "succeeded",
+          coverage: {
+            requested: [],
+            declared: [],
+            undeclared: [],
+            sources_without_declared_countries: [],
+          },
+          sources: [
+            {
+              source_key: "greenhouse:acme",
+              source_name: "Acme (Greenhouse)",
+              status: "ok",
+              complete: true,
+              fetched: 3,
+              created: 1,
+              merged: 0,
+              changed: 0,
+              unchanged: 2,
+              rejected: 0,
+              error_type: null,
+            },
+          ],
+          results: page([]),
+        });
       if (url.includes("/saved-searches")) return json([]);
       if (url.includes("/search-runs")) return json([]);
       if (url.includes("/state")) return etat();
@@ -71,6 +99,7 @@ function simulerApi(
 }
 
 let preferencesSimulees: Record<string, unknown> = { currency: null };
+let suggestionsSimulees: string[] = [];
 
 function afficher(props: { savedOnly?: boolean } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -84,6 +113,7 @@ function afficher(props: { savedOnly?: boolean } = {}) {
 
 beforeEach(() => {
   preferencesSimulees = { currency: null };
+  suggestionsSimulees = [];
   push.mockClear();
   recherche = "";
 });
@@ -182,7 +212,7 @@ describe("JobsExplorer", () => {
     expect(push).toHaveBeenCalledWith("/jobs?text=python&city=Lyon");
   });
 
-  it("n'affiche que l'intitulé, le contrat et la ville tant que la fenêtre des filtres est fermée", async () => {
+  it("n'affiche que le poste, l'entreprise, le contrat et la ville tant que la fenêtre des filtres est fermée", async () => {
     simulerApi(() => json(page([])));
     afficher();
     await screen.findByText("Aucune offre ne correspond");
@@ -190,17 +220,17 @@ describe("JobsExplorer", () => {
     expect(screen.getByLabelText("Intitulé ou mot-clé")).toBeInTheDocument();
     expect(screen.getByLabelText("Contrat")).toBeInTheDocument();
     expect(screen.getByLabelText("Ville")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Entreprise")).toBeNull();
+    expect(screen.getByLabelText("Entreprise")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Salaire minimum")).toBeNull();
 
     await userEvent.click(screen.getByRole("button", { name: "Tous les filtres" }));
 
     expect(screen.getByRole("dialog", { name: "Tous les filtres" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Entreprise")).toBeInTheDocument();
     expect(screen.getByLabelText("Salaire minimum")).toBeInTheDocument();
   });
 
   it("compte les filtres avancés actifs sur le bouton", async () => {
-    recherche = "company=BNP&min_score=70";
+    recherche = "country=FR&min_score=70&company=BNP";
     simulerApi(() => json(page([])));
     afficher();
 
@@ -218,15 +248,80 @@ describe("JobsExplorer", () => {
     await waitFor(() => expect(screen.getByLabelText("Devise")).toHaveValue("CHF"));
   });
 
+  it("interroge aussi les sources à chaque recherche, pas seulement la base locale", async () => {
+    const appels = simulerApi(() => json(page([])));
+    afficher();
+    await screen.findByText("Aucune offre ne correspond");
+
+    await userEvent.type(screen.getByLabelText("Intitulé ou mot-clé"), "python");
+    await userEvent.click(screen.getByRole("button", { name: "Rechercher" }));
+
+    expect(push).toHaveBeenCalledWith("/jobs?text=python");
+    await waitFor(() =>
+      expect(appels.some((a) => a.methode === "POST" && a.url.endsWith("/api/v1/search"))).toBe(
+        true,
+      ),
+    );
+    const envoi = appels.find((a) => a.url.endsWith("/api/v1/search"));
+    expect(JSON.parse(envoi?.corps ?? "{}")).toMatchObject({
+      filter: { text: "python" },
+      refresh: true,
+    });
+    expect(await screen.findByRole("region", { name: "Sources interrogées" })).toHaveTextContent(
+      "1 source interrogée",
+    );
+    expect(screen.getByText("Acme (Greenhouse)")).toBeInTheDocument();
+  });
+
+  it("propose des suggestions tirées des offres pendant la frappe", async () => {
+    suggestionsSimulees = ["Développeur Python", "Développeur Java"];
+    const appels = simulerApi(() => json(page([])));
+    const { container } = afficher();
+    await screen.findByText("Aucune offre ne correspond");
+
+    await userEvent.type(screen.getByLabelText("Intitulé ou mot-clé"), "dév");
+
+    await waitFor(() => {
+      const options = [...container.querySelectorAll("datalist option")].map((o) =>
+        o.getAttribute("value"),
+      );
+      expect(options).toEqual(["Développeur Python", "Développeur Java"]);
+    });
+    const demande = appels.find((a) => a.url.includes("/offers/suggestions"));
+    expect(demande?.url).toContain("field=title");
+    expect(decodeURIComponent(demande?.url ?? "")).toContain("q=dév");
+  });
+
+  it("n'interroge pas le serveur pour une saisie d'un seul caractère", async () => {
+    const appels = simulerApi(() => json(page([])));
+    afficher();
+    await screen.findByText("Aucune offre ne correspond");
+
+    await userEvent.type(screen.getByLabelText("Ville"), "p");
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(appels.some((a) => a.url.includes("/offers/suggestions"))).toBe(false);
+  });
+
+  it("propose d'ajouter une autre entreprise, avec l'explication de la limite", async () => {
+    simulerApi(() => json(page([])));
+    afficher();
+    await screen.findByText("Aucune offre ne correspond");
+
+    await userEvent.click(screen.getByText("Chercher les offres d'une autre entreprise"));
+
+    expect(screen.getByText(/une recherche ne trouve que leurs offres/)).toBeInTheDocument();
+    expect(screen.getByRole("form", { name: "Rechercher une entreprise" })).toBeInTheDocument();
+  });
+
   it("filtre par nom d'entreprise et par ville", async () => {
     simulerApi(() => json(page([])));
     afficher();
     await screen.findByText("Aucune offre ne correspond");
 
     await userEvent.type(screen.getByLabelText("Ville"), "Paris");
-    await userEvent.click(screen.getByRole("button", { name: "Tous les filtres" }));
     await userEvent.type(screen.getByLabelText("Entreprise"), "BNP Paribas");
-    await userEvent.click(screen.getByRole("button", { name: "Appliquer les filtres" }));
+    await userEvent.click(screen.getByRole("button", { name: "Rechercher" }));
 
     expect(push).toHaveBeenCalledWith("/jobs?company=BNP+Paribas&city=Paris");
   });

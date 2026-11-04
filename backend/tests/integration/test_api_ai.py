@@ -1,5 +1,6 @@
 """API des réglages IA : aucune IA appelée, seulement la configuration et le suivi."""
 
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import httpx
@@ -254,3 +255,24 @@ async def test_plafond_par_tache_et_estimation_d_une_tache_via_l_api(
     assert "cette tâche" in estimation["reason"]
     assert sans_taille.status_code == 422
     assert retire.json()["task_daily_caps"] == {}
+
+
+async def test_la_depense_du_mois_est_donnee_jour_par_jour_sans_trou(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    _brancher(client, session, FakeProvider("api-test", reponses=[REPONSE_IA]))
+    await client.put("/api/v1/ai/settings", json={"backend_preference": "api_only"})
+    await client.put("/api/v1/ai/consent", json={"accepted": True})
+    await client.put("/api/v1/ai/budget", json={"daily": "1", "monthly": "10", "currency": "EUR"})
+    await client.post("/api/v1/ai/test", json={})
+
+    corps = (await client.get("/api/v1/ai/usage")).json()
+
+    jours = corps["daily_spend"]
+    aujourdhui = datetime.now(UTC).date()
+    # Un point par jour, du 1er du mois à aujourd'hui ; les jours sans appel valent 0.
+    assert jours[0]["date"] == aujourdhui.replace(day=1).isoformat()
+    assert jours[-1]["date"] == aujourdhui.isoformat()
+    assert len(jours) == aujourdhui.day
+    assert Decimal(jours[-1]["cost"]) == Decimal(corps["spent_today"]) > 0
+    assert sum(Decimal(j["cost"]) for j in jours) == Decimal(corps["spent_month"])

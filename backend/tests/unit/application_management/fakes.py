@@ -125,6 +125,11 @@ class InMemoryApplicationRepository(ApplicationRepositoryPort):
         self.apps[app.id] = app
         return app
 
+    async def delete(self, owner_id: uuid.UUID, application_id: uuid.UUID) -> None:
+        del self.apps[application_id]
+        self.events = [e for e in self.events if e.application_id != application_id]
+        self.contacts = [c for c in self.contacts if c.application_id != application_id]
+
     async def update_status(
         self,
         owner_id: uuid.UUID,

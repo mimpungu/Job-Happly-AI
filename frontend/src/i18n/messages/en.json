@@ -15,7 +15,10 @@
     "title": "General settings",
     "intro": "Language, country, currency and time zone. These are defaults only; nothing is converted or guessed.",
     "language": "Interface language",
-    "languageNames": { "fr": "Français", "en": "English" },
+    "languageNames": {
+      "fr": "Français",
+      "en": "English"
+    },
     "country": "Main search country",
     "currency": "Currency",
     "timezone": "Time zone",
@@ -33,6 +36,22 @@
     "save": "Save",
     "saved": "Preferences saved.",
     "loadError": "Could not load your preferences: {message}",
-    "loading": "Loading preferences"
+    "loading": "Loading preferences",
+    "profileLink": "Edit my profile (CV studio)"
+  },
+  "shell": {
+    "profile": "Profile",
+    "myProfile": "My profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "noNotification": "No notifications.",
+    "globalSearch": "Global search",
+    "searchPlaceholder": "Search for a job…",
+    "lightTheme": "Switch to light theme",
+    "darkTheme": "Switch to dark theme",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNav": "Main navigation",
+    "back": "Back to the previous view"
   }
 }

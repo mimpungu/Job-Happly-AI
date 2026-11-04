@@ -10,16 +10,16 @@ import type { InterviewEvent } from "@/types/applications";
 
 import { DashCard } from "./dash-card";
 import { isSameDay, startOfDay, weekDays } from "./week";
+import { formatDateParts } from "@/lib/regional";
 
 const BARRES = ["bg-chart-2", "bg-chart-1", "bg-chart-3", "bg-chart-4"] as const;
 
-const jourCourt = new Intl.DateTimeFormat("fr-FR", { weekday: "narrow" });
-const jourLong = new Intl.DateTimeFormat("fr-FR", {
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-});
-const heure = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" });
+// Formateurs construits à l'appel : langue, pays et fuseau suivent les préférences.
+const jourCourt = { format: (d: Date) => formatDateParts(d, { weekday: "narrow" }) };
+const jourLong = {
+  format: (d: Date) => formatDateParts(d, { weekday: "long", day: "numeric", month: "long" }),
+};
+const heure = { format: (d: Date) => formatDateParts(d, { hour: "2-digit", minute: "2-digit" }) };
 
 export interface InterviewsCardProps {
   interviews: readonly InterviewEvent[];

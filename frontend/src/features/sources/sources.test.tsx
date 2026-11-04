@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { DataSource, SourceSearchResult } from "@/types/sources";
@@ -160,5 +161,84 @@ describe("QueriedSources", () => {
     render(<QueriedSources result={{ ...base, queried: false, status: null, sources: [] }} />);
 
     expect(screen.getByRole("status")).toHaveTextContent("Aucune source activée");
+  });
+});
+
+describe("QueriedSources : entreprise tapée dans la recherche", () => {
+  const vide: SourceSearchResult = {
+    queried: false,
+    status: null,
+    sources: [],
+    results: { items: [], total: 0, page: 1, page_size: 25, page_count: 1 },
+  };
+  const avec = (company_search: NonNullable<SourceSearchResult["company_search"]>) => ({
+    ...vide,
+    company_search,
+  });
+
+  it("annonce un site trouvé et ajouté automatiquement", () => {
+    render(
+      <QueriedSources
+        result={avec({ status: "followed", query: "Acme", followed_name: "Acme Corp", boards: [] })}
+      />,
+    );
+
+    expect(screen.getByText("Acme Corp")).toBeInTheDocument();
+    expect(screen.getByText(/ajouté à vos entreprises suivies/)).toBeInTheDocument();
+  });
+
+  it("dit qu'aucun site carrières n'a été trouvé, sans conclure que l'entreprise n'embauche pas", () => {
+    render(
+      <QueriedSources
+        result={avec({
+          status: "not_found",
+          query: "Inexistante",
+          followed_name: null,
+          boards: [],
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/Aucun site carrières public/)).toBeInTheDocument();
+    expect(screen.getByText(/elle utilise peut-être un autre outil/)).toBeInTheDocument();
+    expect(screen.queryByText(/Aucune source activée/)).toBeNull();
+  });
+
+  it("explique qu'une entreprise suivie est désactivée", () => {
+    render(
+      <QueriedSources
+        result={avec({ status: "disabled", query: "Bonne", followed_name: null, boards: [] })}
+      />,
+    );
+
+    expect(screen.getByText(/désactivée : réactivez-la/)).toBeInTheDocument();
+  });
+
+  it("propose des candidats à confirmer et remonte le choix de l'utilisateur", async () => {
+    const choix = vi.fn();
+    render(
+      <QueriedSources
+        onFollowBoard={choix}
+        result={avec({
+          status: "candidates",
+          query: "Alpha",
+          followed_name: null,
+          boards: [
+            {
+              ats_kind: "greenhouse",
+              token: "alpha",
+              careers_url: "https://boards.greenhouse.io/alpha",
+              board_name: "Omega Group",
+              offer_count: 4,
+            },
+          ],
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/confirmez avant de suivre/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Suivre Omega Group (Greenhouse)" }));
+
+    expect(choix).toHaveBeenCalledWith(expect.objectContaining({ token: "alpha" }));
   });
 });

@@ -1,26 +1,27 @@
 import type { EventKind } from "@/types/applications";
+import { formatDateParts, formatNumber } from "@/lib/regional";
 
 const ABSENT = "Non renseignée";
 
-/** Date et heure au fuseau du navigateur ; une date absente n'est jamais remplacée par une valeur. */
+/** Date et heure au fuseau choisi (sinon celui du navigateur) ; une date absente n'est jamais remplacée par une valeur. */
 export function formatDateTime(iso: string | null): string {
   if (!iso) return ABSENT;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return ABSENT;
-  return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(date);
+  return formatDateParts(date, { dateStyle: "medium", timeStyle: "short" });
 }
 
 export function formatDay(iso: string | null): string {
   if (!iso) return ABSENT;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return ABSENT;
-  return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(date);
+  return formatDateParts(date, { dateStyle: "medium" });
 }
 
 /** Pourcentage ; `null` = aucune donnée, affiché comme tel et jamais comme 0 %. */
 export function formatPercent(valeur: number | null): string {
   if (valeur === null) return "—";
-  return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(valeur)} %`;
+  return `${formatNumber(valeur, { maximumFractionDigits: 1 })} %`;
 }
 
 /** Valeur d'un `<input type="datetime-local">` (heure locale) → instant ISO avec fuseau. */

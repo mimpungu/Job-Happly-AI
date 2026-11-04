@@ -3,6 +3,9 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+const push = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+
 import { Toaster } from "@/components/ui/toaster";
 
 import { ApplicationDetailView } from "./application-detail-view";
@@ -62,7 +65,10 @@ function afficher() {
   );
 }
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  push.mockClear();
+});
 
 describe("ApplicationDetailView", () => {
   it("affiche l'offre, le statut, l'historique et rappelle que l'utilisateur candidate lui-même", async () => {
@@ -330,5 +336,36 @@ describe("ApplicationDetailView", () => {
 
     expect(await screen.findByText("Candidature introuvable")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Réessayer" })).not.toBeInTheDocument();
+  });
+
+  it("retire une candidature du suivi après confirmation, puis revient à la liste", async () => {
+    const appels = simulerApi(() => detail(), {
+      ecriture: (appel) =>
+        appel.methode === "DELETE" ? new Response(null, { status: 204 }) : undefined,
+    });
+    afficher();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Retirer du suivi" }));
+    // La confirmation précède toute suppression, et dit ce qui est perdu et ce qui reste.
+    expect(appels.some((a) => a.methode === "DELETE")).toBe(false);
+    expect(
+      await screen.findByText(/L'offre reste disponible dans la recherche/),
+    ).toBeInTheDocument();
+    const dialogue = screen.getByRole("dialog");
+    await userEvent.click(within(dialogue).getByRole("button", { name: "Retirer du suivi" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/applications"));
+    expect(appels.some((a) => a.methode === "DELETE")).toBe(true);
+  });
+
+  it("ne supprime rien quand on annule", async () => {
+    const appels = simulerApi(() => detail());
+    afficher();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Retirer du suivi" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Annuler" }));
+
+    expect(appels.some((a) => a.methode === "DELETE")).toBe(false);
+    expect(push).not.toHaveBeenCalled();
   });
 });

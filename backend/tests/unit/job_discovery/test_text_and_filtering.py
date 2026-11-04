@@ -134,3 +134,13 @@ def test_le_filtre_de_collecte_garde_les_intitules_vises_et_exige_les_mots_cles(
     assert not garder.keeps(offre("Comptable", "Python"))  # intitulé non visé
     assert not garder.keeps(offre("Développeur", "Java uniquement"))  # mot-clé absent
     assert CollectionFilter().is_empty and not garder.is_empty
+
+
+def test_les_mots_d_une_saisie_se_separent_aux_espaces_tirets_et_barres_seulement() -> None:
+    from app.modules.job_discovery.domain.text import search_words
+
+    assert search_words("Data-analyst") == ["Data", "analyst"]
+    assert search_words("  python   développeur ") == ["python", "développeur"]
+    assert search_words("C++ / Node.js") == ["C++", "Node.js"]  # jamais coupés au « + » ou au « . »
+    assert search_words("   ") == []
+    assert len(search_words(" ".join(f"m{i}" for i in range(30)))) == 10  # borné

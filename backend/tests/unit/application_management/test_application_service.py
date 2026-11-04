@@ -99,6 +99,35 @@ async def test_creation_directement_envoyee_ou_repondue_refusee(ctx: Contexte, s
     assert ctx.repo.apps == {}
 
 
+async def test_une_candidature_ajoutee_par_erreur_peut_etre_supprimee_avec_son_historique(
+    ctx: Contexte,
+) -> None:
+    app = await ctx.candidature()
+    await ctx.service.add_note(owner_id=OWNER, application_id=app.id, note_body="Une note")
+
+    await ctx.service.delete_application(owner_id=OWNER, application_id=app.id)
+
+    with pytest.raises(ApplicationNotFoundError):
+        await ctx.service.get_application(owner_id=OWNER, application_id=app.id)
+    assert ctx.repo.events == [] and app.offer_id in ctx.offers.offers  # l'offre est conservée
+    # L'offre peut être suivie à nouveau : la suppression a bien levé le doublon.
+    again = await ctx.service.create_application(
+        owner_id=OWNER, offer_id=app.offer_id, initial_status=S.TO_APPLY
+    )
+    assert again.id != app.id
+
+
+async def test_supprimer_la_candidature_d_un_autre_utilisateur_est_refuse(
+    ctx: Contexte,
+) -> None:
+    app = await ctx.candidature()
+
+    with pytest.raises(ApplicationNotFoundError):
+        await ctx.service.delete_application(owner_id=uuid.uuid4(), application_id=app.id)
+
+    assert app.id in ctx.repo.apps
+
+
 async def test_candidature_d_un_autre_utilisateur_introuvable(ctx: Contexte) -> None:
     app = await ctx.candidature()
     with pytest.raises(ApplicationNotFoundError):

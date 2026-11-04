@@ -751,7 +751,9 @@ Méthodes :
 
 - Lire uniquement les données structurées publiques des pages carrières.
 
-[➖] **TASK-006-25 — Lecture de pages publiques conditionnée à l'autorisation**
+[✅] **TASK-006-25 — Lecture de pages publiques conditionnée à l'autorisation**
+
+> Vérifié : `robots.txt` et refus respectés (existant), débit limité à 1 requête/s par hôte et `Crawl-delay` respecté (au-delà de 30 s : source non supportée), cache borné à expiration (15 min) ; seules les pages réussies sont mises en cache.
 
 - Lire et respecter `robots.txt` et les CGU avant toute requête.
 - Limiter le débit, User-Agent honnête, cache pour éviter les requêtes répétées.
@@ -1545,17 +1547,17 @@ Méthodes :
 
 [➖] **TASK-017-02 — Ajouter les traductions**
 
-> Partiel : next-intl en place (français, anglais), navigation et paramètres généraux traduits, test des clés manquantes. Les autres écrans restent en français (traduction progressive, ADR-0021).
+> Partiel : next-intl (français, anglais) ; cadre de l'application (navigation, en-tête, recherche globale, thème, menu) et paramètres généraux traduits, test des clés manquantes. Les autres écrans restent en français (traduction progressive, ADR-0021).
 
-[➖] **TASK-017-03 — Gérer les formats de date**
+[✅] **TASK-017-03 — Gérer les formats de date**
 
-> Non fait : les dates s'affichent encore selon les réglages du navigateur.
+> Vérifié : tous les formateurs de dates et de nombres suivent la langue et le pays choisis (`lib/regional.ts`), sans « fr-FR » en dur ; testé en français, anglais, fr-CA/en-US.
 
 [✅] **TASK-017-04 — Gérer les devises**
 
-[➖] **TASK-017-05 — Gérer les fuseaux horaires**
+[✅] **TASK-017-05 — Gérer les fuseaux horaires**
 
-> Partiel : le fuseau est enregistré et validé (zoneinfo) mais pas encore utilisé pour l'affichage des dates ; les notifications gardent leur propre fuseau.
+> Vérifié : le fuseau des préférences s'applique à l'affichage des dates (fuseau du navigateur à défaut). Les notifications gardent leur propre fuseau (planification côté serveur).
 
 ### [➖] FEATURE 017.2 — Référentiel géographique
 
@@ -1617,7 +1619,9 @@ Méthodes :
 
 [➖] **TASK-017-23 — Ajouter progressivement les autres fournisseurs**
 
-[➖] **TASK-017-24 — Créer la page Paramètres généraux**
+[✅] **TASK-017-24 — Créer la page Paramètres généraux**
+
+> Réalisé : paramètres généraux (langue, pays, devise, fuseau, mobilité, lien vers le profil), notifications (canaux, événements, résumé, e-mail avec accord explicite), confidentialité et export (existants), stockage, sauvegarde et import (informatif : les sauvegardes se font hors de l'application).
 
 - Profil, langue, pays, devise, fuseau horaire.
 - Notifications, confidentialité, stockage, sauvegarde, import/export.
@@ -2091,7 +2095,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 003 — Design System & Application Shell | P0 | 3 | 18 | 18 | 0.1 |
 | [✅] | 004 — Database & Domain Foundation | P0 | 3 | 13 | 13 | 0.1 |
 | [✅] | 005 — Candidate Profile & Master CV | P0 | 4 | 18 | 18 | 0.3 |
-| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 19 | 0.2 |
+| [➖] | 006 — Job Source Connector Framework | P0 | 6 | 28 | 21 | 0.2 |
 | [✅] | 007 — Job Ingestion, Normalization & Deduplication | P0 | 4 | 19 | 19 | 0.2 |
 | [➖] | 008 — Job Search Engine & Search Experience | P0 | 5 | 28 | 24 | 0.2 |
 | [✅] | 009 — Job Matching & Scoring Engine | P0 | 3 | 17 | 17 | 0.3 |
@@ -2102,7 +2106,7 @@ Légende : [✅] réalisé, [➖] non réalisé.
 | [✅] | 014 — Application Tracking & Candidate CRM | P1 | 5 | 22 | 22 | 0.4 |
 | [✅] | 015 — Scheduler, Automation & Notifications | P1 | 4 | 19 | 19 | 0.5 |
 | [✅] | 016 — Interview Preparation & Career Assistant | P2 | 3 | 14 | 14 | 0.5 |
-| [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 15 | 1.0 |
+| [➖] | 017 — Internationalization & Global Job Search | P1 | 5 | 24 | 18 | 1.0 |
 | [➖] | 018 — Security, Privacy & Operational Excellence | P0 | 6 | 37 | 35 | 0.1 → 1.0 |
 | [➖] | 019 — QA, Release & Production Readiness | P0 | 5 | 30 | 29 | 0.1 → 1.0 |
 

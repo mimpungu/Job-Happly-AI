@@ -614,3 +614,29 @@ async def test_tendance_mensuelle_avec_mois_precedent(
     tendance = (await client.get("/api/v1/dashboard")).json()["active_offers_trend"]
 
     assert tendance == {"current": 1, "previous": 4, "percent": -75.0}
+
+
+async def test_supprimer_une_candidature_ajoutee_par_erreur_garde_l_offre(
+    client: httpx.AsyncClient,
+) -> None:
+    candidature = await _candidature(client)
+    identifiant = candidature["id"]
+    await client.post(f"/api/v1/applications/{identifiant}/notes", json={"body": "Une note"})
+
+    suppression = await client.delete(f"/api/v1/applications/{identifiant}")
+    relue = await client.get(f"/api/v1/applications/{identifiant}")
+    liste = (await client.get("/api/v1/applications")).json()
+    offre = await client.get(f"/api/v1/offers/{candidature['offer_id']}")
+    nouvelle = await client.post("/api/v1/applications", json={"offer_id": candidature["offer_id"]})
+
+    assert suppression.status_code == 204
+    assert relue.status_code == 404 and relue.json()["error"]["code"] == "application_not_found"
+    assert liste["total"] == 0
+    assert offre.status_code == 200  # l'offre reste dans la recherche
+    assert nouvelle.status_code == 201  # et peut être suivie à nouveau
+
+
+async def test_supprimer_une_candidature_inconnue_renvoie_404(client: httpx.AsyncClient) -> None:
+    reponse = await client.delete(f"/api/v1/applications/{uuid.uuid4()}")
+
+    assert reponse.status_code == 404

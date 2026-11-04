@@ -26,6 +26,8 @@ import {
   PlafondsFournisseurs,
   PlafondsParTache,
 } from "./budget-extras";
+import { SpendChart } from "./spend-chart";
+import { formatDateParts, formatNumber } from "@/lib/regional";
 
 export const MODES = [
   { value: "disabled", label: "IA désactivée" },
@@ -85,7 +87,7 @@ export function montantValide(valeur: string): boolean {
 }
 
 const argent = (valeur: string, devise: string) =>
-  `${Number(valeur).toLocaleString("fr-FR", { maximumFractionDigits: 4 })} ${devise}`;
+  `${formatNumber(Number(valeur), { maximumFractionDigits: 4 })} ${devise}`;
 
 function Etat({ reglages }: { reglages: AISettings }) {
   const locaux = reglages.providers.filter((p) => p.kind === "local");
@@ -334,6 +336,11 @@ function Consommation({ usage }: { usage: AIUsage }) {
   return (
     <div className="flex flex-col gap-4">
       <AlertesBudget alertes={usage.alerts} devise={usage.currency} />
+      <SpendChart
+        days={usage.daily_spend}
+        currency={usage.currency}
+        dailyBudget={usage.daily_budget}
+      />
       <Jauge
         libelle="Aujourd'hui"
         pourcent={usage.percent_today}
@@ -379,7 +386,9 @@ function Consommation({ usage }: { usage: AIUsage }) {
             <tbody>
               {usage.recent.map((l, i) => (
                 <tr key={`${l.at}-${i}`} className="border-t border-border">
-                  <td className="py-1 pr-3">{new Date(l.at).toLocaleString("fr-FR")}</td>
+                  <td className="py-1 pr-3">
+                    {formatDateParts(new Date(l.at), { dateStyle: "short", timeStyle: "medium" })}
+                  </td>
                   <td className="py-1 pr-3">{l.task_type}</td>
                   <td className="py-1 pr-3">{l.provider}</td>
                   <td className="py-1 pr-3">{ISSUES[l.outcome] ?? l.outcome}</td>

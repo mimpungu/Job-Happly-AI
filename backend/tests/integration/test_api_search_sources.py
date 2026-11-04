@@ -28,6 +28,14 @@ def sans_identifiants(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 def _reseau(monkeypatch: pytest.MonkeyPatch, *, panne: bool = False) -> None:
     def handler(requete: httpx.Request) -> httpx.Response:
         chemin = requete.url.path
+        if chemin == "/v1/boards/acme":
+            return httpx.Response(200, json={"name": "Acme Corp"})
+        if chemin == "/v1/boards/acme/jobs":
+            return httpx.Response(200, json=GREENHOUSE)
+        if chemin == "/v1/boards/alpha":
+            return httpx.Response(200, json={"name": "Omega Group"})
+        if chemin == "/v1/boards/alpha/jobs":
+            return httpx.Response(200, json={"jobs": [{"id": 1}]})
         if "/boards/bonne/" in chemin:
             return httpx.Response(200, json=GREENHOUSE)
         if "/boards/panne/" in chemin:
@@ -241,3 +249,113 @@ async def test_le_catalogue_des_sources_se_filtre_par_pays(
     assert "france_travail" not in canada  # déclare la France seulement
     # Une source à couverture non déclarée reste listée, mais signalée comme telle.
     assert canada["greenhouse:bonne"]["coverage_declared"] is False
+
+
+async def test_titre_entreprise_et_lieu_cherchent_chez_cette_entreprise(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _reseau(monkeypatch)
+    # Une autre entreprise suivie : elle ne doit pas être interrogée pour cette recherche.
+    await _suivre(client, "Bonne", "bonne")
+
+    corps = (
+        await client.post(
+            "/api/v1/search",
+            json={"filter": {"text": "Data-analyst", "company": "Acme", "city": "Paris"}},
+        )
+    ).json()
+
+    recherche = corps["company_search"]
+    assert recherche["status"] == "followed" and recherche["followed_name"] == "Acme Corp"
+    assert [s["source_key"] for s in corps["sources"]] == ["greenhouse:acme"]
+    # Intitulé et lieu filtrent à la collecte : une seule offre sur les trois de la fixture.
+    assert corps["sources"][0]["created"] == 1
+    assert [o["title"] for o in corps["results"]["items"]] == ["Data Analyst"]
+    suivies = {e["name"]: e for e in (await client.get("/api/v1/target-companies")).json()}
+    assert (
+        suivies["Acme Corp"]["enabled"] is True and suivies["Acme Corp"]["ats_kind"] == "greenhouse"
+    )
+
+
+async def test_une_entreprise_deja_suivie_est_lue_sans_la_redecouvrir(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _reseau(monkeypatch)
+    await _suivre(client, "Bonne", "bonne")
+    await _suivre(client, "Panne", "panne")
+
+    corps = (
+        await client.post(
+            "/api/v1/search", json={"filter": {"text": "analyst", "company": "bonne"}}
+        )
+    ).json()
+
+    assert corps["company_search"]["status"] == "tracked"
+    assert [s["source_key"] for s in corps["sources"]] == ["greenhouse:bonne"]  # pas « Panne »
+
+
+async def test_une_entreprise_sans_site_carriere_public_est_signalee(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _reseau(monkeypatch)
+
+    corps = (
+        await client.post(
+            "/api/v1/search", json={"filter": {"text": "analyst", "company": "Inexistante"}}
+        )
+    ).json()
+
+    assert corps["company_search"]["status"] == "not_found"
+    assert corps["queried"] is False and corps["sources"] == []
+    assert (await client.get("/api/v1/target-companies")).json() == []  # rien n'est ajouté
+
+
+async def test_un_site_dont_le_nom_ne_correspond_pas_est_propose_jamais_active(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _reseau(monkeypatch)
+
+    corps = (
+        await client.post(
+            "/api/v1/search", json={"filter": {"text": "analyst", "company": "Alpha"}}
+        )
+    ).json()
+
+    recherche = corps["company_search"]
+    assert recherche["status"] == "candidates"
+    assert [b["board_name"] for b in recherche["boards"]] == ["Omega Group"]
+    # Deux sociétés peuvent partager un jeton : rien n'est suivi sans confirmation.
+    assert corps["sources"] == []
+    assert (await client.get("/api/v1/target-companies")).json() == []
+
+
+async def test_une_entreprise_desactivee_par_l_utilisateur_n_est_pas_reactivee(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _reseau(monkeypatch)
+    await _suivre(client, "Bonne", "bonne")
+    identifiant = (await client.get("/api/v1/target-companies")).json()[0]["id"]
+    await client.patch(f"/api/v1/target-companies/{identifiant}", json={"enabled": False})
+
+    corps = (
+        await client.post(
+            "/api/v1/search", json={"filter": {"text": "analyst", "company": "Bonne"}}
+        )
+    ).json()
+
+    assert corps["company_search"]["status"] == "disabled" and corps["sources"] == []
+    assert (await client.get("/api/v1/target-companies")).json()[0]["enabled"] is False
+
+
+async def test_les_mots_de_l_intitule_se_cherchent_dans_n_importe_quel_ordre_a_la_collecte(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _reseau(monkeypatch)
+    await _suivre(client, "Bonne", "bonne")
+
+    corps = (await client.post("/api/v1/search", json={"filter": {"text": "analyst data"}})).json()
+
+    assert {o["title"] for o in corps["results"]["items"]} == {
+        "Data Analyst",
+        "Responsable Data Analyst Junior",
+    }

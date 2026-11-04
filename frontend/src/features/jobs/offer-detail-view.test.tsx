@@ -167,6 +167,9 @@ describe("OfferDetailView", () => {
     afficher();
 
     await userEvent.click(await screen.findByRole("button", { name: "Suivre cette candidature" }));
+    // Un clic ne crée rien : une confirmation explicite est demandée d'abord.
+    expect(appels.some((a) => a.methode === "POST")).toBe(false);
+    await userEvent.click(await screen.findByRole("button", { name: "Ajouter au suivi" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/applications/c1"));
     const creation = appels.find((a) => a.methode === "POST" && a.url.endsWith("/applications"));
@@ -174,6 +177,28 @@ describe("OfferDetailView", () => {
       offer_id: "o1",
       initial_status: "to_apply",
     });
+  });
+
+  it("n'ajoute rien quand on annule la confirmation", async () => {
+    const appels: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        appels.push(init?.method ?? "GET");
+        if (url.includes("/match") || url.includes("/analysis"))
+          return new Response(JSON.stringify({ error: { code: "x", message: "indisponible" } }), {
+            status: 503,
+          });
+        return new Response(JSON.stringify(detail()));
+      }),
+    );
+    afficher();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Suivre cette candidature" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Annuler" }));
+
+    expect(appels).not.toContain("POST");
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("signale une offre déjà suivie au lieu de créer un doublon", async () => {
@@ -195,6 +220,7 @@ describe("OfferDetailView", () => {
     afficher();
 
     await userEvent.click(await screen.findByRole("button", { name: "Suivre cette candidature" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Ajouter au suivi" }));
 
     expect(await screen.findByText(/déjà suivie/)).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();

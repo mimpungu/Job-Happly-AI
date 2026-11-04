@@ -29,7 +29,7 @@ MAX_NAME_LENGTH = 100
 MAX_CANDIDATES = 3
 
 # Formes juridiques sans valeur d'identification : « Acme Inc. » → « acme ».
-_FORMES_JURIDIQUES = frozenset(
+FORMES_JURIDIQUES = frozenset(
     {"inc", "incorporated", "llc", "ltd", "limited", "gmbh", "sa", "sas", "sarl", "corp", "co"}
 )
 
@@ -50,7 +50,7 @@ def slug_candidates(name: str) -> list[str]:
         c for c in unicodedata.normalize("NFD", name.casefold()) if not unicodedata.combining(c)
     )
     mots = [m for m in re.split(r"[^a-z0-9]+", sans_accents) if m]
-    significatifs = [m for m in mots if m not in _FORMES_JURIDIQUES] or mots
+    significatifs = [m for m in mots if m not in FORMES_JURIDIQUES] or mots
     if not significatifs:
         return []
     candidats = ["".join(significatifs), "-".join(significatifs)]

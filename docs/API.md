@@ -33,7 +33,7 @@ Recherche dans les offres déjà collectées, paginée côté base. Tous les par
 
 | Paramètre | Rôle |
 |---|---|
-| `text` | intitulé, entreprise ou description (insensible à la casse ; `%` et `_` sont littéraux) |
+| `text` | mots recherchés dans l'intitulé, l'entreprise ou la description : **chaque mot** doit figurer, dans n'importe quel ordre, sans tenir compte de la casse ni des accents (`%` et `_` sont littéraux) |
 | `keywords` (répétable) | tous les mots-clés doivent figurer dans l'intitulé ou la description |
 | `company`, `city` | sous-chaîne de l'entreprise / du lieu |
 | `language` | langue de l'annonce (code ISO 639-1, variantes régionales acceptées) |
@@ -50,6 +50,10 @@ Recherche dans les offres déjà collectées, paginée côté base. Tous les par
 | `page`, `page_size` | défaut 1 et 25 ; `page_size` ≤ 100 |
 
 Réponse : `{items, total, page, page_size, page_count}`. Chaque offre liste ses `source_keys` (attribution des sources). Les ex æquo sont départagés par identifiant : les pages ne répètent ni ne sautent d'offre.
+
+### `GET /offers/suggestions?field=title|company|city&q=…&limit=8`
+
+Suggestions pour compléter un champ de recherche : valeurs **déjà présentes** dans les offres actives, les plus fréquentes d'abord, insensibles aux accents. Jamais de valeur inventée. `q` : 1 à 100 caractères.
 
 ### `GET /offers/{offer_id}`
 
@@ -74,7 +78,7 @@ Aucune liste fermée d'entreprises : l'utilisateur tape un nom, l'application ch
 | `GET /target-companies` | Entreprises suivies, avec état de la dernière collecte. |
 | `PATCH /target-companies/{id}` `{enabled}` | Active ou désactive (404 `company_not_found`). |
 | `POST /collection/run` | Collecte en parallèle les entreprises activées ; bilan par source. 409 `no_company_enabled` si aucune. |
-| `POST /search` `{filter?, titles?, refresh?}` | Recherche multi-sources : interroge **en parallèle** les entreprises activées et les sources officielles configurées dont la couverture (pays) correspond, enregistre les offres sans doublon, puis renvoie `{queried, status, sources[], results}` (offres agrégées paginées, bilan par source, erreurs nommées). `titles` : intitulés visés. `refresh:false` lit la base locale seule. Sans source activée : `queried:false`, jamais une erreur. `coverage` : `{requested, declared, undeclared, sources_without_declared_countries}`, la couverture géographique réelle des sources interrogées par rapport aux `country_codes` demandés. Refusé en mode démonstration. |
+| `POST /search` `{filter?, titles?, refresh?}` | Recherche multi-sources : interroge **en parallèle** les entreprises activées et les sources officielles configurées dont la couverture (pays) correspond, enregistre les offres sans doublon, puis renvoie `{queried, status, sources[], results}` (offres agrégées paginées, bilan par source, erreurs nommées). `titles` : intitulés visés. `refresh:false` lit la base locale seule. Sans source activée : `queried:false`, jamais une erreur. Quand `filter.company` est renseigné, la recherche **lit le site carrières de cette entreprise** : `company_search` indique `tracked` (déjà suivie), `followed` (site Greenhouse ou Lever trouvé dont le nom correspond : suivie automatiquement), `candidates` (sites trouvés au nom différent : proposés, jamais activés), `not_found` ou `disabled` (suivie mais désactivée : jamais réactivée sans l'utilisateur). Seule cette entreprise est lue ; l'intitulé (mots dans n'importe quel ordre) et le lieu filtrent à la collecte. `coverage` : `{requested, declared, undeclared, sources_without_declared_countries}`, la couverture géographique réelle des sources interrogées par rapport aux `country_codes` demandés. Refusé en mode démonstration. |
 | `GET /sources` | Sources de données : clé, nom, pays, activation, `configured`/`requires_configuration`, `status` (`ok`, `error`, `unsupported`, `not_configured`, `never_checked`), dernier accès/succès/erreur, nombre d'offres. Une source officielle sans identifiants est listée « non configurée ». |
 | `GET /sources?country=FR` | Ne garde que les sources qui déclarent ce pays **ou** dont la couverture n'est pas déclarée (`coverage_declared: false`, jamais présentée comme couvrante). |
 
@@ -100,7 +104,7 @@ Aucun appel de modèle n'est exposé : ces routes règlent et observent la plate
 | `PUT /ai/budget` | `{daily, monthly, currency, alert_thresholds}` : plafonds (> 0, 2 décimales, seuils 1–100 %). Seul l'utilisateur les change. |
 | `PUT /ai/consent` | `{accepted}` : accord (ou retrait) d'envoi de données à une API payante. |
 | `POST /ai/test` | `{level: 1\|2}` : passe un petit texte d'offre fictif et public par toute la chaîne (routage, accord, plafonds, appel, validation, journal, cache). Erreurs : 409 (`ai_disabled`, `ai_not_configured`, `ai_consent_required`, `ai_budget_not_defined`, `ai_budget_exceeded`), 502 (`ai_provider_failure`, `ai_invalid_output`, `ai_incomplete_output`). |
-| `GET /ai/usage` | Dépense du jour et du mois (avec pourcentage du plafond), par fournisseur, derniers appels (refus et cache compris), et `alerts` : plus haut seuil d'alerte atteint par période, tant qu'il est franchi. |
+| `GET /ai/usage` | Dépense du jour et du mois (avec pourcentage du plafond), `daily_spend` (un point par jour du mois, jours sans dépense à 0), par fournisseur, derniers appels (refus et cache compris), et `alerts` : plus haut seuil d'alerte atteint par période, tant qu'il est franchi. |
 | `PUT /ai/provider-caps/{provider}` | `{daily}` : plafond journalier d'un fournisseur payant, en plus des plafonds globaux (`null` le retire). 409 si le fournisseur payant n'existe pas. Visible dans `provider_daily_caps` des réglages. |
 | `PUT /ai/task-caps/{task_type}` | `{daily}` : plafond journalier d'un type de tâche IA (`offer_summary`, `interview_questions`, `interview_review`, `cv_rewrite`), en plus des plafonds globaux ; `null` le retire. 409 si la tâche est inconnue. Visible dans `task_daily_caps` et `tasks` des réglages. |
 | `POST /ai/estimate` | `{task_type}` (profil connu de la tâche) ou `{characters, level?, max_output_tokens?}` : coût maximal d'une opération et faisabilité (`allowed`, `reason`) sans appeler de modèle ni rien journaliser. Seule la taille du texte est envoyée. |
@@ -228,3 +232,15 @@ payload_too_large`.
 | `GET /reference/timezones` | Fuseaux IANA reconnus par le serveur. |
 
 `GET /offers/{id}` expose aussi `visa_sponsorship` (`offered`, `not_offered`, `null`) et `work_authorization_required` (`true` ou `null`), déduits de l'annonce ; `null` signifie que l'annonce n'en parle pas.
+
+## Candidatures (`/api/v1/applications`)
+
+| Route | Rôle |
+|---|---|
+| `POST /applications` | `{offer_id, initial_status?}` : suit une offre (une offre = une candidature). 409 `duplicate_application` si elle l'est déjà. L'interface demande une confirmation avant cet appel. |
+| `GET /applications` | Liste filtrée et paginée. `GET /applications/kanban` : colonnes par statut ; `GET /applications/stats` : statistiques fondées sur les données réelles. |
+| `GET /applications/{id}` | Fiche : contacts, historique, documents, transitions autorisées. |
+| `DELETE /applications/{id}` | Retire la candidature du suivi (par exemple ajoutée par erreur) avec son historique, ses contacts et ses documents associés. **L'offre est conservée** et peut être suivie à nouveau. 204 ; 404 `application_not_found` si elle n'existe pas ou appartient à un autre utilisateur. |
+| `PATCH /applications/{id}/status`, `POST …/confirm-submission` | Changement de statut validé par la machine à états ; l'envoi est toujours confirmé à la main. |
+| `POST …/notes`, `POST …/interviews`, `POST …/contacts`, `PATCH …/follow-up`, `PUT …/documents` | Historique, entretiens, contacts, relance, CV et lettre associés. |
+| `GET …/dossier`, `GET …/open-url` | Dossier de candidature et lien d'origine de l'offre. |

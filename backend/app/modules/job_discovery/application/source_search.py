@@ -19,9 +19,14 @@ from app.modules.job_discovery.application.collection import (
     ExtraFactory,
     NoEnabledCompanyError,
 )
+from app.modules.job_discovery.application.company_resolution import (
+    CompanyResolution,
+    CompanyResolver,
+)
 from app.modules.job_discovery.domain.criteria import SearchCriteria
 from app.modules.job_discovery.domain.enums import SearchRunStatus
 from app.modules.job_discovery.domain.search import OfferFilter
+from app.modules.job_discovery.domain.text import search_words
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,12 +61,16 @@ class SourceSearchReport:
     status: SearchRunStatus | None
     """`None` : aucune source n'a été interrogée (rien d'activé), pas un échec."""
     sources: tuple[CompanyCollection, ...]
+    company: CompanyResolution | None = None
+    """Résolution de l'entreprise saisie (site carrières retrouvé, suivi, candidats…)."""
 
 
 def to_collection_filter(offer_filter: OfferFilter, titles: tuple[str, ...]) -> CollectionFilter:
     """Ce qu'une offre doit satisfaire pour être enregistrée : le même sens que la recherche
     locale (texte et mots-clés dans l'intitulé ou la description), plus les intitulés visés."""
-    termes = tuple(t for t in (offer_filter.text, *offer_filter.keywords) if t)
+    # Comme la recherche locale : chaque mot saisi doit figurer, dans n'importe quel ordre.
+    mots = tuple(search_words(offer_filter.text or ""))
+    termes = (*mots, *(k for k in offer_filter.keywords if k))
     return CollectionFilter(
         city=offer_filter.city,
         country_codes=offer_filter.country_codes,
@@ -74,12 +83,15 @@ def to_collection_filter(offer_filter: OfferFilter, titles: tuple[str, ...]) -> 
 def to_criteria(offer_filter: OfferFilter, titles: tuple[str, ...]) -> SearchCriteria | None:
     """Critères pour les sources de recherche ; `None` si aucun terme ne permet de les interroger
     (une source ne se parcourt pas « à vide »)."""
-    intitules = tuple(dict.fromkeys(t for t in (offer_filter.text, *titles) if t))
+    intitules = tuple(dict.fromkeys(t for t in titles if t))
+    # Le texte saisi est un ensemble de mots (chacun doit figurer, dans n'importe quel ordre) ;
+    # seuls les intitulés visés explicitement servent d'intitulé (l'un d'eux suffit).
+    mots = tuple(search_words(offer_filter.text or ""))
     try:
         return SearchCriteria(
             title=intitules[0] if intitules else None,
             alternative_titles=intitules[1:],
-            keywords=offer_filter.keywords,
+            keywords=(*mots, *offer_filter.keywords),
             company=offer_filter.company,
             city=offer_filter.city,
             country_codes=offer_filter.country_codes,
@@ -95,8 +107,11 @@ def to_criteria(offer_filter: OfferFilter, titles: tuple[str, ...]) -> SearchCri
 
 
 class SourceSearchService:
-    def __init__(self, collection: CollectionService) -> None:
+    def __init__(
+        self, collection: CollectionService, resolver: CompanyResolver | None = None
+    ) -> None:
         self._collection = collection
+        self._resolver = resolver
 
     async def collect(
         self,
@@ -107,6 +122,17 @@ class SourceSearchService:
         extra_factory: ExtraFactory | None = None,
     ) -> SourceSearchReport:
         criteres = to_criteria(offer_filter, titles)
+        entreprise: CompanyResolution | None = None
+        seulement: frozenset[uuid.UUID] | None = None
+        if offer_filter.company and self._resolver is not None:
+            # Une entreprise précise est demandée : on retrouve son site carrières et on ne lit
+            # que celui-là (pas les autres entreprises suivies).
+            entreprise = await self._resolver.resolve(
+                owner_id=owner_id, company=offer_filter.company
+            )
+            if not entreprise.company_ids:
+                return SourceSearchReport(status=None, sources=(), company=entreprise)
+            seulement = entreprise.company_ids
         try:
             rapport = await self._collection.run(
                 owner_id=owner_id,
@@ -114,7 +140,10 @@ class SourceSearchService:
                 # Sans terme de recherche, seules les entreprises suivies (catalogue) sont lues.
                 extra_factory=extra_factory if criteres is not None else None,
                 criteria=criteres,
+                only_company_ids=seulement,
             )
         except NoEnabledCompanyError:
-            return SourceSearchReport(status=None, sources=())
-        return SourceSearchReport(status=rapport.status, sources=rapport.companies)
+            return SourceSearchReport(status=None, sources=(), company=entreprise)
+        return SourceSearchReport(
+            status=rapport.status, sources=rapport.companies, company=entreprise
+        )

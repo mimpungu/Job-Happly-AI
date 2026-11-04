@@ -7,6 +7,8 @@ import { DataSourcesPanel } from "@/features/sources/data-sources-panel";
 import { FranceTravailPanel } from "@/features/companies/france-travail-panel";
 import { WeightsEditor } from "@/features/matching/weights-editor";
 import { HealthPanel } from "@/features/privacy/health-panel";
+import { NotificationSettingsPanel } from "@/features/notifications/notification-settings-panel";
+import { StorageBackupPanel } from "@/features/privacy/storage-backup-panel";
 import { PrivacyPanel } from "@/features/privacy/privacy-panel";
 
 export const metadata: Metadata = { title: "Paramètres — Happly AI" };
@@ -16,12 +18,14 @@ export default function Page() {
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold text-foreground">Paramètres</h1>
       <GeneralSettingsPanel />
+      <NotificationSettingsPanel />
       <FranceTravailPanel />
       <CompaniesPanel />
       <DataSourcesPanel />
       <WeightsEditor />
       <DemoPanel />
       <PrivacyPanel />
+      <StorageBackupPanel />
       <HealthPanel />
     </div>
   );

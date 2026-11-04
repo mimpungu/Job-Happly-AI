@@ -15,8 +15,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/table";
 import { toast } from "@/components/ui/toaster";
 import { useRecompute } from "@/features/matching/use-matching";
+import { CompanyFinder, resumeCollecte } from "@/features/companies/companies-panel";
+import { useAddCompany, useRunCollection } from "@/features/companies/use-companies";
 import { usePreferences } from "@/features/localization/use-localization";
-import { QueriedSources } from "@/features/sources/queried-sources";
+import { QueriedSources, type CandidateBoard } from "@/features/sources/queried-sources";
 import { useSearchSources } from "@/features/sources/use-sources";
 import { ApiError } from "@/services/api-client";
 import type { OfferFilters, OfferSort, OfferState } from "@/types/jobs";
@@ -58,9 +60,45 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
   };
 
   const offres = useOffers(filters);
+  const collecter = useRunCollection();
+  const ajouterEntreprise = useAddCompany();
   const changerEtat = useChangeOfferState();
   const recalculer = useRecompute();
   const interroger = useSearchSources();
+  const lancerSources = (criteres: OfferFilters) =>
+    interroger.mutate(criteres, {
+      onSuccess: (r) =>
+        toast.success(
+          r.queried
+            ? `${r.sources.length} source${r.sources.length > 1 ? "s" : ""} interrogée${r.sources.length > 1 ? "s" : ""}.`
+            : "Aucune source activée : seules les offres déjà collectées sont affichées.",
+        ),
+      onError: (erreur) => toast.error(erreur.message),
+    });
+  // « Rechercher » affiche aussitôt les offres déjà collectées, puis interroge les sources pour
+  // en trouver de nouvelles : la recherche ne se limite pas à ce qui est déjà en base.
+  const rechercher = (suivants: OfferFilters) => {
+    appliquer(suivants);
+    lancerSources(suivants);
+  };
+  // Candidat proposé par la recherche d'entreprise, confirmé par l'utilisateur : on le suit puis
+  // on relance la recherche, qui lira alors ses offres.
+  const suivreUnSite = (site: CandidateBoard) =>
+    ajouterEntreprise.mutate(
+      { name: site.board_name ?? site.token, careers_url: site.careers_url, enabled: true },
+      {
+        onSuccess: () => lancerSources(filters),
+        onError: (erreur) => toast.error(erreur.message),
+      },
+    );
+  const recupererOffres = () =>
+    collecter.mutate(
+      { it_only: false, city: null },
+      {
+        onSuccess: (rapport) => toast.success(resumeCollecte(rapport)),
+        onError: (erreur) => toast.error(erreur.message),
+      },
+    );
   const modifierEtat = (id: string, state: OfferState | null) =>
     changerEtat.mutate(
       { id, state },
@@ -87,9 +125,25 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
         <SearchForm
           key={`${params.toString()}|${devisePreferee ?? ""}`}
           filters={filters}
-          onSubmit={appliquer}
+          onSubmit={rechercher}
           onSaveSearch={setASauvegarder}
         />
+      )}
+
+      {savedOnly ? null : (
+        <details className="rounded-lg border border-border bg-surface p-4">
+          <summary className="cursor-pointer text-sm font-medium text-foreground">
+            Chercher les offres d&apos;une autre entreprise
+          </summary>
+          <div className="mt-3 flex flex-col gap-3">
+            <p className="text-sm text-foreground-muted">
+              Happly AI lit les sites carrières publics (Greenhouse, Lever) des entreprises que vous
+              suivez : une recherche ne trouve que leurs offres. Pour voir celles d&apos;une autre
+              entreprise, ajoutez-la ici ; ses offres sont récupérées aussitôt.
+            </p>
+            <CompanyFinder onFollowed={recupererOffres} />
+          </div>
+        </details>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
@@ -113,17 +167,7 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
                   <Button
                     variant="secondary"
                     loading={interroger.isPending}
-                    onClick={() =>
-                      interroger.mutate(filters, {
-                        onSuccess: (r) =>
-                          toast.success(
-                            r.queried
-                              ? `${r.sources.length} source${r.sources.length > 1 ? "s" : ""} interrogée${r.sources.length > 1 ? "s" : ""}.`
-                              : "Aucune source activée.",
-                          ),
-                        onError: (erreur) => toast.error(erreur.message),
-                      })
-                    }
+                    onClick={() => lancerSources(filters)}
                   >
                     Interroger les sources
                   </Button>
@@ -160,7 +204,9 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
               </div>
             </div>
 
-            {interroger.data ? <QueriedSources result={interroger.data} /> : null}
+            {interroger.data ? (
+              <QueriedSources result={interroger.data} onFollowBoard={suivreUnSite} />
+            ) : null}
 
             {offres.isPending ? (
               <div className="flex flex-col gap-2" role="status" aria-label="Chargement des offres">
@@ -195,7 +241,7 @@ export function JobsExplorer({ savedOnly = false }: JobsExplorerProps) {
                 description={
                   savedOnly
                     ? "Sauvegardez une offre depuis la recherche pour la retrouver ici."
-                    : "Aucune offre collectée ne correspond à ces critères. Élargissez la recherche ; les offres apparaissent une fois les entreprises suivies et collectées."
+                    : "Aucune offre collectée ne correspond à ces critères. Élargissez la recherche, ou ajoutez l'entreprise qui vous intéresse (« Chercher les offres d'une autre entreprise », au-dessus) : seules les entreprises suivies sont lues."
                 }
                 action={
                   savedOnly ? undefined : (

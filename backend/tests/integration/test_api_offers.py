@@ -188,3 +188,34 @@ async def test_sans_base_configuree_l_api_repond_503_mais_la_sante_fonctionne() 
 
     assert sante.status_code == 200
     assert offres.status_code == 503
+
+
+async def test_les_suggestions_ne_proposent_que_des_valeurs_existantes_les_plus_frequentes_d_abord(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    for titre, entreprise, lieu in (
+        ("Développeur Python", "Alpha", "Paris, France"),
+        ("Développeur Python", "Beta", "Lyon, France"),
+        ("Développeur Java", "Alpha", "Paris, France"),
+        ("Comptable", "Gamma", None),
+    ):
+        await _creer_offre(client, session, title=titre, company_name=entreprise, location=lieu)
+
+    titres = (await client.get("/api/v1/offers/suggestions?field=title&q=developpeur")).json()
+    entreprises = (await client.get("/api/v1/offers/suggestions?field=company&q=al")).json()
+    villes = (await client.get("/api/v1/offers/suggestions?field=city&q=par")).json()
+    aucune = (await client.get("/api/v1/offers/suggestions?field=title&q=xyz")).json()
+
+    # Insensible aux accents ; la valeur la plus fréquente d'abord ; aucune valeur inventée.
+    assert titres == ["Développeur Python", "Développeur Java"]
+    assert entreprises == ["Alpha"]
+    assert villes == ["Paris, France"]
+    assert aucune == []
+
+
+async def test_les_suggestions_refusent_un_champ_inconnu_et_une_saisie_vide(
+    client: httpx.AsyncClient,
+) -> None:
+    assert (await client.get("/api/v1/offers/suggestions?field=salary&q=a")).status_code == 422
+    assert (await client.get("/api/v1/offers/suggestions?field=title&q=")).status_code == 422
+    assert (await client.get("/api/v1/offers/suggestions?field=title")).status_code == 422
