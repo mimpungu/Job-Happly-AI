@@ -1,0 +1,56 @@
+name: E2E
+
+# Parcours complets (navigateur, API, PostgreSQL, pdfLaTeX) : plusieurs minutes, donc lancés à la
+# demande et sur master (avant une release), pas à chaque commit de dev.
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: happly_test
+          POSTGRES_PASSWORD: test-only
+          POSTGRES_DB: happly_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U happly_test -d happly_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+        working-directory: backend
+      - name: Installer TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-base \
+            texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended lmodern
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: frontend
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Accessibilité (API simulée)
+        run: pnpm e2e
+        working-directory: frontend
+      - name: Parcours complets (pile réelle)
+        run: pnpm e2e:fullstack
+        working-directory: frontend

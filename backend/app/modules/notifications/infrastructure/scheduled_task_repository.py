@@ -69,6 +69,9 @@ class SQLAlchemyScheduledTaskRepository(ScheduledTaskRepositoryPort):
         )
         self._session.add(model)
         await self._session.flush()
+        # `updated_at` est recalculé par la base (onupdate) : sans relecture, y accéder déclenche
+        # un chargement paresseux impossible en asynchrone (MissingGreenlet, erreur 500).
+        await self._session.refresh(model)
         return _to_entity(model)
 
     async def get_by_id(
@@ -134,6 +137,9 @@ class SQLAlchemyScheduledTaskRepository(ScheduledTaskRepositoryPort):
         model.last_run_at = last_run_at
         model.next_run_at = next_run_at
         await self._session.flush()
+        # `updated_at` est recalculé par la base (onupdate) : sans relecture, y accéder déclenche
+        # un chargement paresseux impossible en asynchrone (MissingGreenlet, erreur 500).
+        await self._session.refresh(model)
         return _to_entity(model)
 
     async def update(
@@ -176,6 +182,9 @@ class SQLAlchemyScheduledTaskRepository(ScheduledTaskRepositoryPort):
             model.next_run_at = next_run_at
 
         await self._session.flush()
+        # `updated_at` est recalculé par la base (onupdate) : sans relecture, y accéder déclenche
+        # un chargement paresseux impossible en asynchrone (MissingGreenlet, erreur 500).
+        await self._session.refresh(model)
         return _to_entity(model)
 
     async def delete(

@@ -35,13 +35,16 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run mypy
+      # Le registre des tâches doit refléter le backlog maître (le maître fait foi).
+      - run: uv run python tools/sync_backlog_registry.py --check
       # pdfLaTeX est indispensable aux tests de compilation réelle (EPIC 012/013).
       - name: Installer TeX Live
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends texlive-latex-base \
             texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended lmodern
-      - run: uv run pytest
+      # Seuil sous la valeur mesurée (94,6 % le 2026-11-04) : détecte une régression de couverture.
+      - run: uv run pytest --cov=app --cov-fail-under=92
         env:
           # Un test de compilation ne doit jamais être ignoré en silence en CI.
           HAPPLY_REQUIRE_PDFLATEX: "1"

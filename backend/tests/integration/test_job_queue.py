@@ -307,3 +307,16 @@ def test_attente_exponentielle_plafonnee() -> None:
     assert backoff(3) == timedelta(seconds=120)
     assert backoff(20) == timedelta(seconds=3600)
     assert backoff(0) == timedelta(seconds=30)
+
+
+async def test_enqueue_reste_fiable_apres_de_nombreuses_executions_sur_la_meme_connexion(
+    file: PostgresJobQueue,
+) -> None:
+    """Régression : au-delà de 5 exécutions d'une même requête préparée, PostgreSQL bascule sur un
+    plan générique ; un prédicat d'index partiel passé en paramètres n'était alors plus reconnu
+    et l'enqueue échouait (« no unique or exclusion constraint matching ON CONFLICT »)."""
+    resultats = [await file.enqueue(kind="regression", idempotency_key=f"k{i}") for i in range(15)]
+
+    assert all(r.created for r in resultats)
+    doublon = await file.enqueue(kind="regression", idempotency_key="k0")
+    assert doublon.created is False and doublon.job_id == resultats[0].job_id

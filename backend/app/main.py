@@ -76,7 +76,7 @@ async def _lifespan(application: FastAPI) -> AsyncGenerator[None]:
 def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging(settings.log_level)
-    application = FastAPI(title="Happly AI API", version="0.1.0", lifespan=_lifespan)
+    application = FastAPI(title="Happly AI API", version="0.5.0rc1", lifespan=_lifespan)
     application.state.metrics = MetricsRegistry()
     application.add_middleware(
         CORSMiddleware,

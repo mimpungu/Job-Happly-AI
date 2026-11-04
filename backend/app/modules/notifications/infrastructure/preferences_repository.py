@@ -50,6 +50,9 @@ class SQLAlchemyNotificationPreferencesRepository(NotificationPreferencesReposit
             model = NotificationPreferenceModel(owner_id=owner_id)
             self._session.add(model)
             await self._session.flush()
+        # `updated_at` est recalculé par la base (onupdate) : sans relecture, y accéder déclenche
+        # un chargement paresseux impossible en asynchrone (MissingGreenlet, erreur 500).
+        await self._session.refresh(model)
         return _to_entity(model)
 
     async def update(
@@ -99,4 +102,7 @@ class SQLAlchemyNotificationPreferencesRepository(NotificationPreferencesReposit
                 setattr(model, attr, val)
 
         await self._session.flush()
+        # `updated_at` est recalculé par la base (onupdate) : sans relecture, y accéder déclenche
+        # un chargement paresseux impossible en asynchrone (MissingGreenlet, erreur 500).
+        await self._session.refresh(model)
         return _to_entity(model)
